@@ -1,4 +1,4 @@
-// LoginScreen.kt
+// RegisterScreen.kt
 package pt.isec.ams.quizec.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -13,20 +13,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import pt.isec.ams.quizec.viewmodel.LoginViewModel
-import pt.isec.ams.quizec.viewmodel.LoginState
+import pt.isec.ams.quizec.viewmodel.RegisterViewModel
+import pt.isec.ams.quizec.viewmodel.RegisterState
 
 @Composable
-fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
-
-    // Usamos el remember para mantener el estado del TextField (campos email y password)
+fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = viewModel()) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
-    // Observa el estado de autenticación del ViewModel
-    val loginState by viewModel.loginState.observeAsState()
+    // Observar el estado de registro
+    val registerState by viewModel.registerState.observeAsState()
 
-    // Configuración de la pantalla
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -34,7 +31,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Campo texto para email
         TextField(
             value = email.value,
             onValueChange = { email.value = it },
@@ -44,42 +40,39 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Campo texto para contraseña
         TextField(
             value = password.value,
             onValueChange = { password.value = it },
             label = { Text("Password") },
-            // Para ocultar el texto registrado (contraseña)
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón login
         Button(
             onClick = {
-                viewModel.login(email.value, password.value)
+                viewModel.register(email.value, password.value)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Login")
+            Text("Register")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Manejar el estado de autenticación
-        when (loginState) {
-            is LoginState.Success -> {
-                Text(text = "Login exitoso", color = androidx.compose.ui.graphics.Color.Green)
-                // Navegar a la pantalla principal o mostrar un mensaje de bienvenida
-                navController.navigate("home") {
-                    popUpTo("login") { inclusive = true } // Borra LoginScreen de la pila de navegación
+        // Mostrar el estado de registro
+        when (registerState) {
+            is RegisterState.Success -> {
+                Text(text = "Registro exitoso", color = androidx.compose.ui.graphics.Color.Green)
+                // Navegar a la pantalla de inicio de sesión o a la pantalla principal
+                navController.navigate("login") {
+                    popUpTo("register") { inclusive = true } // Elimina RegisterScreen de la pila
                 }
             }
-            is LoginState.Error -> {
+            is RegisterState.Error -> {
                 Text(
-                    text = (loginState as LoginState.Error).message,
+                    text = (registerState as RegisterState.Error).message,
                     color = androidx.compose.ui.graphics.Color.Red
                 )
             }
@@ -87,19 +80,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
                 // No hacer nada cuando el estado es nulo
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Botón register
-        Button(
-            // Redirige a la pantalla de registro
-            onClick = {
-                navController.navigate("register") // Navegar a RegisterScreen
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Register")
-        }
     }
 }
+
 

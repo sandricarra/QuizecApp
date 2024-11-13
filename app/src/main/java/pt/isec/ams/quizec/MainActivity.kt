@@ -12,36 +12,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import pt.isec.ams.quizec.ui.theme.QuizecTheme
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import pt.isec.ams.quizec.ui.screens.HomeScreen
+import pt.isec.ams.quizec.ui.screens.LoginScreen
+import pt.isec.ams.quizec.ui.screens.RegisterScreen
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            QuizecTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            setContent {
+                val navController = rememberNavController()
+                AppNavHost(navController = navController)
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    QuizecTheme {
-        Greeting("Android")
+fun AppNavHost(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") { LoginScreen(navController) }
+        composable("register") { RegisterScreen(navController) }
+        composable("home") { HomeScreen() }
     }
 }
