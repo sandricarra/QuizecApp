@@ -16,17 +16,28 @@ import androidx.navigation.NavController
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.LoginState
 
+enum class QuestionType {
+    TRUE_FALSE,
+    MULTIPLE_CHOICE,
+    SHORT_ANSWER
+}
+
+data class Question(
+    val questionText: String,
+    val questionType: QuestionType,
+    val options: List<String> = emptyList(),
+    val correctAnswers: List<Int> = emptyList() // Índices de las opciones correctas
+)
+
+
 @Composable
 fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
-
-    // Usamos el remember para mantener el estado del TextField (campos email y password)
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
     // Observa el estado de autenticación del ViewModel
     val loginState by viewModel.loginState.observeAsState()
 
-    // Configuración de la pantalla
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -34,7 +45,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Campo texto para email
         TextField(
             value = email.value,
             onValueChange = { email.value = it },
@@ -44,19 +54,16 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Campo texto para contraseña
         TextField(
             value = password.value,
             onValueChange = { password.value = it },
             label = { Text("Password") },
-            // Para ocultar el texto registrado (contraseña)
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón login
         Button(
             onClick = {
                 viewModel.login(email.value, password.value)
@@ -70,13 +77,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
         // Manejar el estado de autenticación
         when (loginState) {
-            is LoginState.Success -> {
-                Text(text = "Login exitoso", color = androidx.compose.ui.graphics.Color.Green)
-                // Navegar a la pantalla principal o mostrar un mensaje de bienvenida
-                navController.navigate("home") {
-                    popUpTo("login") { inclusive = true } // Borra LoginScreen de la pila de navegación
-                }
-            }
             is LoginState.Error -> {
                 Text(
                     text = (loginState as LoginState.Error).message,
@@ -84,21 +84,52 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
                 )
             }
             else -> {
-                // No hacer nada cuando el estado es nulo
+                // No hacer nada
+            }
+        }
+
+        // Usar LaunchedEffect para manejar la navegación
+        if (loginState is LoginState.Success) {
+            LaunchedEffect(Unit) {
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
+                // Restablecer el estado a Idle después de la navegación
+                viewModel.resetState()
             }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botón register
         Button(
-            // Redirige a la pantalla de registro
             onClick = {
-                navController.navigate("register") // Navegar a RegisterScreen
+                navController.navigate("register")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Register")
+        }
+    }
+}
+@Composable
+fun MultipleChoiceQuestion(
+    question: Question,
+    onOptionsChanged: (List<String>) -> Unit
+) {
+    var options by remember { mutableStateOf(question.options) }
+
+    Column {
+        Text(text = question.questionText)
+
+        options.forEachIndexed { index, option ->
+            TextField(
+                value = option,
+                onValueChange = {
+                    options = options.toMutableList().apply { set(index, it) }
+                    onOptionsChanged(options)
+                },
+                label = { Text("Opción ${index + 1}") }
+            )
         }
     }
 }

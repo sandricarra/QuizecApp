@@ -64,6 +64,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation-layout:1.0.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.firebase.firestore.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

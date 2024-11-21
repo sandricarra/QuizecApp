@@ -1,4 +1,3 @@
-// RegisterScreen.kt
 package pt.isec.ams.quizec.ui.screens
 
 import androidx.compose.foundation.layout.*
@@ -24,6 +23,23 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
     // Observar el estado de registro
     val registerState by viewModel.registerState.observeAsState()
 
+    // Usar LaunchedEffect para manejar la navegación basándonos en el estado de registro
+    LaunchedEffect(registerState) {
+        when (registerState) {
+            is RegisterState.Success -> {
+                // Navegar a la pantalla de inicio de sesión y limpiar la pila
+                navController.navigate("login") {
+                    popUpTo("register") { inclusive = true }
+                }
+            }
+            is RegisterState.Error -> {
+                // Manejar el error si es necesario (puedes mostrar un mensaje o realizar otra acción)
+            }
+            else -> Unit // No hacer nada si el estado es nulo
+        }
+    }
+
+    // Contenido de la pantalla de registro
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -61,26 +77,12 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Mostrar el estado de registro
-        when (registerState) {
-            is RegisterState.Success -> {
-                Text(text = "Registro exitoso", color = androidx.compose.ui.graphics.Color.Green)
-                // Navegar a la pantalla de inicio de sesión o a la pantalla principal
-                navController.navigate("login") {
-                    popUpTo("register") { inclusive = true } // Elimina RegisterScreen de la pila
-                }
-            }
-            is RegisterState.Error -> {
-                Text(
-                    text = (registerState as RegisterState.Error).message,
-                    color = androidx.compose.ui.graphics.Color.Red
-                )
-            }
-            else -> {
-                // No hacer nada cuando el estado es nulo
-            }
+        // Mostrar el estado de error si existe
+        if (registerState is RegisterState.Error) {
+            Text(
+                text = (registerState as RegisterState.Error).message,
+                color = androidx.compose.ui.graphics.Color.Red
+            )
         }
     }
 }
-
-

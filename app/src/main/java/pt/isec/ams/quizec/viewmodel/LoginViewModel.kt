@@ -7,31 +7,29 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 class LoginViewModel : ViewModel() {
-    // Instancia de FirebaseAuth: Para gestionar el inicio de sesión de usuario con Firebase
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val _loginState = MutableLiveData<LoginState?>() // Permitir valores nulos
+    val loginState: LiveData<LoginState?> get() = _loginState
 
-    // Estado para almacenar el resultado de autenticación
-    private val _loginState = MutableLiveData<LoginState>()
-
-    // Propiedad de solo lectura para acceder al estado de autenticación
-    val loginState: LiveData<LoginState> get() = _loginState
-
-    // Método para iniciar sesión con email y contraseña
     fun login(email: String, password: String) {
-
-        // Autentica usuario con email y contraseña
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Autentificación exitosa: Actualizamos LoginState.Success (indica éxito)
-                    _loginState.value = LoginState.Success // Autenticación exitosa
+                    _loginState.value = LoginState.Success
                 } else {
-                    // Autentificación no exitosa: Actualizamos LoginState.Error (indica error)
                     _loginState.value = LoginState.Error(task.exception?.message ?: "Error desconocido")
                 }
             }
     }
+
+    // Nueva función para limpiar el estado
+    fun resetState() {
+        _loginState.value = null // Ahora es posible asignar null
+    }
 }
+
+
+
 
 // Clase para representar el estado de autenticación
 sealed class LoginState {

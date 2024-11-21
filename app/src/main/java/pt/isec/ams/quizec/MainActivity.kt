@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import pt.isec.ams.quizec.ui.screens.HomeScreen
 import pt.isec.ams.quizec.ui.screens.LoginScreen
+import pt.isec.ams.quizec.ui.screens.QuizCreationScreen
 import pt.isec.ams.quizec.ui.screens.RegisterScreen
 
 
@@ -26,10 +27,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            setContent {
+
                 val navController = rememberNavController()
                 AppNavHost(navController = navController)
-            }
+
         }
     }
 }
@@ -39,6 +40,10 @@ fun AppNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
-        composable("home") { HomeScreen() }
+        composable("home") { HomeScreen(navController) }
+        composable("createQuiz") { QuizCreationScreen(navController) }  // Nueva pantalla añadida
+        composable("quizHistory") { /* TODO: Implementa QuizHistoryScreen */ }
     }
 }
+
+

@@ -1,9 +1,7 @@
-package pt.isec.ams.quizec.data.models
+package pt.isec.ams.quizec.model
 
-class Quiz(
-    val quizId: String,
+data class Quiz(
     val title: String,
     val description: String,
-    val questions: List<Question>,
-    val creatorId: String
+    val imageUrl: String? = null
 )
