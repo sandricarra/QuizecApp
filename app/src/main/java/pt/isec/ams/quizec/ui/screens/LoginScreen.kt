@@ -16,15 +16,11 @@ import androidx.navigation.NavController
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.LoginState
+import pt.isec.ams.quizec.data.models.Question
 
 
 
-data class Question(
-    val questionText: String,
-    val questionType: QuestionType,
-    val options: List<String> = emptyList(),
-    val correctAnswers: List<Int> = emptyList() // Índices de las opciones correctas
-)
+
 
 
 @Composable

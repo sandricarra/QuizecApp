@@ -8,7 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import pt.isec.ams.quizec.model.Quiz
-import pt.isec.ams.quizec.ui.screens.Question
+import pt.isec.ams.quizec.data.models.Question
 import java.util.UUID
 
 
@@ -32,23 +32,23 @@ class QuizCreationViewModel : ViewModel() {
         "born" to 1815
     )
 
- fun main(){
-     val user = hashMapOf(
-         "first" to "Ada",
-         "last" to "Lovelace",
-         "born" to 1815
-     )
+    fun main() {
+        val user = hashMapOf(
+            "first" to "Ada",
+            "last" to "Lovelace",
+            "born" to 1815
+        )
 
-     db.collection("users")
-         .add(user)
-         .addOnSuccessListener { documentReference ->
-             Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-         }
-         .addOnFailureListener { e ->
-             Log.w(TAG, "Error adding document", e)
-         }
+        db.collection("users")
+            .add(user)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding document", e)
+            }
 
- }
+    }
 
 
     val database = FirebaseDatabase.getInstance()
@@ -128,5 +128,4 @@ class QuizCreationViewModel : ViewModel() {
                 // Mostrar mensaje de error o manejarlo de alguna manera
             }
     }
-
 }
