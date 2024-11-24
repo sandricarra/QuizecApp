@@ -12,70 +12,66 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.FirebaseApp
-import com.google.firebase.database.*
+import com.google.firebase.firestore.FirebaseFirestore
+
 import pt.isec.ams.quizec.ui.screens.*
 import pt.isec.ams.quizec.ui.theme.QuizecTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var db: FirebaseFirestore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Inicializa Firebase
-        FirebaseApp.initializeApp(this)
+        db = FirebaseFirestore.getInstance()
+
 
         setContent {
             QuizecApp()
         }
 
-        // Interacción con Firebase Realtime Database
-        val database = FirebaseDatabase.getInstance() // Obtén la instancia de la base de datos
-        val myRef = database.getReference("message") // Nodo "message"
 
-        // Escribir un mensaje en la base de datos
-        myRef.setValue("Hello, World!")
-            .addOnSuccessListener {
-                Log.d(TAG, "Mensaje guardado correctamente en la base de datos.")
+        val user = hashMapOf(
+            "first" to "Ada",
+            "last" to "Lovelace",
+            "born" to 1815
+        )
+
+        // Agregar el usuario a la colección 'users'
+        db.collection("users")
+            .add(user)  // Agrega el documento con un ID automático
+            .addOnSuccessListener { documentReference ->
+                Log.d("Firebase", "DocumentSnapshot added with ID: ${documentReference.id}")
             }
             .addOnFailureListener { e ->
-                Log.e(TAG, "Error al guardar el mensaje en la base de datos.", e)
+                Log.w("Firebase", "Error adding document", e)
             }
 
-        // Leer datos en tiempo real
-        myRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val value = snapshot.getValue(String::class.java) // Lee el valor como String
-                Log.d(TAG, "El valor es: $value")
+    }}
+
+
+        @Composable
+        fun QuizecApp() {
+            QuizecTheme {
+                val navController = rememberNavController()
+                AppNavHost(navController)
             }
+        }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.e(TAG, "Error al leer datos.", error.toException())
+        @Composable
+        fun AppNavHost(navController: NavHostController) {
+            NavHost(navController = navController, startDestination = "login") {
+                composable("login") { LoginScreen(navController) }
+                composable("register") { RegisterScreen(navController) }
+                composable("home") { HomeScreen(navController) }
+                composable("createQuiz") { QuizCreationScreen(navController) } // Nueva pantalla añadida
+                composable("quizHistory") { /* TODO: Implementa QuizHistoryScreen */ }
             }
-        })
-    }
-}
+        }
 
-@Composable
-fun QuizecApp() {
-    QuizecTheme {
-        val navController = rememberNavController()
-        AppNavHost(navController)
-    }
-}
+        @Preview(showBackground = true)
+        @Composable
+        fun DefaultPreview() {
+            QuizecApp()
+        }
 
-@Composable
-fun AppNavHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = "login") {
-        composable("login") { LoginScreen(navController) }
-        composable("register") { RegisterScreen(navController) }
-        composable("home") { HomeScreen(navController) }
-        composable("createQuiz") { QuizCreationScreen(navController) } // Nueva pantalla añadida
-        composable("quizHistory") { /* TODO: Implementa QuizHistoryScreen */ }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    QuizecApp()
-}

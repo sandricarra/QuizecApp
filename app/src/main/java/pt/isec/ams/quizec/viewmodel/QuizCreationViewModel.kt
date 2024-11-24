@@ -1,22 +1,19 @@
 package pt.isec.ams.quizec.viewmodel
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import pt.isec.ams.quizec.model.Quiz
 import pt.isec.ams.quizec.ui.screens.Question
 import java.util.UUID
 
 
 // Data class para representar un cuestionario
-data class Quiz(
-    val id: String = "",
-    val title: String = "",
-    val description: String = "",
-    val imageUrl: String? = null
-)
+
 
 // Enum para representar los posibles estados de la operación
 sealed class QuizCreationState {
@@ -26,7 +23,36 @@ sealed class QuizCreationState {
     data class Error(val message: String) : QuizCreationState()
 }
 
+
 class QuizCreationViewModel : ViewModel() {
+    var db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    val user = hashMapOf(
+        "first" to "Ada",
+        "last" to "Lovelace",
+        "born" to 1815
+    )
+
+ fun main(){
+     val user = hashMapOf(
+         "first" to "Ada",
+         "last" to "Lovelace",
+         "born" to 1815
+     )
+
+     db.collection("users")
+         .add(user)
+         .addOnSuccessListener { documentReference ->
+             Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
+         }
+         .addOnFailureListener { e ->
+             Log.w(TAG, "Error adding document", e)
+         }
+
+ }
+
+
+    val database = FirebaseDatabase.getInstance()
+    val myref = database.getReference("Quiz")
 
     // Estado de la operación (cargando, éxito, error)
     private val _state = MutableStateFlow<QuizCreationState>(QuizCreationState.Idle)

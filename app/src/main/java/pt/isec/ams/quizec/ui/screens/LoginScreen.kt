@@ -13,14 +13,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.LoginState
 
-enum class QuestionType {
-    TRUE_FALSE,
-    MULTIPLE_CHOICE,
-    SHORT_ANSWER
-}
+
 
 data class Question(
     val questionText: String,

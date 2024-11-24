@@ -1,3 +1,4 @@
+
 package pt.isec.ams.quizec.ui.screens
 
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import pt.isec.ams.quizec.R
+import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.viewmodel.QuizCreationState
 import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
 
@@ -88,7 +90,7 @@ fun QuizCreationScreen(navController: NavController, viewModel: QuizCreationView
                 // y agregarla a la lista de preguntas
                 questions = questions + Question(
                     questionText = "Pregunta de ejemplo",
-                    questionType = QuestionType.MULTIPLE_CHOICE,
+                    questionType = QuestionType.P01,
                     options = listOf("Opción 1", "Opción 2", "Opción 3"),
                     correctAnswers = listOf(0) // Supongamos que la opción 1 es correcta
                 )
