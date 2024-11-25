@@ -1,30 +1,43 @@
 package pt.isec.ams.quizec.ui.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import pt.isec.ams.quizec.viewmodel.RegisterViewModel
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.viewmodel.RegisterState
+import pt.isec.ams.quizec.viewmodel.RegisterViewModel
 
 @Composable
-fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = viewModel()) {
+fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
     // Observar el estado de registro
     val registerState by viewModel.registerState.observeAsState()
 
-    // Usar LaunchedEffect para manejar la navegación basándonos en el estado de registro
-    LaunchedEffect(registerState) {
+
+
         when (registerState) {
             is RegisterState.Success -> {
                 // Navegar a la pantalla de inicio de sesión y limpiar la pila
@@ -33,12 +46,14 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel = 
                 }
             }
             is RegisterState.Error -> {
-                // Manejar el error si es necesario (puedes mostrar un mensaje o realizar otra acción)
+                val errorMessage = (registerState as RegisterState.Error).message
+                // Mostrar mensaje de error
+                Snackbar { Text(text = errorMessage) }
             }
             else -> Unit // No hacer nada si el estado es nulo
         }
-    }
 
+    Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = "Logo")
     // Contenido de la pantalla de registro
     Column(
         modifier = Modifier

@@ -1,10 +1,14 @@
-// RegisterViewModel.kt
 package pt.isec.ams.quizec.viewmodel
+
+
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 
 class RegisterViewModel : ViewModel() {
     // Para registrar nuevos usuarios en Firebase
@@ -16,17 +20,24 @@ class RegisterViewModel : ViewModel() {
 
     // Método para registrar un nuevo usuario en Firebase
     fun register(email: String, password: String) {
-        // Crear un nuevo usuario con email y contraseña
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Registro exitoso: Actualizamos RegisterState.Success
                     _registerState.value = RegisterState.Success
                 } else {
-                    // Registro no exitoso: Actualizamos RegisterState.Error
-                    _registerState.value = RegisterState.Error(task.exception?.message ?: "Error desconocido")
+                    val errorMessage = getFirebaseAuthErrorMessage(task.exception)
+                    _registerState.value = RegisterState.Error(errorMessage)
                 }
             }
+    }
+}
+
+private fun getFirebaseAuthErrorMessage(exception: Exception?): String {
+    return when (exception) {
+        is FirebaseAuthWeakPasswordException -> "La contraseña es demasiado débil. Elige una más segura."
+        is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
+        is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este correo electrónico."
+        else -> exception?.message ?: "Se produjo un error desconocido. Inténtalo nuevamente."
     }
 }
 

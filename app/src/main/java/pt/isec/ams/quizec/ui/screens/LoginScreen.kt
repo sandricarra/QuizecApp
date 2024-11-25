@@ -1,7 +1,9 @@
 // LoginScreen.kt
 package pt.isec.ams.quizec.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -9,29 +11,30 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.viewmodel.LoginViewModel
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.viewmodel.LoginState
-import pt.isec.ams.quizec.data.models.Question
-
-
-
-
+import pt.isec.ams.quizec.viewmodel.LoginViewModel
 
 
 @Composable
-fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
+
+
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
     // Observa el estado de autenticación del ViewModel
     val loginState by viewModel.loginState.observeAsState()
 
+
+    Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = "Logo")
     Column(
+
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
@@ -104,26 +107,5 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
         }
     }
 }
-@Composable
-fun MultipleChoiceQuestion(
-    question: Question,
-    onOptionsChanged: (List<String>) -> Unit
-) {
-    var options by remember { mutableStateOf(question.options) }
 
-    Column {
-        Text(text = question.questionText)
-
-        options.forEachIndexed { index, option ->
-            TextField(
-                value = option,
-                onValueChange = {
-                    options = options.toMutableList().apply { set(index, it) }
-                    onOptionsChanged(options)
-                },
-                label = { Text("Opción ${index + 1}") }
-            )
-        }
-    }
-}
 

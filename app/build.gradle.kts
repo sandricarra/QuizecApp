@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth.ktx)
 
+    implementation("io.coil-kt.coil3:coil-compose:3.0.3")
     // Agrega la dependencia de Navegación de Compose
     implementation("androidx.navigation:navigation-compose:2.5.3")
 

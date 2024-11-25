@@ -1,17 +1,23 @@
-// HomeScreen.kt
 package pt.isec.ams.quizec.ui.screens
+
+
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController,creatorId: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -20,20 +26,37 @@ fun HomeScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         // Mensaje de bienvenida
-        Text(text = "Welcome to Quizec!")
+        Text(
+            text = "Welcome to Quizec!",
+            color = Color(0xFFFFA6A6), // Rojo claro (personalizado con código hexadecimal)
+            fontSize = 28.sp, // Tamaño grande
+            fontWeight = FontWeight.Bold, // Opcional: Hacerlo en negrita
+            textAlign = TextAlign.Center, // Opcional: Centrar el texto
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp) // Espaciado alrededor del texto
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón para crear un nuevo cuestionario
-        Button(
-            onClick = {
-                // Navegar a una pantalla de creación de cuestionarios (a implementar)
-                navController.navigate("createQuiz")
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Create New Quiz")
-        }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text("HOMEPAGE", style = MaterialTheme.typography.headlineMedium)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { navController.navigate("quizCreation") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Create a Quiz")
+                }
+            }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 

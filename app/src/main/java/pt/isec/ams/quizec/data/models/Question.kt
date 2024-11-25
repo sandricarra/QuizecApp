@@ -1,16 +1,16 @@
 package pt.isec.ams.quizec.data.models
 
-import pt.isec.ams.quizec.data.models.QuestionType
+
 
 // Clase para representar una pregunta
 data class Question(
-    val questionText: String, // Texto de la pregunta
-    val questionType: QuestionType, // Tipo de pregunta
-    val options: List<String> = emptyList(), // Opciones para la respuesta (si aplica)
-    val correctAnswers: List<Int> = emptyList(), // Índices de las respuestas correctas
-    val additionalInfo: Any? = null // Información adicional (por ejemplo, imágenes o relaciones entre columnas)
-){
+    val id: String = "",
+    val title: String = "",
+    val type: QuestionType = QuestionType.P01, // Tipo de pregunta (P01, P02, P03, etc.)
+    val options: List<String> = listOf(), // Opciones de respuesta
+    val correctAnswers: List<String> = listOf(), // Respuestas correctas (para preguntas múltiples)
+    val imageUrl: String? = null // Imagen opcional
+)
 
 
 
-}

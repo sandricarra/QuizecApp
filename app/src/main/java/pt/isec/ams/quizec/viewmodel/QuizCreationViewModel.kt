@@ -1,131 +1,95 @@
 package pt.isec.ams.quizec.viewmodel
 
-import android.content.ContentValues.TAG
-import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.google.firebase.database.FirebaseDatabase
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import pt.isec.ams.quizec.model.Quiz
+import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.data.models.Question
-import java.util.UUID
-
-
-// Data class para representar un cuestionario
-
-
-// Enum para representar los posibles estados de la operación
-sealed class QuizCreationState {
-    object Idle : QuizCreationState()
-    object Loading : QuizCreationState()
-    data class Success(val quizId: String) : QuizCreationState()
-    data class Error(val message: String) : QuizCreationState()
-}
-
+import pt.isec.ams.quizec.data.models.QuestionType
+import pt.isec.ams.quizec.model.Quiz
 
 class QuizCreationViewModel : ViewModel() {
-    var db: FirebaseFirestore = FirebaseFirestore.getInstance()
-    val user = hashMapOf(
-        "first" to "Ada",
-        "last" to "Lovelace",
-        "born" to 1815
-    )
-
-    fun main() {
-        val user = hashMapOf(
-            "first" to "Ada",
-            "last" to "Lovelace",
-            "born" to 1815
-        )
-
-        db.collection("users")
-            .add(user)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "DocumentSnapshot added with ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error adding document", e)
-            }
-
-    }
-
-
-    val database = FirebaseDatabase.getInstance()
-    val myref = database.getReference("Quiz")
-
-    // Estado de la operación (cargando, éxito, error)
-    private val _state = MutableStateFlow<QuizCreationState>(QuizCreationState.Idle)
-    val state: StateFlow<QuizCreationState> = _state
-
-    // Estado para almacenar los datos del cuestionario
-    private val _quizTitle = MutableStateFlow("")
-    val quizTitle: StateFlow<String> = _quizTitle
-
-    private val _quizDescription = MutableStateFlow("")
-    val quizDescription: StateFlow<String> = _quizDescription
-
-    private val _imageUrl = MutableStateFlow<String?>(null)
-    val imageUrl: StateFlow<String?> = _imageUrl
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    // Método para actualizar el título
-    fun setQuizTitle(title: String) {
-        _quizTitle.value = title
+    // Declarar 'questions' como un MutableState
+    var questions by mutableStateOf<List<Question>>(emptyList())
+        private set
+
+    // Generar un ID único alfanumérico de 6 caracteres
+    private fun generateUniqueQuizId(): String {
+        val chars = ('A'..'Z') + ('0'..'9')
+        return (1..6).map { chars.random() }.joinToString("")
     }
 
-    // Método para actualizar la descripción
-    fun setQuizDescription(description: String) {
-        _quizDescription.value = description
+    private fun generateUniqueQuestionId(): String {
+        return "q${System.currentTimeMillis()}"  // Usamos el tiempo actual como ID único
     }
 
-    // Método para actualizar la URL de la imagen
-    fun setImageUrl(url: String?) {
-        _imageUrl.value = url
-    }
 
-    // Método para generar un identificador único para el cuestionario
-    private fun generateQuizId(): String {
-        return UUID.randomUUID().toString().substring(0, 6) // Genera un ID de 6 caracteres
-    }
+    // Función para guardar el cuestionario en Firebase Firestore
+    fun saveQuiz(
+        title: String,
+        description: String,
+        questions: List<String>,
+        imageUrl: String?,
+        isGeolocationRestricted: Boolean,
+        startTime: Long,
+        endTime: Long,
+        resultVisibility: Boolean,
+        creatorId: String,
+        onSuccess: () -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        viewModelScope.launch {
+            val quizId = generateUniqueQuizId()
+            val quiz = Quiz(
+                id = quizId,
+                creatorId = creatorId,
+                title = title,
+                description = description,
+                questions = questions,
+                imageUrl = imageUrl,
+                isGeolocationRestricted = isGeolocationRestricted,
+                startTime = startTime,
+                endTime = endTime,
+                resultVisibility = resultVisibility
+            )
 
-    // Método para crear un nuevo cuestionario
-    fun createQuiz(): Quiz {
-        val id = generateQuizId()
-        return Quiz(
-            id = id,
-            title = quizTitle.value,
-            description = quizDescription.value,
-            imageUrl = imageUrl.value
+            firestore.collection("quizzes")
+                .document(quizId)
+                .set(quiz)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onError(it) }
+        }
+    }
+    // Función para agregar una pregunta
+    fun addQuestion(type: QuestionType, title: String, options: List<String>, correctAnswers: List<String>) {
+        val questionId = generateUniqueQuestionId()  // Generamos un ID único para la pregunta
+        val newQuestion = Question(
+            id = questionId,  // ID único generado
+            title = title,    // El título de la pregunta
+            type = type,      // El tipo de la pregunta (P01, P02, etc.)
+            options = options, // Opciones de respuesta
+            correctAnswers = correctAnswers // Respuestas correctas
         )
-    }
 
-
-    fun saveQuiz(quiz: Quiz, questions: List<Question>) {
-        val quizData = hashMapOf(
-            "title" to quiz.title,
-            "description" to quiz.description,
-            "imageUrl" to quiz.imageUrl,
-            "questions" to questions.map { question ->
-                hashMapOf(
-                    "questionText" to question.questionText,
-                    "questionType" to question.questionType.name,
-                    "options" to question.options,
-                    "correctAnswers" to question.correctAnswers
-                )
-            }
-        )
-
-        firestore.collection("quizzes")
-            .add(quizData)
-            .addOnSuccessListener { documentReference ->
-                // El cuestionario se ha guardado exitosamente
-                // Aquí puedes agregar lógica adicional si es necesario
+        // Guardar la pregunta en Firestore
+        firestore.collection("questions")
+            .document(questionId)
+            .set(newQuestion)
+            .addOnSuccessListener {
+                // Si la pregunta se guarda correctamente, actualizamos la lista local de preguntas
+                questions = questions + newQuestion
             }
             .addOnFailureListener { e ->
-                // Error al guardar el cuestionario
-                // Mostrar mensaje de error o manejarlo de alguna manera
+                // Si hay un error al guardar, puedes manejar el error aquí
+                e.printStackTrace()
             }
     }
 }
+
+
