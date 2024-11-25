@@ -38,6 +38,7 @@ fun QuizCreationScreen(
     var title by remember { mutableStateOf(TextFieldValue("")) }
     var description by remember { mutableStateOf(TextFieldValue("")) }
     var isLoading by remember { mutableStateOf(false) }
+    var imageUrl by remember { mutableStateOf<String?>(null) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
 
@@ -62,7 +63,7 @@ fun QuizCreationScreen(
     // Launcher para seleccionar una imagen del dispositivo
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> imageUri = uri }
+        onResult = { uri -> imageUrl = uri.toString() }
     )
 
 
@@ -75,10 +76,10 @@ fun QuizCreationScreen(
 
         // Imagen seleccionada (si existe)
         item {
-            if (imageUri != null) {
+            if (imageUrl != null) {
                 // Mostrar la imagen seleccionada
                 Image(
-                    painter = rememberAsyncImagePainter(imageUri),
+                    painter = rememberAsyncImagePainter(imageUrl),
                     contentDescription = "Selected Image",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -193,7 +194,9 @@ fun QuizCreationScreen(
                             questionTitle = questionTitle,
                             onTitleChange = { questionTitle = it },
                             selectedAnswer = selectedAnswer,
-                            onAnswerChange = { selectedAnswer = it }  // Actualizamos la respuesta seleccionada
+                            onAnswerChange = { selectedAnswer = it },
+                            imageUrl = imageUrl?.toString(), //
+                            onImageChange = { imageUrl = it } // Actualizamos la respuesta seleccionada
                         )
                 }
                 // Otros tipos de preguntas pueden ir aquí
@@ -208,6 +211,7 @@ fun QuizCreationScreen(
                 questionTitle = questionTitle,
                 options = options,
                 correctAnswers = correctAnswers,
+                imageUrl = imageUrl,
                 onUpdate = {
                     questionTitle = ""
                     options = listOf("True", "False")
@@ -312,7 +316,24 @@ fun P01Question(
     onTitleChange: (String) -> Unit, // Callback para actualizar el título
     selectedAnswer: String?, // Respuesta seleccionada
     onAnswerChange: (String) -> Unit, // Callback para actualizar la respuesta
-) {
+    imageUrl: String?, // URL de la imagen
+    onImageChange: (String) -> Unit // Callback para actualizar la URL de la imagen
+)
+
+
+
+
+
+{
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                onImageChange(it.toString()) // Actualizamos la URL de la imagen usando el callback
+            }
+        }
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -324,7 +345,40 @@ fun P01Question(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-        )
+        ) // Mostrar la imagen seleccionada
+        if (imageUrl != null) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Selected Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "No image selected",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(100.dp)
+                )
+                Text(
+                    text = "No image selected",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+        Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+            Text("Select Image")
+        }
 
         // Opciones de respuesta: True/False
         Text("True or False Question", modifier = Modifier.padding(8.dp))
@@ -364,6 +418,7 @@ fun AddQuestionButton(
     questionTitle: String,
     options: List<String>,
     correctAnswers: List<String>,
+    imageUrl: String?,
     onUpdate: () -> Unit, // Callback opcional para actualizar la UI después de agregar la pregunta
     viewModel: QuizCreationViewModel
 ) {
@@ -375,7 +430,8 @@ fun AddQuestionButton(
                     type = it,
                     title = questionTitle,  // El título de la pregunta
                     options = options,      // Las opciones de respuesta
-                    correctAnswers = correctAnswers // Las respuestas correctas
+                    correctAnswers = correctAnswers, // Las respuestas correctas
+                    imageUrl = imageUrl // La URL de la imagen
                 )
             }
 
