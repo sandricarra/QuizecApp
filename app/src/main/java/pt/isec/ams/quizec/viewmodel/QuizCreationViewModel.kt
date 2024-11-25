@@ -41,9 +41,12 @@ class QuizCreationViewModel : ViewModel() {
         questions: List<String>,
         imageUrl: String?,
         isGeolocationRestricted: Boolean,
-        startTime: Long,
-        endTime: Long,
-        resultVisibility: Boolean,
+        timeLimit: Int,
+        isAccessControlled: Boolean,
+        showResultsImmediately: Boolean,
+
+
+
         creatorId: String,
         onSuccess: () -> Unit,
         onError: (Exception) -> Unit
@@ -58,9 +61,10 @@ class QuizCreationViewModel : ViewModel() {
                 questions = questions,
                 imageUrl = imageUrl,
                 isGeolocationRestricted = isGeolocationRestricted,
-                startTime = startTime,
-                endTime = endTime,
-                resultVisibility = resultVisibility
+
+                timeLimit = timeLimit,
+                isAccessControlled = isAccessControlled,
+                showResultsImmediately = showResultsImmediately,
             )
 
             firestore.collection("quizzes")

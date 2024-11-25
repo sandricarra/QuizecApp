@@ -63,6 +63,18 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
                 creatorId = authViewModel.creatorId
             )
         }
+        composable("quizRoom") {
+            QuizRoomScreen(
+                creatorId = authViewModel.creatorId, // Pasa el ID del creador
+                onRoomCreated = { roomId -> navController.navigate("room/$roomId") }
+            )
+        }
+        composable("quizJoin") {
+            QuizJoinScreen(
+                userId = authViewModel.creatorId, // Pasa el ID del jugador autenticado
+                onJoinSuccess = {navController.navigate("room/${authViewModel.creatorId}") }
+            )
+        }
         composable("quizCreation") {
             QuizCreationScreen(
                 creatorId = authViewModel.creatorId, // Pasa el creatorId al crear el quiz

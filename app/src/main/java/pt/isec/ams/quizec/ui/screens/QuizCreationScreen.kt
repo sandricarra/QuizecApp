@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,12 @@ fun QuizCreationScreen(
     var imageUrl by remember { mutableStateOf<String?>(null) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
+    var timeLimit by remember { mutableStateOf(0L) }
+    var isGeolocationRestricted by remember { mutableStateOf(false) }
+
+    var isAccessControlled by remember { mutableStateOf(false) }
+    var showResultsImmediately by remember { mutableStateOf(false) }
+
 
 
     var questionType by remember { mutableStateOf<QuestionType?>(null) }
@@ -136,6 +144,76 @@ fun QuizCreationScreen(
             )
         }
         item {
+            OutlinedTextField(
+                value = timeLimit.toString(),
+                onValueChange = {
+                    // Validar que el valor ingresado sea un número
+                    timeLimit =
+                        (it.toIntOrNull() ?: timeLimit).toLong() // Si no es un número, mantener el valor anterior
+                },
+                label = { Text("Time Limit (minutes)") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                maxLines = 1
+            )
+
+        }
+        item {
+            // Configuración para isGeolocationRestricted
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Restrict by Geolocation",
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = isGeolocationRestricted,
+                    onCheckedChange = { isGeolocationRestricted = it }
+                )
+            }
+        }
+
+        item {
+            // Configuración para isAccessControlled
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Access Controlled (Quiz start when the creator wants)",
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = isAccessControlled,
+                    onCheckedChange = { isAccessControlled = it }
+                )
+            }
+        }
+        item {
+            // Configuración para showResultsImmediately
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Show Results Immediately (Show results after finishing)",
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = showResultsImmediately,
+                    onCheckedChange = { showResultsImmediately = it }
+                )
+            }
+        }
+        item {
             Button(
                 onClick = { imagePickerLauncher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
@@ -196,7 +274,9 @@ fun QuizCreationScreen(
                             selectedAnswer = selectedAnswer,
                             onAnswerChange = { selectedAnswer = it },
                             imageUrl = imageUrl?.toString(), //
-                            onImageChange = { imageUrl = it } // Actualizamos la respuesta seleccionada
+                            onImageChange = { imageUrl = it }// Actualizamos la respuesta seleccionada
+
+
                         )
                 }
                 // Otros tipos de preguntas pueden ir aquí
@@ -231,11 +311,12 @@ fun QuizCreationScreen(
                         description = description.text,
                         questions = viewModel.questions.map { it.id },
                         imageUrl = imageUri?.toString(),
-                        isGeolocationRestricted = false,
-                        startTime = System.currentTimeMillis(),
-                        endTime = System.currentTimeMillis() + 3600000,
-                        resultVisibility = true,
+                        timeLimit = timeLimit.toInt(),
                         creatorId = creatorId,
+                        isGeolocationRestricted=isGeolocationRestricted,
+                        isAccessControlled = isAccessControlled,
+                        showResultsImmediately = showResultsImmediately,
+
                         onSuccess = {
                             isLoading = false
                             onQuizSaved()

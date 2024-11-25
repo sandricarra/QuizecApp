@@ -70,7 +70,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = null)
+        Image(painter = painterResource(id = R.drawable.baseline_quiz_24), contentDescription = null)
 
         Spacer(modifier = Modifier.height(16.dp))
 
