@@ -1,6 +1,7 @@
 package pt.isec.ams.quizec.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -16,8 +17,8 @@ class QuizCreationViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
 
     // Declarar 'questions' como un MutableState
-    var questions by mutableStateOf<List<Question>>(emptyList())
-        private set
+    private val _questions = mutableStateListOf<Question>()
+    val questions: List<Question> get() = _questions
 
     // Generar un ID único alfanumérico de 6 caracteres
     private fun generateUniqueQuizId(): String {
@@ -83,7 +84,7 @@ class QuizCreationViewModel : ViewModel() {
             .set(newQuestion)
             .addOnSuccessListener {
                 // Si la pregunta se guarda correctamente, actualizamos la lista local de preguntas
-                questions = questions + newQuestion
+                _questions.add(newQuestion)
             }
             .addOnFailureListener { e ->
                 // Si hay un error al guardar, puedes manejar el error aquí

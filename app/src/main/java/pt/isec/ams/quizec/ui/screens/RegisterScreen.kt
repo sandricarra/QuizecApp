@@ -1,5 +1,5 @@
 package pt.isec.ams.quizec.ui.screens
-
+import RegisterViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,19 +25,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import pt.isec.ams.quizec.R
-import pt.isec.ams.quizec.viewmodel.RegisterState
-import pt.isec.ams.quizec.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
 
-    // Observar el estado de registro
     val registerState by viewModel.registerState.observeAsState()
 
+    // Estado para controlar el mensaje de error
+    val errorMessage = remember { mutableStateOf<String?>(null) }
 
-
+    // Manejo de efectos secundarios (navegación y error)
+    LaunchedEffect(registerState) {
         when (registerState) {
             is RegisterState.Success -> {
                 // Navegar a la pantalla de inicio de sesión y limpiar la pila
@@ -45,15 +45,18 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                     popUpTo("register") { inclusive = true }
                 }
             }
+
             is RegisterState.Error -> {
-                val errorMessage = (registerState as RegisterState.Error).message
-                // Mostrar mensaje de error
-                Snackbar { Text(text = errorMessage) }
+                errorMessage.value = (registerState as RegisterState.Error).message
             }
+
             else -> Unit // No hacer nada si el estado es nulo
         }
 
-    Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = "Logo")
+        // Reiniciar el estado de registro después de procesarlo
+        viewModel.resetRegisterState()
+    }
+
     // Contenido de la pantalla de registro
     Column(
         modifier = Modifier
@@ -62,6 +65,10 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = null)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         TextField(
             value = email.value,
             onValueChange = { email.value = it },
@@ -92,12 +99,11 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Mostrar el estado de error si existe
-        if (registerState is RegisterState.Error) {
-            Text(
-                text = (registerState as RegisterState.Error).message,
-                color = androidx.compose.ui.graphics.Color.Red
-            )
+        // Mostrar mensaje de error si existe
+        errorMessage.value?.let { message ->
+            Snackbar {
+                Text(text = message)
+            }
         }
     }
 }

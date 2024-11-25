@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec
 
+import RegisterViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,7 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.ui.screens.*
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
-import pt.isec.ams.quizec.viewmodel.RegisterViewModel
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var db: FirebaseFirestore

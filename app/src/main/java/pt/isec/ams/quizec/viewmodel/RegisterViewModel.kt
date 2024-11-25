@@ -1,7 +1,3 @@
-package pt.isec.ams.quizec.viewmodel
-
-
-
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,9 +10,9 @@ class RegisterViewModel : ViewModel() {
     // Para registrar nuevos usuarios en Firebase
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    // Estado de registro (exitoso o con error)
-    private val _registerState = MutableLiveData<RegisterState>()
-    val registerState: LiveData<RegisterState> get() = _registerState
+    // Estado de registro (exitoso o con error), ahora es anulable
+    private val _registerState = MutableLiveData<RegisterState?>()
+    val registerState: LiveData<RegisterState?> get() = _registerState
 
     // Método para registrar un nuevo usuario en Firebase
     fun register(email: String, password: String) {
@@ -30,14 +26,20 @@ class RegisterViewModel : ViewModel() {
                 }
             }
     }
-}
 
-private fun getFirebaseAuthErrorMessage(exception: Exception?): String {
-    return when (exception) {
-        is FirebaseAuthWeakPasswordException -> "La contraseña es demasiado débil. Elige una más segura."
-        is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
-        is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este correo electrónico."
-        else -> exception?.message ?: "Se produjo un error desconocido. Inténtalo nuevamente."
+    // Método para reiniciar el estado de registro
+    fun resetRegisterState() {
+        _registerState.value = null
+    }
+
+    // Función para obtener mensajes de error más descriptivos
+    private fun getFirebaseAuthErrorMessage(exception: Exception?): String {
+        return when (exception) {
+            is FirebaseAuthWeakPasswordException -> "La contraseña es demasiado débil. Elige una más segura."
+            is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
+            is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este correo electrónico."
+            else -> exception?.message ?: "Se produjo un error desconocido. Inténtalo nuevamente."
+        }
     }
 }
 

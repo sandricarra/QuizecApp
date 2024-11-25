@@ -2,6 +2,7 @@ package pt.isec.ams.quizec.ui.screens
 
 
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -10,11 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.R
 
 @Composable
 fun HomeScreen(navController: NavController,creatorId: String) {
@@ -25,6 +28,8 @@ fun HomeScreen(navController: NavController,creatorId: String) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+
+        Image(painter = painterResource(id = R.drawable.baseline_quiz_24), contentDescription = null)
         // Mensaje de bienvenida
         Text(
             text = "Welcome to Quizec!",
