@@ -1,4 +1,4 @@
-package pt.isec.ams.quizec.model
+package pt.isec.ams.quizec.data.models
 
 import pt.isec.ams.quizec.data.models.Answer
 import pt.isec.ams.quizec.data.models.QuizStatus

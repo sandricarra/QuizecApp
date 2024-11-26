@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -68,6 +69,21 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 Text("Create a Quiz")
             }
         }
+        item {
+            // Asume que el quizId que quieres pasar es una variable, por ejemplo "quizId"
+            val quizId = "someQuizId"  // Este debe ser el ID del cuestionario que quieras pasar
+            Button(
+                onClick = {
+                    // Navega pasando el quizId como argumento
+                    navController.navigate("quizScreen/$quizId")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("Participate in a Quiz")
+            }
+        }
 
         item {
             Button(
@@ -80,16 +96,11 @@ fun HomeScreen(navController: NavController, creatorId: String) {
             }
         }
 
-        item {
-            Button(
-                onClick = {
-                    navController.navigate("quizRoom")
-                },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-            ) {
-                Text("Create a Quiz Room")
-            }
-        }
+
+
+
+
+
 
         item {
             Button(

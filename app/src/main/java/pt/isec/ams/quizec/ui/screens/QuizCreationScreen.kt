@@ -71,7 +71,7 @@ fun QuizCreationScreen(
     // Launcher para seleccionar una imagen del dispositivo
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> imageUrl = uri.toString() }
+        onResult = { uri -> imageUri = uri }
     )
 
 

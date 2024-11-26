@@ -10,7 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.model.Quiz
+import pt.isec.ams.quizec.data.models.Quiz
 
 class QuizCreationViewModel : ViewModel() {
 

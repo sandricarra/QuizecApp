@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.ui.screens.*
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
+import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
 import pt.isec.ams.quizec.viewmodel.RegisterViewModel
 
 
@@ -63,18 +64,17 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
                 creatorId = authViewModel.creatorId
             )
         }
-        composable("quizRoom") {
-            QuizRoomScreen(
-                creatorId = authViewModel.creatorId, // Pasa el ID del creador
-                onRoomCreated = { roomId -> navController.navigate("room/$roomId") }
-            )
+        /*composable("quizScreen/{quizId}") { backStackEntry ->
+            val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
+            QuizScreen(quizId = quizId,navController=navController, viewModel = QuizScreenViewModel()) // Implementación pendiente
+        }*/
+        composable("quizScreen/{quizId}") { backStackEntry ->
+            // Recuperar el quizId desde los argumentos
+            val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
+            QuizScreen(quizId = quizId)
         }
-        composable("quizJoin") {
-            QuizJoinScreen(
-                userId = authViewModel.creatorId, // Pasa el ID del jugador autenticado
-                onJoinSuccess = {navController.navigate("room/${authViewModel.creatorId}") }
-            )
-        }
+
+
         composable("quizCreation") {
             QuizCreationScreen(
                 creatorId = authViewModel.creatorId, // Pasa el creatorId al crear el quiz
