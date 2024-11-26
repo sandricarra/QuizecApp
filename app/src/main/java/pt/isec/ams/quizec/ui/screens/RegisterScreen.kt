@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -81,30 +84,34 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally, // Centra horizontalmente
         verticalArrangement = Arrangement.Center // Centra verticalmente
     ) {
-        // Muestra el logo en la parte superior
-        Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = null)
-
-        Spacer(modifier = Modifier.height(16.dp)) // Espaciado entre el logo y el siguiente campo
+        // Muestra el logo en la parte superior con un tamaño adecuado
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp) // Espaciado entre el logo y el formulario
+        )
 
         // Campo para ingresar el nombre
         TextField(
             value = name.value,
             onValueChange = { name.value = it }, // Actualiza el nombre
             label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp) // Espaciado entre los campos
         )
-
-        Spacer(modifier = Modifier.height(8.dp)) // Espaciado entre los campos
 
         // Campo para ingresar el correo electrónico
         TextField(
             value = email.value,
             onValueChange = { email.value = it }, // Actualiza el correo electrónico
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp) // Espaciado entre los campos
         )
-
-        Spacer(modifier = Modifier.height(8.dp)) // Espaciado entre los campos
 
         // Campo para ingresar la contraseña, con transformación visual para ocultarla
         TextField(
@@ -112,23 +119,27 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
             onValueChange = { password.value = it }, // Actualiza la contraseña
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(), // Oculta la contraseña
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp) // Espaciado entre los campos
         )
-
-        Spacer(modifier = Modifier.height(8.dp)) // Espaciado entre los campos
 
         // Botón para abrir el DropdownMenu y seleccionar el rol
         Button(
             onClick = { isDropdownOpen = !isDropdownOpen },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp), // Espaciado entre el botón y el siguiente campo
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Color de fondo
         ) {
-            Text("Select Role")
+            Text("Select Role", color = Color.White) // Texto blanco para el botón
         }
 
         // Menú desplegable para seleccionar el rol (Student o Teacher)
         DropdownMenu(
             expanded = isDropdownOpen,
-            onDismissRequest = { isDropdownOpen = false } // Cierra el menú si se toca fuera
+            onDismissRequest = { isDropdownOpen = false }, // Cierra el menú si se toca fuera
+            modifier = Modifier.fillMaxWidth() // Asegura que el DropdownMenu tenga el mismo ancho que el botón
         ) {
             // Opción para seleccionar el rol de Student
             DropdownMenuItem(
@@ -143,10 +154,16 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
             )
         }
 
-        // Muestra el rol seleccionado
-        Text("Selected Role: ${role.name}")
+        // Muestra el rol seleccionado con un diseño más estilizado
+        Text(
+            text = "Selected Role: ${role.name}",
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally) // Centra el texto horizontalmente
+                .padding(vertical = 8.dp), // Espaciado alrededor del texto
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray // Color gris para diferenciarlo del resto del texto
+        )
 
-        Spacer(modifier = Modifier.height(16.dp)) // Espaciado antes del botón de registro
 
         // Botón para enviar el formulario y registrar al usuario
         Button(
@@ -159,16 +176,22 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                     UserRole.valueOf(role.name) // Convierte el rol a UserRole
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp), // Espaciado antes del mensaje de error
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Color de fondo
         ) {
-            Text("Register")
+            Text("Register", color = Color.White) // Texto blanco para el botón
         }
-
-        Spacer(modifier = Modifier.height(8.dp)) // Espaciado antes del mensaje de error
 
         // Si hay un mensaje de error, lo muestra en un Snackbar
         errorMessage.value?.let { message ->
-            Snackbar {
+            Snackbar(
+                modifier = Modifier.padding(8.dp), // Añadir padding alrededor del Snackbar
+                action = {
+                    // Acciones del Snackbar (si las hay)
+                }
+            ) {
                 Text(text = message)
             }
         }
