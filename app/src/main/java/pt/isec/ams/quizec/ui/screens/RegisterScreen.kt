@@ -34,114 +34,129 @@ import pt.isec.ams.quizec.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
+    // Estados para manejar los campos de entrada del formulario
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val name = remember { mutableStateOf("") }
-    var role by remember { mutableStateOf<UserRole>(UserRole.STUDENT) } // Valor por defecto
+
+    // Estado para manejar el rol seleccionado (por defecto, Student)
+    var role by remember { mutableStateOf<UserRole>(UserRole.STUDENT) }
+
+    // Estado para controlar la visibilidad del DropdownMenu
     var isDropdownOpen by remember { mutableStateOf(false) }
 
+    // Observamos el estado de registro desde el ViewModel
     val registerState by viewModel.registerState.observeAsState()
 
     // Estado para controlar el mensaje de error
     val errorMessage = remember { mutableStateOf<String?>(null) }
 
+    // Efecto que maneja la navegación y la presentación de mensajes de error
     LaunchedEffect(registerState) {
         when (registerState) {
             is RegisterState.Success -> {
+                // Si el registro es exitoso, redirige al login y cierra la pantalla de registro
                 navController.navigate("login") {
                     popUpTo("register") { inclusive = true }
                 }
             }
 
             is RegisterState.Error -> {
+                // Si hay un error, muestra el mensaje de error
                 errorMessage.value = (registerState as RegisterState.Error).message
             }
 
             else -> Unit
         }
 
+        // Reinicia el estado del registro después de la navegación
         viewModel.resetRegisterState()
     }
 
+    // Diseño de la pantalla de registro
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(16.dp), // Espaciado alrededor de toda la columna
+        horizontalAlignment = Alignment.CenterHorizontally, // Centra horizontalmente
+        verticalArrangement = Arrangement.Center // Centra verticalmente
     ) {
-        Image(painter = painterResource(id = R.drawable.baseline_quiz_24), contentDescription = null)
+        // Muestra el logo en la parte superior
+        Image(painter = painterResource(id = R.drawable.ic_logo), contentDescription = null)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp)) // Espaciado entre el logo y el siguiente campo
 
-
+        // Campo para ingresar el nombre
         TextField(
             value = name.value,
-            onValueChange = { name.value = it },
+            onValueChange = { name.value = it }, // Actualiza el nombre
             label = { Text("Name") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp)) // Espaciado entre los campos
 
+        // Campo para ingresar el correo electrónico
         TextField(
             value = email.value,
-            onValueChange = { email.value = it },
+            onValueChange = { email.value = it }, // Actualiza el correo electrónico
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp)) // Espaciado entre los campos
 
-
+        // Campo para ingresar la contraseña, con transformación visual para ocultarla
         TextField(
             value = password.value,
-            onValueChange = { password.value = it },
+            onValueChange = { password.value = it }, // Actualiza la contraseña
             label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = PasswordVisualTransformation(), // Oculta la contraseña
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp)) // Espaciado entre los campos
 
-        // Dropdown para seleccionar el rol
+        // Botón para abrir el DropdownMenu y seleccionar el rol
         Button(
             onClick = { isDropdownOpen = !isDropdownOpen },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Select Role")
         }
+
+        // Menú desplegable para seleccionar el rol (Student o Teacher)
         DropdownMenu(
             expanded = isDropdownOpen,
-            onDismissRequest = { isDropdownOpen = false }
+            onDismissRequest = { isDropdownOpen = false } // Cierra el menú si se toca fuera
         ) {
-            // Opción para el rol de Student
+            // Opción para seleccionar el rol de Student
             DropdownMenuItem(
                 onClick = { role = UserRole.STUDENT; isDropdownOpen = false },
                 text = { Text("Student") }
             )
 
-            // Opción para el rol de Teacher
+            // Opción para seleccionar el rol de Teacher
             DropdownMenuItem(
                 onClick = { role = UserRole.TEACHER; isDropdownOpen = false },
                 text = { Text("Teacher") }
             )
         }
 
-        // Mostrar el rol seleccionado
+        // Muestra el rol seleccionado
         Text("Selected Role: ${role.name}")
 
+        Spacer(modifier = Modifier.height(16.dp)) // Espaciado antes del botón de registro
 
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        // Botón para enviar el formulario y registrar al usuario
         Button(
             onClick = {
+                // Llama a la función de registro en el ViewModel
                 viewModel.register(
                     email.value,
                     password.value,
                     name.value,
-                    UserRole.valueOf(role.name)
+                    UserRole.valueOf(role.name) // Convierte el rol a UserRole
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -149,8 +164,9 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
             Text("Register")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp)) // Espaciado antes del mensaje de error
 
+        // Si hay un mensaje de error, lo muestra en un Snackbar
         errorMessage.value?.let { message ->
             Snackbar {
                 Text(text = message)
@@ -158,6 +174,3 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
         }
     }
 }
-
-
-

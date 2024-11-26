@@ -5,15 +5,15 @@ import java.util.Date
 import java.util.Locale
 
 data class User(
-    val id: String = "",
+    val id: String = "", // ID único del usuario, generado automáticamente, lo genera firebase
     val name: String = "",
     val participatedQuizzes: List<String> = listOf(), // Lista de IDs de los cuestionarios en los que ha participado
-    val email: String = "",
-    val profilePictureUrl: String? = null,
-    val role: UserRole = UserRole.STUDENT,
-    val joinDate: Timestamp = Timestamp.now(), // Timestamp
-    val completedQuizzes: List<String> = listOf(),
-    val score: Int = 0,
-    val lastLogin: Long? = null
+    val email: String = "", // Correo electrónico del usuario
+    val profilePictureUrl: String? = null, //sin implementar
+    val role: UserRole = UserRole.STUDENT, // Rol del usuario (estudiante, profesor, etc.)
+    val joinDate: Timestamp = Timestamp.now(), // Timestamp, date de creacion
+    val completedQuizzes: List<String> = listOf(), // Lista de IDs de los cuestionarios completados, sin implementar
+    val score: Int = 0, // Puntaje del usuario, sin implementar
+    val lastLogin: Long? = null // Timestamp del último inicio de sesión, sin implementar
 )
 

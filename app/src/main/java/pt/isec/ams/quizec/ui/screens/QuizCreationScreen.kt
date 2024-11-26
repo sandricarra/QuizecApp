@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,59 +34,60 @@ import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
 
 @Composable
 fun QuizCreationScreen(
-    creatorId: String, // ID del creador
-    onQuizSaved: () -> Unit, // Acción al guardar exitosamente
-    viewModel: QuizCreationViewModel = viewModel() // Usamos el ViewModel
+    creatorId: String, // ID del creador del cuestionario
+    onQuizSaved: () -> Unit, // Acción que se ejecuta cuando el cuestionario se guarda exitosamente
+    viewModel: QuizCreationViewModel = viewModel() // Usamos el ViewModel para gestionar la lógica de creación
 ) {
-    var title by remember { mutableStateOf(TextFieldValue("")) }
-    var description by remember { mutableStateOf(TextFieldValue("")) }
-    var isLoading by remember { mutableStateOf(false) }
-    var imageUrl by remember { mutableStateOf<String?>(null) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var selectedAnswer by remember { mutableStateOf<String?>(null) }
-    var timeLimit by remember { mutableStateOf(0L) }
-    var isGeolocationRestricted by remember { mutableStateOf(false) }
+    // Estado mutable para cada campo de entrada y configuraciones del cuestionario
+    var title by remember { mutableStateOf(TextFieldValue("")) } // Título del cuestionario
+    var description by remember { mutableStateOf(TextFieldValue("")) } // Descripción del cuestionario
+    var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se guarda el cuestionario
+    var imageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen seleccionada
+    var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
+    var selectedAnswer by remember { mutableStateOf<String?>(null) } // Respuesta seleccionada
+    var timeLimit by remember { mutableStateOf(0L) } // Límite de tiempo del cuestionario
+    var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
+    var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
+    var showResultsImmediately by remember { mutableStateOf(false) } // Mostrar resultados inmediatamente después de terminar
 
-    var isAccessControlled by remember { mutableStateOf(false) }
-    var showResultsImmediately by remember { mutableStateOf(false) }
-
-
-
+    // Variables relacionadas con el tipo de pregunta
     var questionType by remember { mutableStateOf<QuestionType?>(null) }
     var questionTitle by remember { mutableStateOf("") }
     var questionOptions by remember { mutableStateOf<List<String>>(emptyList()) }
     var questionCorrectAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    // Opciones predeterminadas para preguntas de tipo booleano
     var options by remember { mutableStateOf(listOf("True", "False")) }
     var correctAnswers by remember { mutableStateOf(listOf("True")) }
 
+    // Estado para gestionar la visibilidad del menú desplegable
     var isDropdownOpen by remember { mutableStateOf(false) }
 
+    // Lista de preguntas añadidas
     var questions by remember { mutableStateOf<List<Question>>(emptyList()) }
+
+    // Función para limpiar los campos después de añadir una pregunta
     val onUpdate: () -> Unit = {
         questionTitle = ""
         selectedAnswer = null
     }
 
-
-    // Launcher para seleccionar una imagen del dispositivo
+    // Launcher para seleccionar una imagen desde el dispositivo
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri -> imageUri = uri }
     )
 
-
+    // LazyColumn para organizar la UI del cuestionario
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        // Imagen seleccionada (si existe)
+        // Mostrar la imagen seleccionada (si existe)
         item {
             if (imageUrl != null) {
-                // Mostrar la imagen seleccionada
                 Image(
                     painter = rememberAsyncImagePainter(imageUrl),
                     contentDescription = "Selected Image",
@@ -95,7 +97,7 @@ fun QuizCreationScreen(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Mostrar un ícono predeterminado
+                // Mostrar un ícono predeterminado si no se ha seleccionado imagen
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -117,7 +119,8 @@ fun QuizCreationScreen(
                 }
             }
         }
-        // Título principal
+
+        // Título principal del cuestionario
         item {
             Text("Create Quiz", style = MaterialTheme.typography.headlineMedium)
         }
@@ -133,7 +136,7 @@ fun QuizCreationScreen(
             )
         }
 
-        // Campo para la descripción
+        // Campo para la descripción del cuestionario
         item {
             OutlinedTextField(
                 value = description,
@@ -143,23 +146,26 @@ fun QuizCreationScreen(
                 maxLines = 4
             )
         }
+
+        // Campo para el límite de tiempo del cuestionario
         item {
             OutlinedTextField(
                 value = timeLimit.toString(),
                 onValueChange = {
                     // Validar que el valor ingresado sea un número
                     timeLimit =
-                        (it.toIntOrNull() ?: timeLimit).toLong() // Si no es un número, mantener el valor anterior
+                        (it.toIntOrNull()
+                            ?: timeLimit).toLong() // Si no es un número, mantener el valor anterior
                 },
                 label = { Text("Time Limit (minutes)") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 maxLines = 1
             )
-
         }
+
+        // Configuración para restringir el cuestionario por geolocalización
         item {
-            // Configuración para isGeolocationRestricted
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,8 +183,8 @@ fun QuizCreationScreen(
             }
         }
 
+        // Configuración para control de acceso (cuando empieza el cuestionario)
         item {
-            // Configuración para isAccessControlled
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -195,8 +201,9 @@ fun QuizCreationScreen(
                 )
             }
         }
+
+        // Configuración para mostrar resultados inmediatamente
         item {
-            // Configuración para showResultsImmediately
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,6 +220,8 @@ fun QuizCreationScreen(
                 )
             }
         }
+
+        // Botón para seleccionar una imagen
         item {
             Button(
                 onClick = { imagePickerLauncher.launch("image/*") },
@@ -222,8 +231,7 @@ fun QuizCreationScreen(
             }
         }
 
-        // Botón y menú desplegable para seleccionar tipo de pregunta
-        // Botón y menú desplegable para seleccionar tipo de pregunta
+        // Botón y menú desplegable para seleccionar el tipo de pregunta
         item {
             var selectedQuestionTypeText by remember { mutableStateOf("Select Question Type") }
 
@@ -239,8 +247,9 @@ fun QuizCreationScreen(
                     expanded = isDropdownOpen,
                     onDismissRequest = { isDropdownOpen = false },
                     modifier = Modifier
-                        .fillMaxWidth() // Asegura que el menú ocupe todo el ancho del botón
+                        .fillMaxWidth() // Asegura que el menú ocupe todo el ancho
                 ) {
+                    // Itera sobre los tipos de preguntas y permite seleccionar uno
                     QuestionType.values().forEach { type ->
                         DropdownMenuItem(
                             onClick = {
@@ -261,30 +270,26 @@ fun QuizCreationScreen(
             }
         }
 
-
-        // Mostrar UI del tipo de pregunta seleccionada
+        // Mostrar UI de la pregunta basada en el tipo seleccionado
         item {
-
-                when (questionType) {
-                    QuestionType.P01 -> {
-                        // Aquí gestionamos la lógica de la pregunta P01
-                        P01Question(
-                            questionTitle = questionTitle,
-                            onTitleChange = { questionTitle = it },
-                            selectedAnswer = selectedAnswer,
-                            onAnswerChange = { selectedAnswer = it },
-                            imageUrl = imageUrl?.toString(), //
-                            onImageChange = { imageUrl = it }// Actualizamos la respuesta seleccionada
-
-
-                        )
+            when (questionType) {
+                QuestionType.P01 -> {
+                    // Mostrar la UI para el tipo de pregunta P01
+                    P01Question(
+                        questionTitle = questionTitle,
+                        onTitleChange = { questionTitle = it },
+                        selectedAnswer = selectedAnswer,
+                        onAnswerChange = { selectedAnswer = it },
+                        imageUrl = imageUrl?.toString(),
+                        onImageChange = { imageUrl = it }
+                    )
                 }
-                // Otros tipos de preguntas pueden ir aquí
+
                 else -> {}
             }
         }
 
-        // Botón para añadir preguntas
+        // Botón para añadir la pregunta al cuestionario
         item {
             AddQuestionButton(
                 questionType = questionType,
@@ -292,11 +297,7 @@ fun QuizCreationScreen(
                 options = options,
                 correctAnswers = correctAnswers,
                 imageUrl = imageUrl,
-                onUpdate = {
-                    questionTitle = ""
-                    options = listOf("True", "False")
-                    correctAnswers = listOf("True")
-                },
+                onUpdate = onUpdate,
                 viewModel = viewModel
             )
         }
@@ -313,7 +314,7 @@ fun QuizCreationScreen(
                         imageUrl = imageUri?.toString(),
                         timeLimit = timeLimit.toInt(),
                         creatorId = creatorId,
-                        isGeolocationRestricted=isGeolocationRestricted,
+                        isGeolocationRestricted = isGeolocationRestricted,
                         isAccessControlled = isAccessControlled,
                         showResultsImmediately = showResultsImmediately,
 
@@ -338,11 +339,6 @@ fun QuizCreationScreen(
         }
 
 
-
-
-
-
-
         // Agregar preguntas añadidas como otro ítem en el LazyColumn
         item {
             if (viewModel.questions.isNotEmpty()) {
@@ -352,6 +348,7 @@ fun QuizCreationScreen(
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
+
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -361,17 +358,34 @@ fun QuizCreationScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp)
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                        MaterialTheme.shapes.small
+                                    ) // Agrega borde sutil
+                                    .padding(16.dp) // Padding interno para separación
                             ) {
-                                Text(text="Title: ${question.title}",
+                                // Título de la pregunta
+                                Text(
+                                    text = "Title: ${question.title}",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-
-
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(bottom = 4.dp)
                                 )
+
+                                // Tipo de pregunta
                                 Text(
                                     text = "Type: ${question.type}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+
+                                // Respuestas correctas
+                                Text(
+                                    text = "Correct Answers: ${question.correctAnswers}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
                             }
                         }
@@ -385,11 +399,9 @@ fun QuizCreationScreen(
                     modifier = Modifier.padding(8.dp)
                 )
             }
+
         }
-
     }
-
-
 }
 @Composable
 fun P01Question(

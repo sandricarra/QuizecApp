@@ -5,18 +5,18 @@ import pt.isec.ams.quizec.data.models.QuizStatus
 
 data class Quiz(
     val id: String = "",
-    val title: String = "",
-    val description: String = "",
-    val creatorId: String = "",
-    val questions: List<String> = listOf(),
+    val title: String = "", // Título del cuestionario
+    val description: String = "", // Descripción del cuestionario
+    val creatorId: String = "", // ID del creador del cuestionario
+    val questions: List<String> = listOf(), // Lista de IDs de preguntas asociadas
     val timeLimit: Int = 0,// Lista de IDs de preguntas asociadas
     val imageUrl: String? = null, // Imagen opcional
     val isGeolocationRestricted: Boolean = false, // Si la geolocalización está activada
-    val isAccessControlled: Boolean = false,
-    val showResultsImmediately: Boolean =true,
-    val participants: List<String> = listOf(),
-    val status: QuizStatus = QuizStatus.AVAILABLE,
-    val answers: Map<String, List<Answer>>  = mapOf()
+    val isAccessControlled: Boolean = false, // Si la adicionais está activa, para esperar a que esten todos listos o no
+    val showResultsImmediately: Boolean =true, // Si se muestran los resultados inmediatamente al terminar
+    val participants: List<String> = listOf(), // Lista de IDs de participantes, no se como usarlo aun
+    val status: QuizStatus = QuizStatus.AVAILABLE, // Estado del cuestionario (disponible, en progreso, finalizado)
+    val answers: Map<String, List<Answer>>  = mapOf() // Mapa de respuestas por ID de pregunta y lista de respuestas tampoco se como usarlo aun
 
 
 )
