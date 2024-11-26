@@ -1,7 +1,7 @@
 package pt.isec.ams.quizec.data.models
 
 import pt.isec.ams.quizec.data.models.Answer
-import pt.isec.ams.quizec.data.models.QuizStatus
+
 
 data class Quiz(
     val id: String = "",
@@ -9,6 +9,7 @@ data class Quiz(
     val description: String = "", // Descripción del cuestionario
     val creatorId: String = "", // ID del creador del cuestionario
     val questions: List<String> = listOf(), // Lista de IDs de preguntas asociadas
+    val createdAt: Long = System.currentTimeMillis(), // Timestamp de creación
     val timeLimit: Int = 0,// Lista de IDs de preguntas asociadas
     val imageUrl: String? = null, // Imagen opcional
     val isGeolocationRestricted: Boolean = false, // Si la geolocalización está activada

@@ -1,6 +1,5 @@
 package pt.isec.ams.quizec
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,7 +15,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
-import pt.isec.ams.quizec.ui.screens.*
+import pt.isec.ams.quizec.ui.screens.HomeScreen
+import pt.isec.ams.quizec.ui.screens.LoginScreen
+import pt.isec.ams.quizec.ui.screens.RegisterScreen
+import pt.isec.ams.quizec.ui.screens.QuizCreationScreen
+import pt.isec.ams.quizec.ui.screens.QuizHistoryScreen
+import pt.isec.ams.quizec.ui.screens.QuizScreen
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
@@ -80,8 +84,11 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
                 creatorId = authViewModel.creatorId, // Pasa el creatorId al crear el quiz
                 onQuizSaved = { navController.navigate("home") }
             )
+        }
+        composable("quizHistory") {
+            QuizHistoryScreen(navController = navController)
+        }
     }
-}
 }
 
 

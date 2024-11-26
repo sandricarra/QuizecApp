@@ -114,3 +114,6 @@ fun QuizScreen(quizId: String, viewModel: QuizScreenViewModel = viewModel()) {
     }
 }
 
+class QuizScreen {
+
+}
