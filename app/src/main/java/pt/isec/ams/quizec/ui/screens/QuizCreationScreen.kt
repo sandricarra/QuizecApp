@@ -13,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,21 +45,23 @@ fun QuizCreationScreen(
     var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se guarda el cuestionario
     var imageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen seleccionada
     var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
-    var selectedAnswer by remember { mutableStateOf<String?>(null) } // Respuesta seleccionada
+
     var timeLimit by remember { mutableStateOf(0L) } // Límite de tiempo del cuestionario
     var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
     var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
     var showResultsImmediately by remember { mutableStateOf(false) } // Mostrar resultados inmediatamente después de terminar
 
+
     // Variables relacionadas con el tipo de pregunta
     var questionType by remember { mutableStateOf<QuestionType?>(null) }
     var questionTitle by remember { mutableStateOf("") }
-    var questionOptions by remember { mutableStateOf<List<String>>(emptyList()) }
-    var questionCorrectAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
+    var optionsP01 by remember { mutableStateOf(listOf<String>("True", "False")) }
+    var optionsP02 by remember { mutableStateOf(listOf<String>()) }
+    var selectedAnswer by remember { mutableStateOf<String?>(null) }
+    var selectedAnswerP02 by remember { mutableStateOf<String?>(null) }
 
-    // Opciones predeterminadas para preguntas de tipo booleano
-    var options by remember { mutableStateOf(listOf("True", "False")) }
-    var correctAnswers by remember { mutableStateOf(listOf("True")) }
+
+
 
     // Estado para gestionar la visibilidad del menú desplegable
     var isDropdownOpen by remember { mutableStateOf(false) }
@@ -285,21 +288,63 @@ fun QuizCreationScreen(
                     )
                 }
 
+                QuestionType.P02 -> {
+                    P02Question(
+                        imageUrl = imageUrl,
+                        onImageChange = { imageUrl = it },
+                        questionTitle = questionTitle,
+                        onTitleChange = { questionTitle = it },
+                        options = optionsP02,
+                        onOptionsChange = { optionsP02 = it },
+                        onSelectedOptionChange = { selectedAnswerP02 = it },
+                        selectedOption = selectedAnswerP02
+
+                    )
+
+                }
                 else -> {}
             }
         }
 
         // Botón para añadir la pregunta al cuestionario
         item {
-            AddQuestionButton(
-                questionType = questionType,
-                questionTitle = questionTitle,
-                options = options,
-                correctAnswers = correctAnswers,
-                imageUrl = imageUrl,
-                onUpdate = onUpdate,
-                viewModel = viewModel
-            )
+            when (questionType) {
+                QuestionType.P01 -> {
+                    // Cuando el questionType es P01, pasamos las opciones y otros parámetros específicos de este tipo
+                    AddQuestionButton(
+                        questionType = questionType,
+                        questionTitle = questionTitle,
+                        options = optionsP01,
+                        correctAnswers = listOf(selectedAnswer ?: ""),
+                        imageUrl = imageUrl,
+                        onUpdate = onUpdate,
+                        viewModel = viewModel
+                    )
+                }
+                QuestionType.P02 -> {
+                    AddQuestionButton(
+                        questionType = questionType,
+                        questionTitle = questionTitle,
+                        options =optionsP02,
+                        correctAnswers = listOf(selectedAnswerP02 ?: "") ,
+                        imageUrl = imageUrl,
+                        onUpdate = onUpdate,
+                        viewModel = viewModel
+                    )
+                }
+
+
+
+
+
+
+
+
+                // Agregar más tipos de preguntas si es necesario
+                else -> {
+
+                }
+            }
         }
 
         // Botón para guardar el cuestionario
@@ -407,29 +452,19 @@ fun QuizCreationScreen(
 fun P01Question(
     questionTitle: String, // Estado compartido para el título de la pregunta
     onTitleChange: (String) -> Unit, // Callback para actualizar el título
+
     selectedAnswer: String?, // Respuesta seleccionada
     onAnswerChange: (String) -> Unit, // Callback para actualizar la respuesta
     imageUrl: String?, // URL de la imagen
     onImageChange: (String) -> Unit // Callback para actualizar la URL de la imagen
-)
+) {
 
-
-
-
-
-{
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            uri?.let {
-                onImageChange(it.toString()) // Actualizamos la URL de la imagen usando el callback
-            }
-        }
+        onResult = { uri -> uri?.let { onImageChange(it.toString()) } }
     )
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         // Campo de texto para el título de la pregunta
         TextField(
             value = questionTitle,
@@ -438,7 +473,9 @@ fun P01Question(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-        ) // Mostrar la imagen seleccionada
+        )
+
+        // Mostrar la imagen seleccionada
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
@@ -476,13 +513,14 @@ fun P01Question(
         // Opciones de respuesta: True/False
         Text("True or False Question", modifier = Modifier.padding(8.dp))
 
+        // Manejo de selección de respuestas
         Row(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             RadioButton(
                 selected = selectedAnswer == "True",
-                onClick = { onAnswerChange("True") }
+                onClick = { onAnswerChange("True") } // Cambia el valor seleccionado
             )
             Text("True", modifier = Modifier.padding(start = 8.dp))
         }
@@ -493,12 +531,100 @@ fun P01Question(
         ) {
             RadioButton(
                 selected = selectedAnswer == "False",
-                onClick = { onAnswerChange("False") }
+                onClick = { onAnswerChange("False") } // Cambia el valor seleccionado
             )
             Text("False", modifier = Modifier.padding(start = 8.dp))
         }
     }
 }
+
+
+@Composable
+fun P02Question(
+    questionTitle: String,
+    onTitleChange: (String) -> Unit,
+    options: List<String>, // Lista de opciones disponibles
+    onOptionsChange: (List<String>) -> Unit, // Callback para actualizar las opciones
+    selectedOption: String?, // Opción seleccionada como respuesta correcta
+    onSelectedOptionChange: (String) -> Unit, // Callback para actualizar la opción correcta
+    imageUrl: String?,
+    onImageChange: (String) -> Unit
+) {
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let { onImageChange(it.toString()) }
+        }
+    )
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        // Campo de texto para el título de la pregunta
+        TextField(
+            value = questionTitle,
+            onValueChange = onTitleChange,
+            label = { Text("Enter Question Title") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+        )
+
+        // Imagen asociada a la pregunta
+        if (imageUrl != null) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Selected Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Text("No image selected", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
+        Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.padding(vertical = 8.dp)) {
+            Text("Select Image")
+        }
+
+        // Opciones para la pregunta
+        Text("Options:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+        options.forEachIndexed { index, option ->
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                RadioButton(
+                    selected = selectedOption == option,
+                    onClick = { onSelectedOptionChange(option) }
+                )
+                TextField(
+                    value = option,
+                    onValueChange = { newOption ->
+                        val updatedOptions = options.toMutableList()
+                        updatedOptions[index] = newOption
+                        onOptionsChange(updatedOptions)
+                    },
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    label = { Text("Option ${index + 1}") }
+                )
+                IconButton(
+                    onClick = {
+                        val updatedOptions = options.toMutableList()
+                        updatedOptions.removeAt(index)
+                        onOptionsChange(updatedOptions)
+                    },
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove option")
+                }
+            }
+        }
+
+        // Botón para añadir una nueva opción
+        Button(
+            onClick = { onOptionsChange(options + "") }, // Añadir una opción vacía
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text("Add Option")
+        }
+    }
+}
+
+
 
 
 
