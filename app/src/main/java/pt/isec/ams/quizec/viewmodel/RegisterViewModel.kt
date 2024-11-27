@@ -1,6 +1,6 @@
 package pt.isec.ams.quizec.viewmodel
 
-import User
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,8 +10,9 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.firestore.FirebaseFirestore
-
+import User
 import pt.isec.ams.quizec.data.models.UserRole
+
 
 class RegisterViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -79,3 +80,5 @@ sealed class RegisterState {
     object Success : RegisterState()
     data class Error(val message: String) : RegisterState()
 }
+
+

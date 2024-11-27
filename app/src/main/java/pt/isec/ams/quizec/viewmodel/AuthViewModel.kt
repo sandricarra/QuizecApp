@@ -10,3 +10,5 @@ class AuthViewModel : ViewModel() {
     val creatorId: String
         get() = firebaseAuth.currentUser?.uid ?: "" // Obtén el UID del usuario autenticado
 }
+
+
