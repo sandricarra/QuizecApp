@@ -12,6 +12,7 @@ import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.utils.IdGenerator
+import pt.isec.ams.quizec.utils.IdGeneratorQ
 
 class QuizCreationViewModel : ViewModel() {
 
@@ -27,6 +28,10 @@ class QuizCreationViewModel : ViewModel() {
     private fun generateUniqueQuizId(): String {
         return IdGenerator.generateUniqueQuizId() // Usa la clase utilitaria
     }
+    private fun generateUniqueQId(): String {
+        return IdGeneratorQ.generateUniqueQuizCode() // Usa la clase utilitaria
+    }
+
 
     // Función para guardar un cuestionario en Firebase Firestore
     fun saveQuiz(
@@ -78,7 +83,7 @@ class QuizCreationViewModel : ViewModel() {
         imageUrl: String?  // URL de la imagen asociada a la pregunta (opcional)
     ) {
         // Generar un ID único para la nueva pregunta
-        val questionId = generateUniqueQuizId()
+        val questionId = generateUniqueQId()
 
         // Crear el objeto Question con los datos proporcionados
         val newQuestion = Question(
