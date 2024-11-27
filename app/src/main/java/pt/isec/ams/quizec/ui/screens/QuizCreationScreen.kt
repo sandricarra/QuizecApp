@@ -57,8 +57,11 @@ fun QuizCreationScreen(
     var questionTitle by remember { mutableStateOf("") }
     var optionsP01 by remember { mutableStateOf(listOf<String>("True", "False")) }
     var optionsP02 by remember { mutableStateOf(listOf<String>()) }
+    var optionsP03 by remember { mutableStateOf(listOf<String>()) }
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var selectedAnswerP02 by remember { mutableStateOf<String?>(null) }
+    var selectedAnswerP03 by remember { mutableStateOf<List<String>>(emptyList()) }
+
 
 
 
@@ -302,6 +305,21 @@ fun QuizCreationScreen(
                     )
 
                 }
+                QuestionType.P03 -> {
+                    P03Question(
+                        imageUrl = imageUrl,
+                        onImageChange = { imageUrl = it },
+                        questionTitle = questionTitle,
+                        onTitleChange = { questionTitle = it },
+                        options = optionsP03,
+                        onOptionsChange = { optionsP03 = it },
+                        onSelectedOptionsChange = { selectedAnswerP03 = it },
+                        selectedOptions = selectedAnswerP03
+
+
+                    )
+
+                }
                 else -> {}
             }
         }
@@ -327,6 +345,17 @@ fun QuizCreationScreen(
                         questionTitle = questionTitle,
                         options =optionsP02,
                         correctAnswers = listOf(selectedAnswerP02 ?: "") ,
+                        imageUrl = imageUrl,
+                        onUpdate = onUpdate,
+                        viewModel = viewModel
+                    )
+                }
+                QuestionType.P03 -> {
+                    AddQuestionButton(
+                        questionType = questionType,
+                        questionTitle = questionTitle,
+                        options =optionsP03,
+                        correctAnswers = selectedAnswerP03 ,
                         imageUrl = imageUrl,
                         onUpdate = onUpdate,
                         viewModel = viewModel
@@ -623,6 +652,100 @@ fun P02Question(
         }
     }
 }
+
+@Composable
+fun P03Question(
+    questionTitle: String, // Título de la pregunta
+    onTitleChange: (String) -> Unit, // Callback para actualizar el título
+
+    options: List<String>, // Opciones dinámicas para la pregunta
+    onOptionsChange: (List<String>) -> Unit, // Callback para actualizar las opciones
+
+    selectedOptions: List<String>, // Respuestas seleccionadas (varias respuestas correctas)
+    onSelectedOptionsChange: (List<String>) -> Unit, // Callback para actualizar las respuestas seleccionadas
+
+    imageUrl: String?, // URL de la imagen
+    onImageChange: (String) -> Unit // Callback para actualizar la URL de la imagen
+) {
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> uri?.let { onImageChange(it.toString()) } }
+    )
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        // Campo de texto para el título de la pregunta
+        TextField(
+            value = questionTitle,
+            onValueChange = onTitleChange,
+            label = { Text("Enter Question Title") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+        )
+
+        // Imagen asociada a la pregunta
+        if (imageUrl != null) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Selected Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Text("No image selected", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
+        Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.padding(vertical = 8.dp)) {
+            Text("Select Image")
+        }
+
+        // Opciones para la pregunta
+        Text("Options:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+        options.forEachIndexed { index, option ->
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Checkbox(
+                    checked = selectedOptions.contains(option),
+                    onCheckedChange = { isChecked ->
+                        val updatedOptions = if (isChecked) {
+                            selectedOptions + option // Añadir la opción seleccionada
+                        } else {
+                            selectedOptions - option // Eliminar la opción seleccionada
+                        }
+                        onSelectedOptionsChange(updatedOptions)
+                    }
+                )
+                TextField(
+                    value = option,
+                    onValueChange = { newOption ->
+                        val updatedOptions = options.toMutableList()
+                        updatedOptions[index] = newOption
+                        onOptionsChange(updatedOptions)
+                    },
+                    modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    label = { Text("Option ${index + 1}") }
+                )
+                IconButton(
+                    onClick = {
+                        val updatedOptions = options.toMutableList()
+                        updatedOptions.removeAt(index)
+                        onOptionsChange(updatedOptions)
+                    },
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove option")
+                }
+            }
+        }
+
+        // Botón para añadir una nueva opción
+        Button(
+            onClick = { onOptionsChange(options + "") }, // Añadir una opción vacía
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text("Add Option")
+        }
+    }
+}
+
 
 
 
