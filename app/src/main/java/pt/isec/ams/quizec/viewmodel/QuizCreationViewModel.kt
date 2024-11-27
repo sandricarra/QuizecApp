@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.data.models.Quiz
+import pt.isec.ams.quizec.utils.IdGenerator
 
 class QuizCreationViewModel : ViewModel() {
 
@@ -23,20 +24,8 @@ class QuizCreationViewModel : ViewModel() {
     // Exposición de la lista de preguntas como solo lectura
     val questions: List<Question> get() = _questions
 
-    // Función privada para generar un ID único para el cuestionario
     private fun generateUniqueQuizId(): String {
-        // Define los caracteres disponibles para el ID
-        val chars = ('A'..'Z') + ('0'..'9')
-        // Genera un ID de 6 caracteres al azar
-        return (1..6)
-            .map { chars.random() }
-            .joinToString("")
-    }
-
-    // Función privada para generar un ID único para cada pregunta
-    private fun generateUniqueQuestionId(): String {
-        // Utiliza el tiempo actual en milisegundos para generar un ID único
-        return "q${System.currentTimeMillis()}"
+        return IdGenerator.generateUniqueQuizId() // Usa la clase utilitaria
     }
 
     // Función para guardar un cuestionario en Firebase Firestore
@@ -89,7 +78,7 @@ class QuizCreationViewModel : ViewModel() {
         imageUrl: String?  // URL de la imagen asociada a la pregunta (opcional)
     ) {
         // Generar un ID único para la nueva pregunta
-        val questionId = generateUniqueQuestionId()
+        val questionId = generateUniqueQuizId()
 
         // Crear el objeto Question con los datos proporcionados
         val newQuestion = Question(
