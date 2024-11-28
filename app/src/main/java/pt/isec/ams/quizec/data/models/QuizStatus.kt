@@ -4,5 +4,7 @@ package pt.isec.ams.quizec.data.models
 enum class QuizStatus {
     AVAILABLE,
     COMPLETED,
-    LOCKED
+    LOCKED,
+    IN_PROGRESS
+
 }

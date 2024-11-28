@@ -75,7 +75,7 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
         composable("quizScreen/{quizId}") { backStackEntry ->
             // Recuperar el quizId desde los argumentos
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
-            QuizScreen(quizId = quizId)
+            QuizScreen( viewModel = QuizScreenViewModel())
         }
 
 
