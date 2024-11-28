@@ -2,21 +2,8 @@ package pt.isec.ams.quizec.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
@@ -24,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.viewmodel.QuizHistoryViewModel
 
 @Composable
@@ -53,6 +39,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
         )
 
         Spacer(modifier = Modifier.height(8.dp))
+
         LazyColumn {
             items(quizzes.value.size) { index ->
                 val quiz = quizzes.value[index]
@@ -61,30 +48,32 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
                     onClick = {
-                        coroutineScope.launch {
-                            navController.navigate("quizScreen/${quiz.id}")
-                        }
+                        // Navegar al historial de preguntas del cuestionario seleccionado
+                        navController.navigate("questionHistory/${quiz.id}")
                     }
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        // Mostrar el título y la fecha de creación del cuestionario
                         Text(text = quiz.title, style = MaterialTheme.typography.titleMedium)
                         Text(
-                            text = "Creado el: ${viewModel.formatDate(quiz.createdAt)}", // Formatear la fecha
+                            text = "Created on: ${viewModel.formatDate(quiz.createdAt)}", // Formatear la fecha
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row {
+                            // Botón para eliminar el cuestionario
                             Button(
                                 onClick = { viewModel.deleteQuiz(quiz.id) },
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                                 modifier = Modifier.padding(end = 8.dp)
                             ) {
-                                Text("Eliminar", color = MaterialTheme.colorScheme.onError)
+                                Text("Delete", color = MaterialTheme.colorScheme.onError)
                             }
+                            // Botón para duplicar el cuestionario
                             Button(
                                 onClick = { viewModel.duplicateQuiz(quiz) }
                             ) {
-                                Text("Duplicar")
+                                Text("Duplicate")
                             }
                         }
                     }
@@ -93,13 +82,15 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
         }
     }
 }
+
+// Componente para mostrar el menú desplegable de filtro por estado
 @Composable
 fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
         Button(onClick = { expanded = !expanded }) {
-            Text(text = "Filtrar: $selectedStatus")
+            Text(text = "Filter: $selectedStatus")
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             listOf("All", "Available", "Completed", "Locked").forEach { status ->
@@ -114,5 +105,6 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
         }
     }
 }
+
 
 

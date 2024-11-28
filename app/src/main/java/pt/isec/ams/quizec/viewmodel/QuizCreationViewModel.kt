@@ -22,6 +22,7 @@ class QuizCreationViewModel : ViewModel() {
     // Lista mutable de preguntas del cuestionario
     private val _questions = mutableStateListOf<Question>()
 
+
     // Exposición de la lista de preguntas como solo lectura
     val questions: List<Question> get() = _questions
 
@@ -37,7 +38,7 @@ class QuizCreationViewModel : ViewModel() {
     fun saveQuiz(
         title: String,  // Título del cuestionario
         description: String,  // Descripción del cuestionario
-        questions: List<String>,  // Lista de preguntas del cuestionario
+        //questions: List<String>,  // Lista de preguntas del cuestionario
         imageUrl: String?,  // URL de la imagen asociada al cuestionario
         isGeolocationRestricted: Boolean,  // Si el cuestionario está restringido por geolocalización
         timeLimit: Int,  // Límite de tiempo del cuestionario en minutos
@@ -51,13 +52,23 @@ class QuizCreationViewModel : ViewModel() {
             // Generar un ID único para el cuestionario
             val quizId = generateUniqueQuizId()
 
-            // Crear el objeto Quiz con los datos proporcionados
+            // Guardar todas las preguntas asociadas al cuestionario
+            val questionIds = _questions.map { question ->
+                question.copy(quizId = quizId) // Asociar la pregunta al cuestionario
+            }.map { question ->
+                firestore.collection("questions").document(question.id)
+                    .set(question)
+                    .addOnFailureListener { e -> println("Error saving question: ${e.message}") }
+                question.id
+            }
+
+            // Crear el objeto Quiz
             val quiz = Quiz(
                 id = quizId,
                 creatorId = creatorId,
                 title = title,
                 description = description,
-                questions = questions,
+                questions = questionIds, // Asociar los IDs de las preguntas al cuestionario
                 imageUrl = imageUrl,
                 isGeolocationRestricted = isGeolocationRestricted,
                 timeLimit = timeLimit,
@@ -95,6 +106,8 @@ class QuizCreationViewModel : ViewModel() {
             imageUrl = imageUrl  // Imagen asociada (si existe)
         )
 
+        _questions.add(newQuestion) // Agregar a la lista local
+        /*
         // Guardar la pregunta en Firestore
         firestore.collection("questions")
             .document(questionId)  // Usar el ID único para el documento
@@ -106,7 +119,7 @@ class QuizCreationViewModel : ViewModel() {
             .addOnFailureListener { e ->
                 // Si ocurre un error, se maneja aquí (por ejemplo, imprimiendo el error)
                 e.printStackTrace()
-            }
+            }*/
     }
 }
 

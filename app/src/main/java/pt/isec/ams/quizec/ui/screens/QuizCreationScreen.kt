@@ -501,7 +501,7 @@ fun QuizCreationScreen(
                     viewModel.saveQuiz(
                         title = title.text,
                         description = description.text,
-                        questions = viewModel.questions.map { it.id },
+                        // questions = viewModel.questions.map { it.id },
                         imageUrl = imageUri?.toString(),
                         timeLimit = timeLimit.toInt(),
                         creatorId = creatorId,

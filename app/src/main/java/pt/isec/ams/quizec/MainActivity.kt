@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.ui.screens.HomeScreen
 import pt.isec.ams.quizec.ui.screens.LoginScreen
+import pt.isec.ams.quizec.ui.screens.QuestionHistoryScreen
 import pt.isec.ams.quizec.ui.screens.RegisterScreen
 import pt.isec.ams.quizec.ui.screens.QuizCreationScreen
 import pt.isec.ams.quizec.ui.screens.QuizHistoryScreen
@@ -68,16 +69,17 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
                 creatorId = authViewModel.creatorId
             )
         }
-        /*composable("quizScreen/{quizId}") { backStackEntry ->
-            val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
-            QuizScreen(quizId = quizId,navController=navController, viewModel = QuizScreenViewModel()) // Implementación pendiente
-        }*/
+
         composable("quizScreen/{quizId}") { backStackEntry ->
             // Recuperar el quizId desde los argumentos
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
             QuizScreen(quizId = quizId)
         }
 
+        composable("questionHistory/{quizId}") { backStackEntry ->
+            val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
+            QuestionHistoryScreen(navController = navController, quizId = quizId)
+        }
 
         composable("quizCreation") {
             QuizCreationScreen(
