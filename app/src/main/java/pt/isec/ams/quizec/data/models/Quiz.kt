@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec.data.models
 
+import com.google.firebase.firestore.GeoPoint
 import pt.isec.ams.quizec.data.models.Answer
 
 
@@ -12,7 +13,8 @@ data class Quiz(
     val createdAt: Long = System.currentTimeMillis(), // Timestamp de creación
     val timeLimit: Int = 0,// Lista de IDs de preguntas asociadas
     val imageUrl: String? = null, // Imagen opcional
-    val isGeolocationRestricted: Boolean = false, // Si la geolocalización está activada
+    val isGeolocationRestricted: Boolean = false,
+    val location: GeoPoint? = null,// Si la geolocalización está activada
     val isAccessControlled: Boolean = false, // Si la adicionais está activa, para esperar a que esten todos listos o no
     val showResultsImmediately: Boolean =true, // Si se muestran los resultados inmediatamente al terminar
     val participants: List<String> = listOf(), // Lista de IDs de participantes, no se como usarlo aun

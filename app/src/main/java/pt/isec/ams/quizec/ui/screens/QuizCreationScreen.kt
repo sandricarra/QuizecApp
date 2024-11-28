@@ -77,7 +77,15 @@ fun QuizCreationScreen(
     var associationsP07 = remember { mutableStateListOf<Pair<String, String>>() }
     val imageUrlP07 by remember { mutableStateOf<String?>(null) }
 
+    var baseTextP08 by remember { mutableStateOf("Complete the sentence: The [...] is shining.") }
 
+
+
+
+    var correctAnswersP08 by remember { mutableStateOf(listOf("sun")) }
+
+
+    var optionsP08 by remember { mutableStateOf(listOf("sun", "moon", "star")) }
 
 
 
@@ -388,6 +396,19 @@ fun QuizCreationScreen(
                         onImageChange = { imageUrl = it }
                     )
                 }
+                QuestionType.P08 -> {
+                P08Question(
+                    questionTitle = "Complete the sentence",
+                    onTitleChange = { questionTitle = it },
+                    baseTextP08 = baseTextP08,
+                    onBaseTextChange = { baseTextP08 = it },
+                    answers = correctAnswersP08,
+                    onAnswersChange = { correctAnswersP08 = it },
+                    imageUrl = imageUrl,
+                    onImageChange = { imageUrl = it }
+                )
+                }
+
                 else -> {}
             }
         }
@@ -458,7 +479,7 @@ fun QuizCreationScreen(
                         questionTitle = questionTitle, // Usamos el texto base como título de la pregunta
                         options = optionsP06,
                         correctAnswers = correctAnswersP06,
-                        imageUrl = null, // Las preguntas de completar no requieren imagen (puedes cambiar esto)
+                        imageUrl = imageUrl, // Las preguntas de completar no requieren imagen (puedes cambiar esto)
                         onUpdate = onUpdate,
                         viewModel = viewModel
                     )
@@ -470,6 +491,19 @@ fun QuizCreationScreen(
                         options = associationsP07.map { it.first }, // Lista de conceptos
                         correctAnswers = associationsP07.map { it.second }, // Lista de asociaciones
                         imageUrl = imageUrlP07,
+                        onUpdate = onUpdate,
+                        viewModel = viewModel
+                    )
+                }
+
+
+                QuestionType.P08 -> {
+                    AddQuestionButton(
+                        questionType = questionType,
+                        questionTitle = questionTitle,
+                        options = optionsP08 ,
+                        correctAnswers = correctAnswersP08,
+                        imageUrl = imageUrl,
                         onUpdate = onUpdate,
                         viewModel = viewModel
                     )
@@ -1253,6 +1287,89 @@ fun P07Question(
         }
     }
 }
+
+@Composable
+fun P08Question(
+    questionTitle: String,
+    onTitleChange: (String) -> Unit,
+    baseTextP08: String,
+    onBaseTextChange: (String) -> Unit,
+    answers: List<String>,
+    onAnswersChange: (List<String>) -> Unit,
+    imageUrl: String?,
+    onImageChange: (String) -> Unit
+) {
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> uri?.let { onImageChange(it.toString()) } }
+    )
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        // Campo de texto para el título de la pregunta
+        TextField(
+            value = questionTitle,
+            onValueChange = onTitleChange,
+            label = { Text("Enter Question Title") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+        )
+
+        // Campo de texto para el texto base con espacios en blanco
+        TextField(
+            value = baseTextP08,
+            onValueChange = onBaseTextChange,
+            label = { Text("Enter Sentence with Blanks (use {} for blanks)") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            placeholder = { Text("Example: The {} is {}.") }
+        )
+
+        // Imagen asociada a la pregunta
+        if (imageUrl != null) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Selected Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Text("No image selected", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
+        Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.padding(vertical = 8.dp)) {
+            Text("Select Image")
+        }
+
+        // Respuestas para los espacios en blanco
+        Text("Answers:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+        answers.forEachIndexed { index, answer ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            ) {
+                Text("Blank ${index + 1}:", modifier = Modifier.padding(end = 8.dp))
+                TextField(
+                    value = answer,
+                    onValueChange = { newAnswer ->
+                        val updatedAnswers = answers.toMutableList()
+                        updatedAnswers[index] = newAnswer
+                        onAnswersChange(updatedAnswers)
+                    },
+                    modifier = Modifier.weight(1f),
+                    label = { Text("Enter Answer ${index + 1}") }
+                )
+            }
+        }
+
+        // Botón para añadir nuevos espacios en blanco
+        Button(
+            onClick = { onAnswersChange(answers + "") },
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text("Add Blank")
+        }
+    }
+}
+
 
 
 
