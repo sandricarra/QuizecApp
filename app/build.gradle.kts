@@ -64,11 +64,14 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.0.0")
     implementation("androidx.compose.foundation:foundation-layout:1.0.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    // Dependencia para restringir la Localización
+    implementation ("com.google.android.gms:play-services-location:18.0.0")
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
+    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

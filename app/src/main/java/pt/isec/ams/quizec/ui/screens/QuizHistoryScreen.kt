@@ -61,6 +61,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Row {
+
                             // Botón para eliminar el cuestionario
                             Button(
                                 onClick = { viewModel.deleteQuiz(quiz.id) },
@@ -69,12 +70,14 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                             ) {
                                 Text("Delete", color = MaterialTheme.colorScheme.onError)
                             }
+
                             // Botón para duplicar el cuestionario
                             Button(
                                 onClick = { viewModel.duplicateQuiz(quiz) }
                             ) {
                                 Text("Duplicate")
                             }
+
                         }
                     }
                 }

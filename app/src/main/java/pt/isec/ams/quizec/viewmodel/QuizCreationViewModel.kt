@@ -1,9 +1,10 @@
 package pt.isec.ams.quizec.viewmodel
 
-import androidx.compose.runtime.getValue
+import android.content.Context
+import android.location.Location
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,6 +14,7 @@ import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.utils.IdGenerator
 import pt.isec.ams.quizec.utils.IdGeneratorQ
+import pt.isec.ams.quizec.utils.LocationUtils
 
 class QuizCreationViewModel : ViewModel() {
 
@@ -32,8 +34,16 @@ class QuizCreationViewModel : ViewModel() {
     private fun generateUniqueQId(): String {
         return IdGeneratorQ.generateUniqueQuizCode() // Usa la clase utilitaria
     }
+    private val creatorLocation = Location("creator").apply {
+        latitude = 40.7128 // Latitud del creador
+        longitude = -74.0060 // Longitud del creador
+    }
 
+    private val _locationError = mutableStateOf("")
+    val locationError: State<String> get() = _locationError
 
+    private val _isLocationValid = mutableStateOf(false)
+    val isLocationValid: State<Boolean> get() = _isLocationValid
     // Función para guardar un cuestionario en Firebase Firestore
     fun saveQuiz(
         title: String,  // Título del cuestionario
@@ -45,7 +55,7 @@ class QuizCreationViewModel : ViewModel() {
         isAccessControlled: Boolean,  // Si el acceso al cuestionario está controlado
         showResultsImmediately: Boolean,  // Si los resultados se muestran inmediatamente
         creatorId: String,  // ID del creador del cuestionario
-        onSuccess: () -> Unit,  // Función que se ejecuta al guardar correctamente
+        onSuccess: (String) -> Unit,  // Función que se ejecuta al guardar correctamente
         onError: (Exception) -> Unit  // Función que se ejecuta si ocurre un error
     ) {
         viewModelScope.launch {
@@ -80,10 +90,11 @@ class QuizCreationViewModel : ViewModel() {
             firestore.collection("quizzes")
                 .document(quizId)  // Usar el ID único generado para el documento
                 .set(quiz)  // Guardar el cuestionario
-                .addOnSuccessListener { onSuccess() }  // Llamar a onSuccess si se guarda correctamente
+                .addOnSuccessListener { onSuccess(quizId) }  // Llamar a onSuccess si se guarda correctamente
                 .addOnFailureListener { onError(it) }  // Llamar a onError si ocurre un error
         }
     }
+
 
     // Función para agregar una nueva pregunta al cuestionario
     fun addQuestion(
@@ -107,20 +118,81 @@ class QuizCreationViewModel : ViewModel() {
         )
 
         _questions.add(newQuestion) // Agregar a la lista local
-        /*
-        // Guardar la pregunta en Firestore
-        firestore.collection("questions")
-            .document(questionId)  // Usar el ID único para el documento
-            .set(newQuestion)  // Guardar la pregunta
-            .addOnSuccessListener {
-                // Si la pregunta se guarda correctamente, agregarla a la lista local de preguntas
-                _questions.add(newQuestion)
-            }
-            .addOnFailureListener { e ->
-                // Si ocurre un error, se maneja aquí (por ejemplo, imprimiendo el error)
-                e.printStackTrace()
-            }*/
+
+
+
     }
+
+    fun updateAccessCode(quizId: String, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
+        // Genera un código único para el quiz (quizId como código de acceso)
+        val newAccessCode = quizId  // Usamos el quizId como código de acceso
+
+        // Actualiza el campo `accessCode` en Firestore para este cuestionario
+        firestore.collection("quizzes").document(quizId)
+            .update("accessCode", newAccessCode)
+            .addOnSuccessListener {
+                onSuccess() // Llamar a onSuccess cuando se actualiza correctamente
+            }
+            .addOnFailureListener { exception ->
+                onError(exception) // Llamar a onError si ocurre algún problema
+            }
+    }
+
+    // Verificar si el estudiante está cerca del creador
+    // Función para verificar la ubicación del estudiante
+    fun checkLocationPermissionAndDistance(
+        context: Context,
+        onValidLocation: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val fusedLocationClient = LocationUtils(context)
+        fusedLocationClient.getUserLocation(
+            onLocationReceived = { location ->
+                // Obtener la ubicación del creador desde Firestore u otra fuente
+                val creatorLocation = Location("creator").apply {
+                    latitude = 40.7128  // Latitud del creador
+                    longitude = -74.0060 // Longitud del creador
+                }
+                val distance = calculateDistance(
+                    location.latitude,
+                    location.longitude,
+                    creatorLocation.latitude,
+                    creatorLocation.longitude
+                )
+
+                if (distance <= 500) {  // Si la distancia es menor o igual a 500 metros
+                    onValidLocation()
+                    _isLocationValid.value = true
+                    _locationError.value = "" // Limpiar el mensaje de error
+                } else {
+                    onError("You are too far from the creator to access this quiz.")
+                    _isLocationValid.value = false
+                    _locationError.value = "You are too far from the creator to access this quiz."
+                }
+            },
+            onError = { errorMessage ->
+                onError(errorMessage.toString())
+                _isLocationValid.value = false
+                _locationError.value = errorMessage.toString()
+            }
+        )
+    }
+
+
+    // Calcular distancia entre dos ubicaciones geográficas
+    fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
+        val location1 = Location("")
+        location1.latitude = lat1
+        location1.longitude = lon1
+
+        val location2 = Location("")
+        location2.latitude = lat2
+        location2.longitude = lon2
+
+        return location1.distanceTo(location2) // Distancia en metros
+    }
+
+
 }
 
 

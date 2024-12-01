@@ -93,7 +93,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
             Button(
                 onClick = {
                     // Navega a la pantalla del cuestionario pasando quizId como parámetro en la URL.
-                    navController.navigate("quizScreen/$quizId")
+                    navController.navigate("quizAccessScreen/$quizId")
                 },
                 modifier = Modifier
                     .fillMaxWidth() // Ocupa todo el ancho disponible.

@@ -50,6 +50,8 @@ fun QuizCreationScreen(
     var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
     var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
     var showResultsImmediately by remember { mutableStateOf(false) } // Mostrar resultados inmediatamente después de terminar
+    var showAccessCodeScreen by remember { mutableStateOf(false) } // Controla la visibilidad de la pantalla de código
+    var savedQuizId by remember { mutableStateOf<String?>(null) } // ID del cuestionario guardado
 
 
     // Variables relacionadas con el tipo de pregunta
@@ -330,6 +332,7 @@ fun QuizCreationScreen(
                     )
 
                 }
+
                 QuestionType.P03 -> {
                     P03Question(
                         imageUrl = imageUrl,
@@ -359,15 +362,15 @@ fun QuizCreationScreen(
                 }
 
                 QuestionType.P05 -> {
-                P05Question(
-                    questionTitle = questionTitle,
-                    onTitleChange = { questionTitle = it },
-                    items = itemsP05,
-                    onItemsChange = { itemsP05 = it },
-                    imageUrl = imageUrl,
-                    onImageChange = { imageUrl = it }
-                )}
-
+                    P05Question(
+                        questionTitle = questionTitle,
+                        onTitleChange = { questionTitle = it },
+                        items = itemsP05,
+                        onItemsChange = { itemsP05 = it },
+                        imageUrl = imageUrl,
+                        onImageChange = { imageUrl = it }
+                    )
+                }
 
 
                 QuestionType.P06 -> {
@@ -385,6 +388,7 @@ fun QuizCreationScreen(
 
                     )
                 }
+
                 QuestionType.P07 -> {
                     // Mostrar la UI para el tipo de pregunta P07
                     P07Question(
@@ -396,17 +400,18 @@ fun QuizCreationScreen(
                         onImageChange = { imageUrl = it }
                     )
                 }
+
                 QuestionType.P08 -> {
-                P08Question(
-                    questionTitle = "Complete the sentence",
-                    onTitleChange = { questionTitle = it },
-                    baseTextP08 = baseTextP08,
-                    onBaseTextChange = { baseTextP08 = it },
-                    answers = correctAnswersP08,
-                    onAnswersChange = { correctAnswersP08 = it },
-                    imageUrl = imageUrl,
-                    onImageChange = { imageUrl = it }
-                )
+                    P08Question(
+                        questionTitle = "Complete the sentence",
+                        onTitleChange = { questionTitle = it },
+                        baseTextP08 = baseTextP08,
+                        onBaseTextChange = { baseTextP08 = it },
+                        answers = correctAnswersP08,
+                        onAnswersChange = { correctAnswersP08 = it },
+                        imageUrl = imageUrl,
+                        onImageChange = { imageUrl = it }
+                    )
                 }
 
                 else -> {}
@@ -428,28 +433,31 @@ fun QuizCreationScreen(
                         viewModel = viewModel
                     )
                 }
+
                 QuestionType.P02 -> {
                     AddQuestionButton(
                         questionType = questionType,
                         questionTitle = questionTitle,
-                        options =optionsP02,
-                        correctAnswers = listOf(selectedAnswerP02 ?: "") ,
+                        options = optionsP02,
+                        correctAnswers = listOf(selectedAnswerP02 ?: ""),
                         imageUrl = imageUrl,
                         onUpdate = onUpdate,
                         viewModel = viewModel
                     )
                 }
+
                 QuestionType.P03 -> {
                     AddQuestionButton(
                         questionType = questionType,
                         questionTitle = questionTitle,
-                        options =optionsP03,
-                        correctAnswers = selectedAnswerP03 ,
+                        options = optionsP03,
+                        correctAnswers = selectedAnswerP03,
                         imageUrl = imageUrl,
                         onUpdate = onUpdate,
                         viewModel = viewModel
                     )
                 }
+
                 QuestionType.P04 -> {
                     AddQuestionButton(
                         questionType = questionType,
@@ -461,6 +469,7 @@ fun QuizCreationScreen(
                         viewModel = viewModel
                     )
                 }
+
                 QuestionType.P05 -> {
                     AddQuestionButton(
                         questionType = questionType,
@@ -473,6 +482,7 @@ fun QuizCreationScreen(
 
                     )
                 }
+
                 QuestionType.P06 -> {
                     AddQuestionButton(
                         questionType = questionType,
@@ -484,6 +494,7 @@ fun QuizCreationScreen(
                         viewModel = viewModel
                     )
                 }
+
                 QuestionType.P07 -> {
                     AddQuestionButton(
                         questionType = questionType,
@@ -501,23 +512,13 @@ fun QuizCreationScreen(
                     AddQuestionButton(
                         questionType = questionType,
                         questionTitle = questionTitle,
-                        options = optionsP08 ,
+                        options = optionsP08,
                         correctAnswers = correctAnswersP08,
                         imageUrl = imageUrl,
                         onUpdate = onUpdate,
                         viewModel = viewModel
                     )
                 }
-
-
-
-
-
-
-
-
-
-
 
 
                 // Agregar más tipos de preguntas si es necesario
@@ -527,8 +528,20 @@ fun QuizCreationScreen(
             }
         }
 
+
         // Botón para guardar el cuestionario
         item {
+
+            // Mostrar el código del cuestionario si ya ha sido guardado
+            if (showAccessCodeScreen && savedQuizId != null) {
+                Text(
+                    text = "Quiz Access Code: $savedQuizId",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp)) // Espacio entre el código y el botón
+            }
+
             Button(
                 onClick = {
                     isLoading = true
@@ -543,10 +556,12 @@ fun QuizCreationScreen(
                         isAccessControlled = isAccessControlled,
                         showResultsImmediately = showResultsImmediately,
 
-                        onSuccess = {
+                        onSuccess = { id ->
                             isLoading = false
-                            onQuizSaved()
+                            showAccessCodeScreen = true // Muestra la pantalla del código de acceso
+                            savedQuizId = id
                         },
+
                         onError = {
                             isLoading = false
                         }
@@ -626,6 +641,8 @@ fun QuizCreationScreen(
             }
 
         }
+
+
     }
 }
 @Composable

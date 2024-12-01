@@ -1,5 +1,7 @@
 package pt.isec.ams.quizec.viewmodel
 
+import android.content.Context
+import android.location.Location
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +28,7 @@ class QuizScreenViewModel : ViewModel() {
     // Estado de error
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
+
 
     // Estado para almacenar el índice de la pregunta actual
     private val _currentQuestionIndex = mutableStateOf<Int>(-1)
@@ -116,6 +119,9 @@ class QuizScreenViewModel : ViewModel() {
             _errorMessage.value = "No previous question."
         }
     }
+
+
+
 }
 
 
