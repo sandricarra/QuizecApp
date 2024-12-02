@@ -14,7 +14,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.ui.screens.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,7 +24,6 @@ import pt.isec.ams.quizec.viewmodel.RegisterViewModel
 
 
 class MainActivity : ComponentActivity() {
-    private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,8 +64,7 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
             )
         }
 
-        composable("quizAccessScreen/{quizId}") { backStackEntry ->
-            val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
+        composable("quizAccessScreen/{quizId}") {
             val viewModel = viewModel<QuizScreenViewModel>()
             val isGeolocationRestricted by viewModel.isGeolocationRestricted.collectAsState()
 

@@ -1,8 +1,5 @@
 package pt.isec.ams.quizec.viewmodel
 
-import android.content.Context
-import android.location.Location
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -18,10 +15,6 @@ class QuizScreenViewModel : ViewModel() {
     private val _isGeolocationRestricted = MutableStateFlow(false) // Valor inicial
     val isGeolocationRestricted: StateFlow<Boolean> get() = _isGeolocationRestricted
 
-    // Función para actualizar isGeolocationRestricted
-    fun setGeolocationRestricted(value: Boolean) {
-        _isGeolocationRestricted.value = value
-    }
 
     private val firestore = FirebaseFirestore.getInstance()
 

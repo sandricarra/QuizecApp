@@ -7,8 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-
-
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -19,7 +17,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
@@ -27,16 +24,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.rememberAsyncImagePainter
-
 import pt.isec.ams.quizec.data.models.QuestionType
-
-
 import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
 
 @Composable
 fun QuizCreationScreen(
     creatorId: String, // ID del creador del cuestionario
-    onQuizSaved: () -> Unit, // Acción que se ejecuta cuando el cuestionario se guarda exitosamente
     viewModel: QuizCreationViewModel = viewModel() // Usamos el ViewModel para gestionar la lógica de creación
 ) {
     // Estado mutable para cada campo de entrada y configuraciones del cuestionario
