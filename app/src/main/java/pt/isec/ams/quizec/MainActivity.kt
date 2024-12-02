@@ -94,7 +94,6 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
         composable("quizCreation") {
             QuizCreationScreen(
                 creatorId = authViewModel.creatorId, // Pasa el creatorId al crear el quiz
-                onQuizSaved = { navController.navigate("home") }
             )
         }
         composable("quizHistory") {
