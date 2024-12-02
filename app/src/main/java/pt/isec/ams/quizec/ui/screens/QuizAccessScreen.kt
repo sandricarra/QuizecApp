@@ -29,6 +29,7 @@ import pt.isec.ams.quizec.utils.calculateDistance
 @Composable
 fun QuizAccessScreen(
     viewModel: QuizScreenViewModel = viewModel(),
+    isGeolocationRestricted: Boolean,
     isLocationValid: () -> Unit, // Tipo de parámetro explícito
     onError: (String) -> Unit // Tipo de parámetro explícito
 ) {
@@ -89,14 +90,6 @@ fun QuizAccessScreen(
             }
     }
 
-    // Función para cargar el cuestionario y agregar un participante
-    fun loadQuiz() {
-        if (quizId.isNotBlank()) {
-            viewModel.loadQuizAndFirstQuestion(quizId)
-            checkAccess(quizId) // Verificar si el acceso es permitido
-        }
-    }
-
     // Función para ir a la siguiente pregunta
     fun nextQuestion() {
         viewModel.loadNextQuestion()
@@ -144,6 +137,20 @@ fun QuizAccessScreen(
         )
     }
 
+    // Función para cargar el cuestionario y agregar un participante
+    fun loadQuiz() {
+        if (quizId.isNotBlank()) {
+            viewModel.loadQuizAndFirstQuestion(quizId)
+            // Verificar si la restricción de geolocalización está activada
+            if (isGeolocationRestricted) {
+                checkLocation()
+            } else {
+                isLocationValidState = true
+                isLocationValid()
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -161,14 +168,12 @@ fun QuizAccessScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón para iniciar la verificación de la ubicación
+        // Botón para cargar el cuestionario
         Button(
-            onClick = {
-                checkLocation() // Verificar ubicación
-            },
+            onClick = { loadQuiz() },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Check Location")
+            Text("Load Quiz")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -181,14 +186,6 @@ fun QuizAccessScreen(
         // Mostrar mensaje de ubicación válida
         if (isLocationValidState) {
             Text(text = "You are within range to access this quiz.", color = Color.Green)
-        }
-
-        // Botón para cargar el cuestionario
-        Button(
-            onClick = { loadQuiz() },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Load Quiz")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

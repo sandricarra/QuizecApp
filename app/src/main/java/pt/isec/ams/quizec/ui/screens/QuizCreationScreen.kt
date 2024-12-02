@@ -211,7 +211,10 @@ fun QuizCreationScreen(
                 )
                 Switch(
                     checked = isGeolocationRestricted,
-                    onCheckedChange = { isGeolocationRestricted = it }
+                    onCheckedChange = {
+                        isGeolocationRestricted = it
+                        viewModel.setGeolocationRestricted(it) // Actualizar el valor en el ViewModel
+                    }
                 )
             }
         }

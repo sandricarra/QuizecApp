@@ -28,12 +28,22 @@ class QuizCreationViewModel : ViewModel() {
     // Exposición de la lista de preguntas como solo lectura
     val questions: List<Question> get() = _questions
 
+    // Estado para isGeolocationRestricted
+    private val _isGeolocationRestricted = mutableStateOf(false)
+    val isGeolocationRestricted: State<Boolean> get() = _isGeolocationRestricted
+
     private fun generateUniqueQuizId(): String {
         return IdGenerator.generateUniqueQuizId() // Usa la clase utilitaria
     }
     private fun generateUniqueQId(): String {
         return IdGeneratorQ.generateUniqueQuizCode() // Usa la clase utilitaria
     }
+
+    // Función para actualizar isGeolocationRestricted
+    fun setGeolocationRestricted(value: Boolean) {
+        _isGeolocationRestricted.value = value
+    }
+
     private val creatorLocation = Location("creator").apply {
         latitude = 40.7128 // Latitud del creador
         longitude = -74.0060 // Longitud del creador

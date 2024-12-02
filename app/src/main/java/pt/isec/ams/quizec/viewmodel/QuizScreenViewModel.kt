@@ -7,10 +7,22 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
 
 class QuizScreenViewModel : ViewModel() {
+
+    // Estado para isGeolocationRestricted
+    private val _isGeolocationRestricted = MutableStateFlow(false) // Valor inicial
+    val isGeolocationRestricted: StateFlow<Boolean> get() = _isGeolocationRestricted
+
+    // Función para actualizar isGeolocationRestricted
+    fun setGeolocationRestricted(value: Boolean) {
+        _isGeolocationRestricted.value = value
+    }
+
     private val firestore = FirebaseFirestore.getInstance()
 
     // Estado para almacenar el cuestionario

@@ -16,6 +16,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.ui.screens.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
@@ -66,17 +68,22 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
 
         composable("quizAccessScreen/{quizId}") { backStackEntry ->
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
+            val viewModel = viewModel<QuizScreenViewModel>()
+            val isGeolocationRestricted by viewModel.isGeolocationRestricted.collectAsState()
+
             QuizAccessScreen(
-                viewModel = viewModel<QuizScreenViewModel>(),
+                viewModel = viewModel,
                 isLocationValid = {
                     // Acción cuando la ubicación es válida
                     println("Location is valid, proceeding with quiz participation.")
                 },
                 onError = { errorMessage ->
                     println("Error: $errorMessage")
-                }
+                },
+                isGeolocationRestricted = isGeolocationRestricted
             )
         }
+
         composable("quizScreen/{quizId}") { backStackEntry ->
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
             QuizScreen(quizId = quizId, viewModel = viewModel<QuizScreenViewModel>())
