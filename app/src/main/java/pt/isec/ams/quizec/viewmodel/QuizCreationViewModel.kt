@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.QuestionType
@@ -93,7 +94,9 @@ class QuizCreationViewModel : ViewModel() {
                 isGeolocationRestricted = isGeolocationRestricted,
                 timeLimit = timeLimit,
                 isAccessControlled = isAccessControlled,
-                showResultsImmediately = showResultsImmediately
+                showResultsImmediately = showResultsImmediately,
+                location = if (isGeolocationRestricted) GeoPoint(creatorLocation.latitude, creatorLocation.longitude) else null // Guardar la ubicación del creador si está restringido
+
             )
 
             // Guardar el cuestionario en Firestore
@@ -147,7 +150,7 @@ class QuizCreationViewModel : ViewModel() {
                 onError(exception) // Llamar a onError si ocurre algún problema
             }
     }
-
+/*
     // Verificar si el estudiante está cerca del creador
     // Función para verificar la ubicación del estudiante
     fun checkLocationPermissionAndDistance(
@@ -158,7 +161,7 @@ class QuizCreationViewModel : ViewModel() {
         val fusedLocationClient = LocationUtils(context)
         fusedLocationClient.getUserLocation(
             onLocationReceived = { location ->
-                // Obtener la ubicación del creador desde Firestore u otra fuente
+                // Obtener la ubicación del creador desde Firestore
                 val creatorLocation = Location("creator").apply {
                     latitude = 40.7128  // Latitud del creador
                     longitude = -74.0060 // Longitud del creador
@@ -186,7 +189,7 @@ class QuizCreationViewModel : ViewModel() {
                 _locationError.value = errorMessage.toString()
             }
         )
-    }
+    } --> Creo que no lo necesito REVISAR!!!*/
 
 
     // Calcular distancia entre dos ubicaciones geográficas

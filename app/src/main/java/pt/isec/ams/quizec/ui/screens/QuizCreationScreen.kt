@@ -38,7 +38,7 @@ fun QuizCreationScreen(
     var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se guarda el cuestionario
     var imageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen seleccionada
     var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
-
+    var locationErrorMessage by remember { mutableStateOf("") }
     var timeLimit by remember { mutableLongStateOf(0L) } // Límite de tiempo del cuestionario
     var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
     var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)

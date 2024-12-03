@@ -101,41 +101,54 @@ fun QuizAccessScreen(
     }
 
     // Comprobar ubicación
-    fun checkLocation() {
+    fun checkLocation(quizId: String) {
         val locationUtils = LocationUtils(context)
         locationUtils.getUserLocation(
-            onLocationReceived = { location ->
-                // Obtener la ubicación del creador
-                val creatorLocation = Location("creator").apply {
-                    latitude = 40.7128  // Latitud del creador
-                    longitude = -74.0060 // Longitud del creador
-                }
+            onLocationReceived = { userLocation ->
+                // Obtener la ubicación del creador desde Firestore
+                FirebaseFirestore.getInstance().collection("quizzes").document(quizId)
+                    .get()
+                    .addOnSuccessListener { document ->
+                        val quiz = document.toObject(Quiz::class.java)
+                        if (quiz != null && quiz.location != null) {
+                            val creatorLocation = quiz.location
+                            val distance = calculateDistance(
+                                userLocation.latitude,
+                                userLocation.longitude,
+                                creatorLocation.latitude,
+                                creatorLocation.longitude
+                            )
 
-                // Calcular la distancia
-                val distance = calculateDistance(
-                    location.latitude,
-                    location.longitude,
-                    creatorLocation.latitude,
-                    creatorLocation.longitude
-                )
-
-                if (distance <= 500) {  // Si la distancia es menor o igual a 500 metros
-                    isLocationValidState = true
-                    locationError = ""  // Limpiar el mensaje de error
-                    isLocationValid()  // Llamar a la función cuando la ubicación es válida
-                } else {
-                    locationError = "You are too far from the creator to access this quiz."
-                    isLocationValidState = false
-                    onError(locationError) // Llamar a la función cuando hay un error
-                }
+                            if (distance <= 500) {
+                                isLocationValidState = true
+                                locationError = ""
+                                isLocationValid()
+                            } else {
+                                locationError = "You are too far from the creator to access this quiz."
+                                isLocationValidState = false
+                                onError(locationError)
+                            }
+                        } else {
+                            locationError = "Creator location not available."
+                            isLocationValidState = false
+                            onError(locationError)
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        locationError = "Error loading quiz: ${exception.message}"
+                        isLocationValidState = false
+                        onError(locationError)
+                    }
             },
             onError = { error ->
                 locationError = error.message ?: "Error obtaining location"
                 isLocationValidState = false
-                onError(locationError) // Llamar a la función cuando hay un error
+                onError(locationError)
             }
         )
     }
+
+
 
     // Función para cargar el cuestionario y agregar un participante
     fun loadQuiz() {
@@ -143,7 +156,7 @@ fun QuizAccessScreen(
             viewModel.loadQuizAndFirstQuestion(quizId)
             // Verificar si la restricción de geolocalización está activada
             if (isGeolocationRestricted) {
-                checkLocation()
+                checkLocation(quizId)
             } else {
                 isLocationValidState = true
                 isLocationValid()
