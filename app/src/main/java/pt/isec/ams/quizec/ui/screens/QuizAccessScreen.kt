@@ -9,6 +9,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -238,20 +241,16 @@ fun QuizAccessScreen(
                     P04 (question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
                 }
                 QuestionType.P05 -> {
-
-
+                    P05 (question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
                 }
                 QuestionType.P06 -> {
-
-
+                    P06 (question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
                 }
                 QuestionType.P07 -> {
-
-
+                    P07 (question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
                 }
                 QuestionType.P08 -> {
-
-
+                    P08 (question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
                 }
                 else -> {
                     Text("Unsupported question type.")
@@ -317,6 +316,20 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
         question.options.forEach { option ->
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -362,6 +375,19 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
         question.options.forEach { option ->
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -405,8 +431,8 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
 @Composable
 fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+
     val (selectedPairs, setSelectedPairs) = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
-    val (expandedIndex, setExpandedIndex) = remember { mutableStateOf(-1) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -430,7 +456,11 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
             parts[0] to parts[1]
         }
 
-        Text("Match the following:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+        Text(
+            "Match the following:",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
         pairs.forEachIndexed { index, (left, _) ->
             var expanded by remember { mutableStateOf(false) }
@@ -457,20 +487,19 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                     ) {
                         pairs.forEach { (_, right) ->
                             DropdownMenuItem(
-                                    onClick = {
-                                    },
-                                    text = { Text(right) }
-                                )
-                                selectedOption = right
-                                expanded = false
-                                val updatedPairs = selectedPairs.toMutableList()
-                                if (index < updatedPairs.size) {
-                                    updatedPairs[index] = left to right
-                                } else {
-                                    updatedPairs.add(left to right)
-                                }
-                                setSelectedPairs(updatedPairs)
-                            }
+                                onClick = {
+                                    selectedOption = right
+                                    expanded = false
+                                    val updatedPairs = selectedPairs.toMutableList()
+                                    if (index < updatedPairs.size) {
+                                        updatedPairs[index] = left to right
+                                    } else {
+                                        updatedPairs.add(left to right)
+                                    }
+                                    setSelectedPairs(updatedPairs)
+                                },
+                                text = { Text(right) }
+                            )
                         }
                     }
                 }
@@ -488,6 +517,286 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+    val items = remember { mutableStateOf(question.options.toMutableList()) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Text("Order the following items:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+
+        items.value.forEachIndexed { index, item ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                Text(text = "${index + 1}.", modifier = Modifier.padding(end = 8.dp))
+
+                Text(text = item, modifier = Modifier.weight(1f).padding(start = 8.dp))
+
+                IconButton(onClick = {
+                    if (index > 0) {
+                        val updatedItems = items.value.toMutableList()
+                        val temp = updatedItems[index]
+                        updatedItems[index] = updatedItems[index - 1]
+                        updatedItems[index - 1] = temp
+                        items.value = updatedItems
+                    }
+                }) {
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move up")
+                }
+
+                IconButton(onClick = {
+                    if (index < items.value.size - 1) {
+                        val updatedItems = items.value.toMutableList()
+                        val temp = updatedItems[index]
+                        updatedItems[index] = updatedItems[index + 1]
+                        updatedItems[index + 1] = temp
+                        items.value = updatedItems
+                    }
+                }) {
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move down")
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onPrevious) {
+                Text("Previous Question")
+            }
+            Button(onClick = onNext) {
+                Text("Next Question")
+            }
+        }
+    }
+}
+
+@Composable
+fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+    val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        // Texto base con espacios en blanco
+        val baseTextParts = question.options[0].split("{}")
+        baseTextParts.forEachIndexed { index, part ->
+            Text(text = part, style = MaterialTheme.typography.bodyMedium)
+            if (index < userAnswers.value.size) {
+                var expanded by remember { mutableStateOf(false) }
+                var selectedOption by remember { mutableStateOf(userAnswers.value[index]) }
+
+                Box {
+                    Text(
+                        text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
+                        modifier = Modifier
+                            .clickable { expanded = true }
+                            .background(Color.LightGray)
+                            .padding(8.dp)
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        question.options.forEach { option ->
+                            DropdownMenuItem(onClick = {
+                                selectedOption = option
+                                expanded = false
+                                val updatedAnswers = userAnswers.value.toMutableList()
+                                updatedAnswers[index] = option
+                                userAnswers.value = updatedAnswers
+                            },
+                                text = { Text(option) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onPrevious) {
+                Text("Previous Question")
+            }
+            Button(onClick = onNext) {
+                Text("Next Question")
+            }
+        }
+    }
+}
+
+@Composable
+fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+    val selectedAssociations = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        // Conceptos y definiciones
+        val concepts = question.options
+        val definitions = question.correctAnswers
+
+        Text("Match the following:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+
+        concepts.forEachIndexed { index, concept ->
+            var expanded by remember { mutableStateOf(false) }
+            var selectedDefinition by remember { mutableStateOf("") }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                Text(text = concept, modifier = Modifier.weight(1f))
+
+                Box(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (selectedDefinition.isEmpty()) "Select a definition" else selectedDefinition,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = true }
+                            .background(Color.LightGray)
+                            .padding(8.dp)
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        definitions.forEach { definition ->
+                            DropdownMenuItem(onClick = {
+                                selectedDefinition = definition
+                                expanded = false
+                                val updatedAssociations = selectedAssociations.value.toMutableList()
+                                if (index < updatedAssociations.size) {
+                                    updatedAssociations[index] = concept to definition
+                                } else {
+                                    updatedAssociations.add(concept to definition)
+                                }
+                                selectedAssociations.value = updatedAssociations
+                            },
+                                text= { Text(definition) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onPrevious) {
+                Text("Previous Question")
+            }
+            Button(onClick = onNext) {
+                Text("Next Question")
+            }
+        }
+    }
+}
+
+@Composable
+fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+    val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        // Texto base con espacios en blanco
+        val baseTextParts = question.options[0].split("{}")
+        baseTextParts.forEachIndexed { index, part ->
+            Text(text = part, style = MaterialTheme.typography.bodyMedium)
+            if (index < userAnswers.value.size) {
+                TextField(
+                    value = userAnswers.value[index],
+                    onValueChange = { newAnswer ->
+                        val updatedAnswers = userAnswers.value.toMutableList()
+                        updatedAnswers[index] = newAnswer
+                        userAnswers.value = updatedAnswers
+                    },
+                    modifier = Modifier
+                        .background(Color.LightGray)
+                        .padding(8.dp),
+                    label = { Text("Enter Answer ${index + 1}") }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onPrevious) {
+                Text("Previous Question")
+            }
+            Button(onClick = onNext) {
+                Text("Next Question")
+            }
+        }
+    }
+}
+
+
+
+
+
 
 
 
