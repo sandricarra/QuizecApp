@@ -81,10 +81,6 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
             )
         }
 
-        composable("quizScreen/{quizId}") { backStackEntry ->
-            val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
-            QuizScreen(quizId = quizId, viewModel = viewModel<QuizScreenViewModel>())
-        }
 
         composable("questionHistory/{quizId}") { backStackEntry ->
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""

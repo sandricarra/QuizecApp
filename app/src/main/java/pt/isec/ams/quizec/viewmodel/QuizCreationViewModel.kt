@@ -150,60 +150,7 @@ class QuizCreationViewModel : ViewModel() {
                 onError(exception) // Llamar a onError si ocurre algún problema
             }
     }
-/*
-    // Verificar si el estudiante está cerca del creador
-    // Función para verificar la ubicación del estudiante
-    fun checkLocationPermissionAndDistance(
-        context: Context,
-        onValidLocation: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val fusedLocationClient = LocationUtils(context)
-        fusedLocationClient.getUserLocation(
-            onLocationReceived = { location ->
-                // Obtener la ubicación del creador desde Firestore
-                val creatorLocation = Location("creator").apply {
-                    latitude = 40.7128  // Latitud del creador
-                    longitude = -74.0060 // Longitud del creador
-                }
-                val distance = calculateDistance(
-                    location.latitude,
-                    location.longitude,
-                    creatorLocation.latitude,
-                    creatorLocation.longitude
-                )
 
-                if (distance <= 500) {  // Si la distancia es menor o igual a 500 metros
-                    onValidLocation()
-                    _isLocationValid.value = true
-                    _locationError.value = "" // Limpiar el mensaje de error
-                } else {
-                    onError("You are too far from the creator to access this quiz.")
-                    _isLocationValid.value = false
-                    _locationError.value = "You are too far from the creator to access this quiz."
-                }
-            },
-            onError = { errorMessage ->
-                onError(errorMessage.toString())
-                _isLocationValid.value = false
-                _locationError.value = errorMessage.toString()
-            }
-        )
-    } --> Creo que no lo necesito REVISAR!!!*/
-
-
-    // Calcular distancia entre dos ubicaciones geográficas
-    fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
-        val location1 = Location("")
-        location1.latitude = lat1
-        location1.longitude = lon1
-
-        val location2 = Location("")
-        location2.latitude = lat2
-        location2.longitude = lon2
-
-        return location1.distanceTo(location2) // Distancia en metros
-    }
 
 
 }

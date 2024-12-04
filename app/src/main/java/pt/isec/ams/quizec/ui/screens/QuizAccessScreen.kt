@@ -1,21 +1,26 @@
 package pt.isec.ams.quizec.ui.screens
 
+import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Build
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,7 +52,7 @@ fun QuizAccessScreen(
     // Verificar permisos
     val permissionStatus = ContextCompat.checkSelfPermission(
         context,
-        android.Manifest.permission.ACCESS_FINE_LOCATION
+        Manifest.permission.ACCESS_FINE_LOCATION
     )
 
     // Si el permiso no ha sido otorgado, pedirlo
@@ -55,7 +60,7 @@ fun QuizAccessScreen(
         // Solicitar permiso para acceder a la ubicación
         ActivityCompat.requestPermissions(
             context as Activity,
-            arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
             1
         )
     }
@@ -219,11 +224,34 @@ fun QuizAccessScreen(
 
             // Mostrar la pregunta dependiendo de su tipo
             when (question?.type) {
-                QuestionType.P03 -> {
-                    MultipleChoiceQuestion(question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
-                }
                 QuestionType.P01 -> {
-                    TrueFalseQuestion(question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
+                    P01(question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
+
+                }
+                QuestionType.P02 -> {
+                    P02(question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
+                }
+                QuestionType.P03 -> {
+                    P03(question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
+                }
+                QuestionType.P04 -> {
+                    P04 (question = question!!, onNext = { nextQuestion() }, onPrevious = { previousQuestion() })
+                }
+                QuestionType.P05 -> {
+
+
+                }
+                QuestionType.P06 -> {
+
+
+                }
+                QuestionType.P07 -> {
+
+
+                }
+                QuestionType.P08 -> {
+
+
                 }
                 else -> {
                     Text("Unsupported question type.")
@@ -234,40 +262,23 @@ fun QuizAccessScreen(
 }
 
 @Composable
-fun MultipleChoiceQuestion(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
-        question.options.forEach { option ->
-            Row(
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = false,
-                    onClick = { /* Handle answer selection */ }
-                )
-                Text(text = option, modifier = Modifier.padding(start = 8.dp))
-            }
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Button(onClick = onPrevious) {
-                Text("Previous Question")
-            }
-            Button(onClick = onNext) {
-                Text("Next Question")
-            }
-        }
-    }
-}
-
-@Composable
-fun TrueFalseQuestion(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -300,4 +311,185 @@ fun TrueFalseQuestion(question: Question, onNext: () -> Unit, onPrevious: () -> 
         }
     }
 }
+
+
+@Composable fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+        question.options.forEach { option ->
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            )
+            {
+                RadioButton(
+                    selected = false,
+                    onClick = { /* Handle answer selection */ }
+                )
+                Text(
+                    text = option,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        )
+        {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(onClick = onPrevious) {
+                    Text("Previous Question")
+                }
+                Button(onClick = onNext) {
+                    Text("Next Question")
+                }
+            }
+        }
+    }
+}
+
+@Composable fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+        question.options.forEach { option ->
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            )
+            {
+                RadioButton(
+                    selected = false,
+                    onClick = { /* Handle answer selection */ }
+                )
+                Text(
+                    text = option,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        )
+        {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Button(onClick = onPrevious) {
+                    Text("Previous Question")
+                }
+                Button(onClick = onNext) {
+                    Text("Next Question")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+    val (selectedPairs, setSelectedPairs) = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
+    val (expandedIndex, setExpandedIndex) = remember { mutableStateOf(-1) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
+        // Mostrar imagen si está disponible
+        question.imageUrl?.let { imageUrl ->
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = "Question Image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        // Dividir las opciones en pares
+        val pairs = question.options.map { option ->
+            val parts = option.split(" -> ")
+            parts[0] to parts[1]
+        }
+
+        Text("Match the following:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 8.dp))
+
+        pairs.forEachIndexed { index, (left, _) ->
+            var expanded by remember { mutableStateOf(false) }
+            var selectedOption by remember { mutableStateOf("") }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                Text(text = left, modifier = Modifier.weight(1f))
+
+                Box(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded = true }
+                            .background(Color.LightGray)
+                            .padding(8.dp)
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        pairs.forEach { (_, right) ->
+                            DropdownMenuItem(
+                                    onClick = {
+                                    },
+                                    text = { Text(right) }
+                                )
+                                selectedOption = right
+                                expanded = false
+                                val updatedPairs = selectedPairs.toMutableList()
+                                if (index < updatedPairs.size) {
+                                    updatedPairs[index] = left to right
+                                } else {
+                                    updatedPairs.add(left to right)
+                                }
+                                setSelectedPairs(updatedPairs)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = onPrevious) {
+                Text("Previous Question")
+            }
+            Button(onClick = onNext) {
+                Text("Next Question")
+            }
+        }
+    }
+
+
+
+
 
