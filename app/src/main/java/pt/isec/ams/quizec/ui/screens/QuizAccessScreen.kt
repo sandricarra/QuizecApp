@@ -589,8 +589,9 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
     }
 }
 
+
 @Composable
-fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
@@ -610,38 +611,22 @@ fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
         }
 
         // Texto base con espacios en blanco
-        val baseTextParts = question.options[0].split("{}")
+        val baseTextParts = question.title.split("{}")
         baseTextParts.forEachIndexed { index, part ->
             Text(text = part, style = MaterialTheme.typography.bodyMedium)
             if (index < userAnswers.value.size) {
-                var expanded by remember { mutableStateOf(false) }
-                var selectedOption by remember { mutableStateOf(userAnswers.value[index]) }
-
-                Box {
-                    Text(
-                        text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
-                        modifier = Modifier
-                            .clickable { expanded = true }
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        question.options.forEach { option ->
-                            DropdownMenuItem(onClick = {
-                                selectedOption = option
-                                expanded = false
-                                val updatedAnswers = userAnswers.value.toMutableList()
-                                updatedAnswers[index] = option
-                                userAnswers.value = updatedAnswers
-                            },
-                                text = { Text(option) }
-                            )
-                        }
-                    }
-                }
+                TextField(
+                    value = userAnswers.value[index],
+                    onValueChange = { newAnswer ->
+                        val updatedAnswers = userAnswers.value.toMutableList()
+                        updatedAnswers[index] = newAnswer
+                        userAnswers.value = updatedAnswers
+                    },
+                    modifier = Modifier
+                        .background(Color.LightGray)
+                        .padding(8.dp),
+                    label = { Text("Enter Answer ${index + 1}") }
+                )
             }
         }
 
@@ -741,7 +726,7 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 }
 
 @Composable
-fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
@@ -761,22 +746,38 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
         }
 
         // Texto base con espacios en blanco
-        val baseTextParts = question.options[0].split("{}")
+        val baseTextParts = question.title.split("{}")
         baseTextParts.forEachIndexed { index, part ->
             Text(text = part, style = MaterialTheme.typography.bodyMedium)
             if (index < userAnswers.value.size) {
-                TextField(
-                    value = userAnswers.value[index],
-                    onValueChange = { newAnswer ->
-                        val updatedAnswers = userAnswers.value.toMutableList()
-                        updatedAnswers[index] = newAnswer
-                        userAnswers.value = updatedAnswers
-                    },
-                    modifier = Modifier
-                        .background(Color.LightGray)
-                        .padding(8.dp),
-                    label = { Text("Enter Answer ${index + 1}") }
-                )
+                var expanded by remember { mutableStateOf(false) }
+                var selectedOption by remember { mutableStateOf(userAnswers.value[index]) }
+
+                Box {
+                    Text(
+                        text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
+                        modifier = Modifier
+                            .clickable { expanded = true }
+                            .background(Color.LightGray)
+                            .padding(8.dp)
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        question.options.forEach { option ->
+                            DropdownMenuItem(onClick = {
+                                selectedOption = option
+                                expanded = false
+                                val updatedAnswers = userAnswers.value.toMutableList()
+                                updatedAnswers[index] = option
+                                userAnswers.value = updatedAnswers
+                            },
+                                text = { Text(option) }
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -792,6 +793,7 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
         }
     }
 }
+
 
 
 

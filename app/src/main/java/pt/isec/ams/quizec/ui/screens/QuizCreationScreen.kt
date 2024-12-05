@@ -369,8 +369,6 @@ fun QuizCreationScreen(
 
                 QuestionType.P06 -> {
                     P06Question(
-                        baseTextP06 = baseTextP06,
-                        onBaseTextChange = { baseTextP06 = it },
                         options = optionsP06,
                         onOptionsChange = { optionsP06 = it },
                         correctAnswers = correctAnswersP06,
@@ -399,8 +397,6 @@ fun QuizCreationScreen(
                     P08Question(
                         questionTitle = "Complete the sentence",
                         onTitleChange = { questionTitle = it },
-                        baseTextP08 = baseTextP08,
-                        onBaseTextChange = { baseTextP08 = it },
                         answers = correctAnswersP08,
                         onAnswersChange = { correctAnswersP08 = it },
                         imageUrl = imageUrl,

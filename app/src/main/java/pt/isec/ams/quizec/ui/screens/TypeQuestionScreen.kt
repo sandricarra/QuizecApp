@@ -542,8 +542,6 @@ fun P05Question(
 fun P06Question(
     questionTitle: String,
     onTitleChange: (String) -> Unit,
-    baseTextP06: String,
-    onBaseTextChange: (String) -> Unit,
     options: List<String>,
     onOptionsChange: (List<String>) -> Unit,
     correctAnswers: List<String>,
@@ -568,15 +566,7 @@ fun P06Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
-        )
-
-        // Campo de texto para el texto base con espacios en blanco
-        TextField(
-            value = baseTextP06,
-            onValueChange = onBaseTextChange,
-            label = { Text("Enter Sentence with Blanks (use {} for blanks)") },
+            label = { Text("Enter Question Title: Enter Sentence with Blanks (use {} for blanks)") },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             placeholder = { Text("Example: The {} is {}.") }
         )
@@ -785,8 +775,6 @@ fun P07Question(
 fun P08Question(
     questionTitle: String,
     onTitleChange: (String) -> Unit,
-    baseTextP08: String,
-    onBaseTextChange: (String) -> Unit,
     answers: List<String>,
     onAnswersChange: (List<String>) -> Unit,
     imageUrl: String?,
@@ -802,15 +790,7 @@ fun P08Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
-        )
-
-        // Campo de texto para el texto base con espacios en blanco
-        TextField(
-            value = baseTextP08,
-            onValueChange = onBaseTextChange,
-            label = { Text("Enter Sentence with Blanks (use {} for blanks)") },
+            label = { Text("Enter Question Title: Enter Sentence with Blanks (use {} for blanks)") },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             placeholder = { Text("Example: The {} is {}.") }
         )
