@@ -39,6 +39,15 @@ class QuizScreenViewModel : ViewModel() {
     private val _currentQuestionIndex = mutableStateOf<Int>(-1)
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
 
+    // Estado para almacenar las respuestas correctas
+    private val _correctAnswers = mutableStateOf(0)
+    val correctAnswers: State<Int> = _correctAnswers
+
+
+    // Estado para indicar si el cuestionario ha terminado
+    private val _isQuizFinished = mutableStateOf(false)
+    val isQuizFinished: State<Boolean> = _isQuizFinished
+
     // Función para cargar el cuestionario y la primera pregunta
     fun loadQuizAndFirstQuestion(quizId: String) {
         _isLoading.value = true
@@ -92,6 +101,12 @@ class QuizScreenViewModel : ViewModel() {
             }
     }
 
+    // Función para registrar una respuesta correcta
+    fun registerCorrectAnswer() {
+        _correctAnswers.value += 1
+    }
+
+
     fun loadNextQuestion() {
         val currentIndex = currentQuestionIndex.value
         val quiz = quiz.value // Accedemos al quiz aquí para asegurarnos de que no sea null
@@ -102,8 +117,7 @@ class QuizScreenViewModel : ViewModel() {
             if (nextQuestionId != null) {
                 loadQuestionById(nextQuestionId)
             } else {
-                // Si no hay más preguntas, puedes manejar la finalización del cuestionario aquí
-                _errorMessage.value = "No more questions."
+                _isQuizFinished.value = true
             }
         }
     }
@@ -120,13 +134,9 @@ class QuizScreenViewModel : ViewModel() {
                 loadQuestionById(previousQuestionId)
             }
         } else {
-            // Si no hay pregunta anterior, puedes manejar esto aquí si lo deseas
-            _errorMessage.value = "No previous question."
+            _isQuizFinished.value = true
         }
     }
-
-
-
 }
 
 

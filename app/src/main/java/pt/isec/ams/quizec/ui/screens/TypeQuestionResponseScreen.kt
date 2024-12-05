@@ -38,9 +38,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import pt.isec.ams.quizec.data.models.Question
+import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
 
 @Composable
-fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -110,8 +111,12 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
             }
             Button(
                 onClick = {
+                    // Verificar si la respuesta está correcta
                     isCorrect = selectedAnswer == question.correctAnswers.firstOrNull()
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -137,7 +142,7 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
 
 @Composable
-fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -205,6 +210,9 @@ fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = selectedAnswer == question.correctAnswers.firstOrNull()
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -230,7 +238,7 @@ fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
 
 @Composable
-fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     var selectedAnswers by remember { mutableStateOf(setOf<String>()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -304,6 +312,9 @@ fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = selectedAnswers == question.correctAnswers.toSet()
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -329,7 +340,7 @@ fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
 
 @Composable
-fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     val (selectedPairs, setSelectedPairs) = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -439,6 +450,9 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = selectedPairs.toSet() == pairs.toSet()
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -463,7 +477,7 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 }
 
 @Composable
-fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     val items = remember { mutableStateOf(question.options.shuffled().toMutableList()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -555,6 +569,9 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = items.value == question.correctAnswers
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -580,7 +597,7 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
 
 @Composable
-fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -651,6 +668,9 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = userAnswers.value == question.correctAnswers
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -676,7 +696,7 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 
 
 @Composable
-fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     val selectedAssociations = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -781,6 +801,9 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = selectedAssociations.value.toSet() == concepts.zip(question.correctAnswers).toSet()
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -805,7 +828,7 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
 }
 
 @Composable
-fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
+fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -893,6 +916,9 @@ fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit) {
                 onClick = {
                     isCorrect = userAnswers.value == question.correctAnswers
                     isAnswerChecked = true
+                    if (isCorrect) {
+                        viewModel.registerCorrectAnswer()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
