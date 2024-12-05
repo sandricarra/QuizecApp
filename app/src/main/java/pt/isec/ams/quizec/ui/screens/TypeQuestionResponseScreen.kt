@@ -70,7 +70,8 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
         ) {
             RadioButton(
                 selected = selectedAnswer == "True",
-                onClick = { selectedAnswer = "True" }
+                onClick = { if (!isAnswerChecked) selectedAnswer = "True" },
+                enabled = !isAnswerChecked
             )
             Text(text = "True", modifier = Modifier.padding(start = 8.dp))
 
@@ -78,7 +79,8 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
             RadioButton(
                 selected = selectedAnswer == "False",
-                onClick = { selectedAnswer = "False" }
+                onClick = { if (!isAnswerChecked) selectedAnswer = "False" },
+                enabled = !isAnswerChecked
             )
             Text(text = "False", modifier = Modifier.padding(start = 8.dp))
         }
@@ -173,7 +175,8 @@ fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                 ) {
                     RadioButton(
                         selected = selectedAnswer == option,
-                        onClick = { selectedAnswer = option }
+                        onClick = { if (!isAnswerChecked) selectedAnswer = option },
+                        enabled = !isAnswerChecked
                     )
                     Text(text = option, modifier = Modifier.padding(start = 8.dp))
                 }
@@ -270,12 +273,15 @@ fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     Checkbox(
                         checked = selectedAnswers.contains(option),
                         onCheckedChange = { isChecked ->
-                            selectedAnswers = if (isChecked) {
-                                selectedAnswers + option
-                            } else {
-                                selectedAnswers - option
+                            if (!isAnswerChecked) {
+                                selectedAnswers = if (isChecked) {
+                                    selectedAnswers + option
+                                } else {
+                                    selectedAnswers - option
+                                }
                             }
-                        }
+                        },
+                        enabled = !isAnswerChecked
                     )
                     Text(text = option, modifier = Modifier.padding(start = 8.dp))
                 }
@@ -391,7 +397,7 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { expanded = true }
+                            .clickable(enabled = !isAnswerChecked) { expanded = true }
                             .background(Color.LightGray)
                             .padding(8.dp)
                     )
@@ -402,15 +408,17 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         shuffledRightOptions.forEach { right ->
                             DropdownMenuItem(
                                 onClick = {
-                                    selectedOption = right
-                                    expanded = false
-                                    val updatedPairs = selectedPairs.toMutableList()
-                                    if (index < updatedPairs.size) {
-                                        updatedPairs[index] = left to right
-                                    } else {
-                                        updatedPairs.add(left to right)
+                                    if (!isAnswerChecked) {
+                                        selectedOption = right
+                                        expanded = false
+                                        val updatedPairs = selectedPairs.toMutableList()
+                                        if (index < updatedPairs.size) {
+                                            updatedPairs[index] = left to right
+                                        } else {
+                                            updatedPairs.add(left to right)
+                                        }
+                                        setSelectedPairs(updatedPairs)
                                     }
-                                    setSelectedPairs(updatedPairs)
                                 },
                                 text = { Text(right) }
                             )
@@ -521,7 +529,9 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         updatedItems[index - 1] = temp
                         items.value = updatedItems
                     }
-                }) {
+                },
+                    enabled = !isAnswerChecked
+                    ) {
                     Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move up")
                 }
 
@@ -533,7 +543,9 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         updatedItems[index + 1] = temp
                         items.value = updatedItems
                     }
-                }) {
+                },
+                    enabled = !isAnswerChecked
+                    ) {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move down")
                 }
             }
@@ -626,9 +638,11 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                 TextField(
                     value = userAnswers.value[index],
                     onValueChange = { newAnswer ->
-                        val updatedAnswers = userAnswers.value.toMutableList()
-                        updatedAnswers[index] = newAnswer
-                        userAnswers.value = updatedAnswers
+                        if (!isAnswerChecked) {
+                            val updatedAnswers = userAnswers.value.toMutableList()
+                            updatedAnswers[index] = newAnswer
+                            userAnswers.value = updatedAnswers
+                        }
                     },
                     modifier = Modifier
                         .background(Color.LightGray)
@@ -753,15 +767,17 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         definitions.forEach { definition ->
                             DropdownMenuItem(
                                 onClick = {
-                                    selectedDefinition = definition
-                                    expanded = false
-                                    val updatedAssociations = selectedAssociations.value.toMutableList()
-                                    if (index < updatedAssociations.size) {
-                                        updatedAssociations[index] = concept to definition
-                                    } else {
-                                        updatedAssociations.add(concept to definition)
+                                    if (!isAnswerChecked) {
+                                        selectedDefinition = definition
+                                        expanded = false
+                                        val updatedAssociations = selectedAssociations.value.toMutableList()
+                                        if (index < updatedAssociations.size) {
+                                            updatedAssociations[index] = concept to definition
+                                        } else {
+                                            updatedAssociations.add(concept to definition)
+                                        }
+                                        selectedAssociations.value = updatedAssociations
                                     }
-                                    selectedAssociations.value = updatedAssociations
                                 },
                                 text = { Text(definition) }
                             )
@@ -872,11 +888,13 @@ fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         question.options.forEach { option ->
                             DropdownMenuItem(
                                 onClick = {
-                                    selectedOption = option
-                                    expanded = false
-                                    val updatedAnswers = userAnswers.value.toMutableList()
-                                    updatedAnswers[index] = option
-                                    userAnswers.value = updatedAnswers
+                                    if (!isAnswerChecked) {
+                                        selectedOption = option
+                                        expanded = false
+                                        val updatedAnswers = userAnswers.value.toMutableList()
+                                        updatedAnswers[index] = option
+                                        userAnswers.value = updatedAnswers
+                                    }
                                 },
                                 text = { Text(option) }
                             )
