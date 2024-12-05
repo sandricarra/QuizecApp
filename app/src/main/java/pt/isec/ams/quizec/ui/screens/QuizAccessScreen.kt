@@ -14,25 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
+
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
-import pt.isec.ams.quizec.utils.LocationUtils
-import pt.isec.ams.quizec.utils.calculateDistance
+
 
 @Composable
 fun QuizAccessScreen(
     viewModel: QuizScreenViewModel = viewModel(),
-    isGeolocationRestricted: Boolean,
-    isLocationValid: () -> Unit, // Tipo de parámetro explícito
-    onError: (String) -> Unit // Tipo de parámetro explícito
 ) {
     var quizId by remember { mutableStateOf("") }
     var locationError by remember { mutableStateOf("") }
@@ -46,9 +36,6 @@ fun QuizAccessScreen(
 
     val context = LocalContext.current
 
-    fun addParticipant(quizId: String, userId: String) { /* Función existente */ }
-
-    fun checkAccess(quizId: String) { /* Función existente */ }
 
     fun nextQuestion() {
         viewModel.loadNextQuestion()
@@ -58,17 +45,10 @@ fun QuizAccessScreen(
         viewModel.loadPreviousQuestion()
     }
 
-    fun checkLocation(quizId: String) { /* Función existente */ }
 
     fun loadQuiz() {
         if (quizId.isNotBlank()) {
             viewModel.loadQuizAndFirstQuestion(quizId)
-            if (isGeolocationRestricted) {
-                checkLocation(quizId)
-            } else {
-                isLocationValidState = true
-                isLocationValid()
-            }
             isQuizStarted = true // Cambiar al estado de inicio del quiz
         }
     }

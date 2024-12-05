@@ -66,19 +66,7 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
 
         composable("quizAccessScreen/{quizId}") {
             val viewModel = viewModel<QuizScreenViewModel>()
-            val isGeolocationRestricted by viewModel.isGeolocationRestricted.collectAsState()
-
-            QuizAccessScreen(
-                viewModel = viewModel,
-                isLocationValid = {
-                    // Acción cuando la ubicación es válida
-                    println("Location is valid, proceeding with quiz participation.")
-                },
-                onError = { errorMessage ->
-                    println("Error: $errorMessage")
-                },
-                isGeolocationRestricted = isGeolocationRestricted
-            )
+            QuizAccessScreen( viewModel = viewModel)
         }
 
 

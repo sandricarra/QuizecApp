@@ -1,10 +1,6 @@
 package pt.isec.ams.quizec.viewmodel
 
-import android.content.Context
-import android.location.Location
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,7 +11,6 @@ import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.utils.IdGenerator
 import pt.isec.ams.quizec.utils.IdGeneratorQ
-import pt.isec.ams.quizec.utils.LocationUtils
 
 class QuizCreationViewModel : ViewModel() {
 
@@ -29,10 +24,6 @@ class QuizCreationViewModel : ViewModel() {
     // Exposición de la lista de preguntas como solo lectura
     val questions: List<Question> get() = _questions
 
-    // Estado para isGeolocationRestricted
-    private val _isGeolocationRestricted = mutableStateOf(false)
-    val isGeolocationRestricted: State<Boolean> get() = _isGeolocationRestricted
-
     private fun generateUniqueQuizId(): String {
         return IdGenerator.generateUniqueQuizId() // Usa la clase utilitaria
     }
@@ -40,21 +31,7 @@ class QuizCreationViewModel : ViewModel() {
         return IdGeneratorQ.generateUniqueQuizCode() // Usa la clase utilitaria
     }
 
-    // Función para actualizar isGeolocationRestricted
-    fun setGeolocationRestricted(value: Boolean) {
-        _isGeolocationRestricted.value = value
-    }
 
-    private val creatorLocation = Location("creator").apply {
-        latitude = 40.7128 // Latitud del creador
-        longitude = -74.0060 // Longitud del creador
-    }
-
-    private val _locationError = mutableStateOf("")
-    val locationError: State<String> get() = _locationError
-
-    private val _isLocationValid = mutableStateOf(false)
-    val isLocationValid: State<Boolean> get() = _isLocationValid
     // Función para guardar un cuestionario en Firebase Firestore
     fun saveQuiz(
         title: String,  // Título del cuestionario
@@ -95,8 +72,6 @@ class QuizCreationViewModel : ViewModel() {
                 timeLimit = timeLimit,
                 isAccessControlled = isAccessControlled,
                 showResultsImmediately = showResultsImmediately,
-                location = if (isGeolocationRestricted) GeoPoint(creatorLocation.latitude, creatorLocation.longitude) else null // Guardar la ubicación del creador si está restringido
-
             )
 
             // Guardar el cuestionario en Firestore
@@ -131,27 +106,7 @@ class QuizCreationViewModel : ViewModel() {
         )
 
         _questions.add(newQuestion) // Agregar a la lista local
-
-
-
     }
-
-    fun updateAccessCode(quizId: String, onSuccess: () -> Unit, onError: (Exception) -> Unit) {
-        // Genera un código único para el quiz (quizId como código de acceso)
-        val newAccessCode = quizId  // Usamos el quizId como código de acceso
-
-        // Actualiza el campo `accessCode` en Firestore para este cuestionario
-        firestore.collection("quizzes").document(quizId)
-            .update("accessCode", newAccessCode)
-            .addOnSuccessListener {
-                onSuccess() // Llamar a onSuccess cuando se actualiza correctamente
-            }
-            .addOnFailureListener { exception ->
-                onError(exception) // Llamar a onError si ocurre algún problema
-            }
-    }
-
-
 
 }
 

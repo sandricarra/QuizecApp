@@ -36,7 +36,6 @@ fun QuizCreationScreen(
     var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se guarda el cuestionario
     var imageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen seleccionada
     var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
-    var locationErrorMessage by remember { mutableStateOf("") }
     var timeLimit by remember { mutableLongStateOf(0L) } // Límite de tiempo del cuestionario
     var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
     var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
@@ -58,9 +57,6 @@ fun QuizCreationScreen(
 
     var itemsP05 by remember { mutableStateOf(listOf("Item 1", "Item 2")) }
 
-    // Texto base con espacios en blanco representados por un marcador (por ejemplo, "[...]")
-    var baseTextP06 by remember { mutableStateOf("Complete the sentence: The [...] is shining.") }
-
     // Lista de opciones posibles para completar los espacios en blanco
     var optionsP06 by remember { mutableStateOf(listOf("sun", "moon", "star")) }
 
@@ -70,25 +66,12 @@ fun QuizCreationScreen(
     var associationsP07 = remember { mutableStateListOf<Pair<String, String>>() }
     val imageUrlP07 by remember { mutableStateOf<String?>(null) }
 
-    var baseTextP08 by remember { mutableStateOf("Complete the sentence: The [...] is shining.") }
-
-
-
-
     var correctAnswersP08 by remember { mutableStateOf(listOf("sun")) }
-
 
     var optionsP08 by remember { mutableStateOf(listOf("sun", "moon", "star")) }
 
-
-
-
-
-
     // Estado para gestionar la visibilidad del menú desplegable
     var isDropdownOpen by remember { mutableStateOf(false) }
-
-
 
     // Función para limpiar los campos después de añadir una pregunta
     val onUpdate: () -> Unit = {
@@ -204,7 +187,6 @@ fun QuizCreationScreen(
                     checked = isGeolocationRestricted,
                     onCheckedChange = {
                         isGeolocationRestricted = it
-                        viewModel.setGeolocationRestricted(it) // Actualizar el valor en el ViewModel
                     }
                 )
             }
@@ -629,10 +611,7 @@ fun QuizCreationScreen(
                     modifier = Modifier.padding(8.dp)
                 )
             }
-
         }
-
-
     }
 }
 
