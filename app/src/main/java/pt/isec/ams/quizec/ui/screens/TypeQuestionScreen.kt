@@ -775,6 +775,7 @@ fun P07Question(
 fun P08Question(
     questionTitle: String,
     onTitleChange: (String) -> Unit,
+    onOptionsChange: (List<String>) -> Unit,
     answers: List<String>,
     onAnswersChange: (List<String>) -> Unit,
     imageUrl: String?,

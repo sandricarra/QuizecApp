@@ -94,9 +94,9 @@ fun QuizCreationScreen(
     ) {
         // Mostrar la imagen seleccionada (si existe)
         item {
-            if (imageUrl != null) {
+            if (imageUri != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(imageUrl),
+                    painter = rememberAsyncImagePainter(imageUri),
                     contentDescription = "Selected Image",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -377,12 +377,13 @@ fun QuizCreationScreen(
 
                 QuestionType.P08 -> {
                     P08Question(
-                        questionTitle = "Complete the sentence",
+                        questionTitle = questionTitle,
                         onTitleChange = { questionTitle = it },
                         answers = correctAnswersP08,
                         onAnswersChange = { correctAnswersP08 = it },
                         imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it }
+                        onImageChange = { imageUrl = it },
+                        onOptionsChange = { optionsP08 = it }
                     )
                 }
 
@@ -485,6 +486,7 @@ fun QuizCreationScreen(
                         questionType = questionType,
                         questionTitle = questionTitle,
                         options = optionsP08,
+
                         correctAnswers = correctAnswersP08,
                         imageUrl = imageUrl,
                         onUpdate = onUpdate,

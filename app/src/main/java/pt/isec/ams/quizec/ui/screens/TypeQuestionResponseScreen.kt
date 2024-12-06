@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil3.compose.rememberAsyncImagePainter
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
@@ -843,6 +844,8 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
     }
 }
 
+
+
 @Composable
 fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
@@ -885,7 +888,7 @@ fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        question.options.forEach { option ->
+                        question.correctAnswers.forEach { option ->
                             DropdownMenuItem(
                                 onClick = {
                                     if (!isAnswerChecked) {
