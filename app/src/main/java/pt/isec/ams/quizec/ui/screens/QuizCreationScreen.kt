@@ -1,7 +1,7 @@
 package pt.isec.ams.quizec.ui.screens
 
 import android.net.Uri
-import android.widget.Toast
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -522,7 +522,7 @@ fun QuizCreationScreen(
             Button(
                 onClick = {
                     isLoading = true
-                    if (!title.text.isBlank() && !description.text.isBlank() && timeLimit > 0 && viewModel.questions.isNotEmpty()) {
+                    if (title.text.isNotBlank() && description.text.isNotBlank() && timeLimit > 0 && viewModel.questions.isNotEmpty()) {
                     viewModel.saveQuiz(
                         title = title.text,
                         description = description.text,
@@ -546,7 +546,7 @@ fun QuizCreationScreen(
                     )
                 }
                           },
-                enabled = !isLoading && !title.toString().isBlank() && description.toString().isNotBlank() && timeLimit > 0 && viewModel.questions.isNotEmpty(),
+                enabled = !isLoading && title.toString().isNotBlank() && description.toString().isNotBlank() && timeLimit > 0 && viewModel.questions.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (isLoading) {
