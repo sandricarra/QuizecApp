@@ -4,17 +4,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
-
 class QuizScreenViewModel : ViewModel() {
-
-    // Estado para isGeolocationRestricted
-    private val _isGeolocationRestricted = MutableStateFlow(false) // Valor inicial
-    val isGeolocationRestricted: StateFlow<Boolean> get() = _isGeolocationRestricted
-
 
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -34,7 +26,6 @@ class QuizScreenViewModel : ViewModel() {
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
 
-
     // Estado para almacenar el índice de la pregunta actual
     private val _currentQuestionIndex = mutableStateOf<Int>(-1)
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
@@ -43,10 +34,13 @@ class QuizScreenViewModel : ViewModel() {
     private val _correctAnswers = mutableStateOf(0)
     val correctAnswers: State<Int> = _correctAnswers
 
-
     // Estado para indicar si el cuestionario ha terminado
     private val _isQuizFinished = mutableStateOf(false)
     val isQuizFinished: State<Boolean> = _isQuizFinished
+
+    // Estado para el tiempo restante
+    private val _timeRemaining = mutableStateOf<Long?>(null)
+    val timeRemaining: State<Long?> = _timeRemaining
 
     // Función para cargar el cuestionario y la primera pregunta
     fun loadQuizAndFirstQuestion(quizId: String) {
@@ -58,85 +52,92 @@ class QuizScreenViewModel : ViewModel() {
                 if (document.exists()) {
                     val quiz = document.toObject(Quiz::class.java)
                     _quiz.value = quiz
-
-                    // Cargar la primera pregunta a partir de los IDs de las preguntas en el quiz
-                    quiz?.questions?.firstOrNull()?.let { questionId ->
-                        loadQuestionById(questionId)
-                    } ?: run {
-                        _isLoading.value = false
-                    }
+                    quiz?.questions?.firstOrNull()?.let { loadQuestionById(it) }
+                    _timeRemaining.value = quiz?.timeLimit?.toLong()?.times(60) // minutes to seconds
                 } else {
-                    _errorMessage.value = "Quiz not found"
-                    _isLoading.value = false
+                    handleError("Quiz not found")
                 }
             }
             .addOnFailureListener { exception ->
-                _errorMessage.value = exception.message
-                _isLoading.value = false
+                handleError(exception.message ?: "Error loading quiz")
             }
     }
 
-    // Función para cargar una pregunta usando el ID de la pregunta
     private fun loadQuestionById(questionId: String) {
+        _isLoading.value = true // Inicia el estado de carga
         firestore.collection("questions").document(questionId).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     val question = document.toObject(Question::class.java)
-                    _question.value = question
-
-                    // Actualizar el índice de la pregunta actual
-                    _quiz.value?.questions?.let { questions ->
-                        _currentQuestionIndex.value = questions.indexOf(questionId)
-                    } ?: run {
-                        _currentQuestionIndex.value = -1
+                    if (question != null) {
+                        _question.value = question
+                        updateQuestionIndex(questionId)
+                    } else {
+                        handleError("Question data is null")
                     }
                 } else {
-                    _errorMessage.value = "Question not found"
+                    handleError("Question with ID $questionId not found")
                 }
-                _isLoading.value = false
+                _isLoading.value = false // Termina el estado de carga
             }
             .addOnFailureListener { exception ->
-                _errorMessage.value = exception.message
-                _isLoading.value = false
+                handleError("Error loading question: ${exception.message}")
+                _isLoading.value = false // Termina el estado de carga
             }
+    }
+
+    private fun updateQuestionIndex(questionId: String) {
+        val index = _quiz.value?.questions?.indexOf(questionId) ?: -1
+        if (index != -1) {
+            _currentQuestionIndex.value = index
+        } else {
+            handleError("Question ID $questionId not found in the quiz")
+        }
+    }
+
+    private fun handleError(message: String) {
+        _errorMessage.value = message
+        _isLoading.value = false
+    }
+
+    fun loadNextQuestion() {
+        navigateToQuestion(1)
+    }
+
+    fun loadPreviousQuestion() {
+        navigateToQuestion(-1)
+    }
+
+    private fun navigateToQuestion(step: Int) {
+        val currentIndex = currentQuestionIndex.value
+        val questions = quiz.value?.questions ?: return
+
+        val newIndex = currentIndex + step
+        if (newIndex in questions.indices) {
+            loadQuestionById(questions[newIndex])
+        } else if (step > 0) {
+            _isQuizFinished.value = true
+        }
+    }
+
+    fun finishQuiz() {
+        _isQuizFinished.value = true
+        _isLoading.value = false // Detener cualquier indicador de carga
+    }
+
+    fun decrementTimeRemaining() {
+        _timeRemaining.value = _timeRemaining.value?.minus(1)?.coerceAtLeast(0)
+        if (_timeRemaining.value == 0L) {
+            finishQuiz()
+        }
     }
 
     // Función para registrar una respuesta correcta
     fun registerCorrectAnswer() {
         _correctAnswers.value += 1
     }
-
-
-    fun loadNextQuestion() {
-        val currentIndex = currentQuestionIndex.value
-        val quiz = quiz.value // Accedemos al quiz aquí para asegurarnos de que no sea null
-        if (currentIndex != -1 && quiz != null) {  // Verificamos que quiz no sea null
-            val nextIndex = currentIndex + 1
-            val nextQuestionId =
-                quiz.questions.getOrNull(nextIndex) // Accedemos a la lista de IDs de preguntas
-            if (nextQuestionId != null) {
-                loadQuestionById(nextQuestionId)
-            } else {
-                _isQuizFinished.value = true
-            }
-        }
-    }
-
-    // Función para cargar la pregunta anterior
-    fun loadPreviousQuestion() {
-        val currentIndex = currentQuestionIndex.value
-        val quiz = quiz.value // Accedemos al quiz aquí para asegurarnos de que no sea null
-        if (currentIndex > 0 && quiz != null) {  // Verificamos que quiz no sea null
-            val previousIndex = currentIndex - 1
-            val previousQuestionId =
-                quiz.questions.getOrNull(previousIndex) // Accedemos a la lista de IDs de preguntas
-            if (previousQuestionId != null) {
-                loadQuestionById(previousQuestionId)
-            }
-        } else {
-            _isQuizFinished.value = true
-        }
-    }
 }
+
+
 
 

@@ -1,6 +1,7 @@
 package pt.isec.ams.quizec.ui.screens
 
 import android.net.Uri
+import android.widget.Toast
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -39,7 +40,7 @@ fun QuizCreationScreen(
     var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se guarda el cuestionario
     var imageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen seleccionada
     var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
-    var timeLimit by remember { mutableLongStateOf(0L) } // Límite de tiempo del cuestionario
+    var timeLimit by remember { mutableStateOf<Long?>(null) } // Límite de tiempo del cuestionario
     var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
     var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
     var showResultsImmediately by remember { mutableStateOf(false) } // Mostrar resultados inmediatamente después de terminar
@@ -160,12 +161,10 @@ fun QuizCreationScreen(
         // Campo para el límite de tiempo del cuestionario
         item {
             OutlinedTextField(
-                value = timeLimit.toString(),
+                value = timeLimit?.toString() ?: "",
                 onValueChange = {
                     // Validar que el valor ingresado sea un número
-                    timeLimit =
-                        (it.toIntOrNull()
-                            ?: timeLimit).toLong() // Si no es un número, mantener el valor anterior
+                    timeLimit = it.toLongOrNull() // Si no es un número, será null
                 },
                 label = { Text("Time Limit (minutes)") },
                 modifier = Modifier.fillMaxWidth(),
@@ -496,12 +495,7 @@ fun QuizCreationScreen(
                         viewModel = viewModel
                     )
                 }
-
-
-                // Agregar más tipos de preguntas si es necesario
-                else -> {
-
-                }
+                else -> {}
             }
         }
 
@@ -522,13 +516,13 @@ fun QuizCreationScreen(
             Button(
                 onClick = {
                     isLoading = true
-                    if (title.text.isNotBlank() && description.text.isNotBlank() && timeLimit > 0 && viewModel.questions.isNotEmpty()) {
+                    if (title.text.isNotBlank() &&
+                        viewModel.questions.isNotEmpty()) {
                     viewModel.saveQuiz(
                         title = title.text,
                         description = description.text,
-                        // questions = viewModel.questions.map { it.id },
                         imageUrl = imageUri?.toString(),
-                        timeLimit = timeLimit.toInt(),
+                        timeLimit = timeLimit?.toInt(),
                         creatorId = creatorId,
                         isGeolocationRestricted = isGeolocationRestricted,
                         isAccessControlled = isAccessControlled,
@@ -545,8 +539,13 @@ fun QuizCreationScreen(
                         }
                     )
                 }
+                    else {
+                        isLoading = false // Si falla la validación, asegurarse de desactivar el loading
+                    }
                           },
-                enabled = !isLoading && title.toString().isNotBlank() && description.toString().isNotBlank() && timeLimit > 0 && viewModel.questions.isNotEmpty(),
+                enabled = !isLoading &&
+                        title.toString().isNotBlank() &&
+                        viewModel.questions.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (isLoading) {

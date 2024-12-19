@@ -69,16 +69,38 @@ class QuizHistoryViewModel : ViewModel() {
         return sdf.format(Date(timestamp))
     }
 
-    // Función para eliminar un cuestionario de Firestore
+    // Función para eliminar un cuestionario y sus preguntas asociadas de Firestore
     fun deleteQuiz(quizId: String) {
-        db.collection("quizzes").document(quizId)
-            .delete()
-            .addOnSuccessListener {
-                // Recargar la lista de cuestionarios tras eliminar
-                loadQuizzes()
+        // Obtener el cuestionario
+        db.collection("quizzes").document(quizId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val quiz = document.toObject(Quiz::class.java)
+                    if (quiz != null) {
+                        // Eliminar todas las preguntas asociadas
+                        val batch = db.batch()
+                        quiz.questions.forEach { questionId ->
+                            val questionRef = db.collection("questions").document(questionId)
+                            batch.delete(questionRef)
+                        }
+                        // Eliminar el cuestionario
+                        val quizRef = db.collection("quizzes").document(quizId)
+                        batch.delete(quizRef)
+
+                        // Ejecutar el batch
+                        batch.commit()
+                            .addOnSuccessListener {
+                                // Recargar la lista de cuestionarios tras eliminar
+                                loadQuizzes()
+                            }
+                            .addOnFailureListener { exception ->
+                                println("Error deleting quiz and questions: ${exception.message}")
+                            }
+                    }
+                }
             }
             .addOnFailureListener { exception ->
-                println("Error deleting quiz: ${exception.message}")
+                println("Error fetching quiz: ${exception.message}")
             }
     }
 
