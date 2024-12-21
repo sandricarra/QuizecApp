@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.QuestionType
@@ -35,9 +36,9 @@ class QuizCreationViewModel : ViewModel() {
     fun saveQuiz(
         title: String,  // Título del cuestionario
         description: String,  // Descripción del cuestionario
-        //questions: List<String>,  // Lista de preguntas del cuestionario
         imageUrl: String?,  // URL de la imagen asociada al cuestionario
         isGeolocationRestricted: Boolean,  // Si el cuestionario está restringido por geolocalización
+        location: GeoPoint?, // Ubicación del creador
         timeLimit: Int?,  // Límite de tiempo del cuestionario en minutos
         isAccessControlled: Boolean,  // Si el acceso al cuestionario está controlado
         showResultsImmediately: Boolean,  // Si los resultados se muestran inmediatamente
@@ -68,6 +69,7 @@ class QuizCreationViewModel : ViewModel() {
                 questions = questionIds, // Asociar los IDs de las preguntas al cuestionario
                 imageUrl = imageUrl,
                 isGeolocationRestricted = isGeolocationRestricted,
+                location = location, // Guardar la ubicación si está disponible
                 timeLimit = timeLimit,
                 isAccessControlled = isAccessControlled,
                 showResultsImmediately = showResultsImmediately,

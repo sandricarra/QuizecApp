@@ -1,5 +1,7 @@
 package pt.isec.ams.quizec.ui.screens
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 
@@ -24,7 +26,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.rememberAsyncImagePainter
-
+import com.google.firebase.firestore.GeoPoint
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import android.Manifest
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
 
@@ -42,11 +50,14 @@ fun QuizCreationScreen(
     var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
     var timeLimit by remember { mutableStateOf<Long?>(null) } // Límite de tiempo del cuestionario
     var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
+    var creatorLocation by remember { mutableStateOf<GeoPoint?>(null) }
     var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
     var showResultsImmediately by remember { mutableStateOf(false) } // Mostrar resultados inmediatamente después de terminar
     var showAccessCodeScreen by remember { mutableStateOf(false) } // Controla la visibilidad de la pantalla de código
     var savedQuizId by remember { mutableStateOf<String?>(null) } // ID del cuestionario guardado
 
+    val context = LocalContext.current
+    val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     // Variables relacionadas con el tipo de pregunta
     var questionType by remember { mutableStateOf<QuestionType?>(null) }
@@ -77,6 +88,7 @@ fun QuizCreationScreen(
     // Estado para gestionar la visibilidad del menú desplegable
     var isDropdownOpen by remember { mutableStateOf(false) }
 
+
     // Función para limpiar los campos después de añadir una pregunta
     val onUpdate: () -> Unit = {
         questionTitle = ""
@@ -88,6 +100,51 @@ fun QuizCreationScreen(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri -> imageUri = uri }
     )
+
+    // Función para obtener la ubicación
+    fun requestLocation(
+        context: Context,
+        fusedLocationProviderClient: FusedLocationProviderClient,
+        onLocationRetrieved: (GeoPoint?) -> Unit
+    ) {
+        fusedLocationProviderClient.lastLocation
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    onLocationRetrieved(GeoPoint(location.latitude, location.longitude))
+                } else {
+                    Toast.makeText(context, "No se pudo obtener la ubicación.", Toast.LENGTH_LONG).show()
+                    onLocationRetrieved(null)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Error al obtener la ubicación.", Toast.LENGTH_LONG).show()
+                onLocationRetrieved(null)
+            }
+    }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                requestLocation(
+                    context,
+                    fusedLocationProviderClient
+                ) { location ->
+                    creatorLocation = location
+                }
+            } else {
+                Toast.makeText(
+                    context,
+                    "Ubicación no permitida. No se puede habilitar la restricción por geolocalización.",
+                    Toast.LENGTH_LONG
+                ).show()
+                isGeolocationRestricted = false
+            }
+        }
+    )
+
+
 
     // LazyColumn para organizar la UI del cuestionario
     LazyColumn(
@@ -185,10 +242,29 @@ fun QuizCreationScreen(
                     text = "Restrict by Geolocation",
                     modifier = Modifier.weight(1f)
                 )
+                // Al cambiar el switch de restricción geográfica, obtener la ubicación
                 Switch(
                     checked = isGeolocationRestricted,
-                    onCheckedChange = {
-                        isGeolocationRestricted = it
+                    onCheckedChange = { isChecked ->
+                        isGeolocationRestricted = isChecked
+                        if (isChecked) {
+                            val permissionStatus = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            )
+                            if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+                                requestLocation(
+                                    context,
+                                    fusedLocationProviderClient
+                                ) { location ->
+                                    creatorLocation = location
+                                }
+                            } else {
+                                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            }
+                        } else {
+                            creatorLocation = null
+                        }
                     }
                 )
             }
@@ -525,6 +601,7 @@ fun QuizCreationScreen(
                         timeLimit = timeLimit?.toInt(),
                         creatorId = creatorId,
                         isGeolocationRestricted = isGeolocationRestricted,
+                        location = creatorLocation,
                         isAccessControlled = isAccessControlled,
                         showResultsImmediately = showResultsImmediately,
 
