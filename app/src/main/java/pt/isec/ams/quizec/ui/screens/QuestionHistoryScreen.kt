@@ -6,13 +6,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.viewmodel.QuestionHistoryViewModel
 
 @Composable
@@ -23,7 +21,7 @@ fun QuestionHistoryScreen(
 ) {
     // Observar las preguntas del cuestionario desde el ViewModel
     val questions = viewModel.questions.collectAsState(initial = emptyList())
-    val coroutineScope = rememberCoroutineScope()
+
 
     // Cargar preguntas al entrar en la pantalla
     LaunchedEffect(quizId) {
@@ -58,7 +56,7 @@ fun QuestionHistoryScreen(
                         Row {
                             Button(
                                 onClick = {
-                                    navController.navigate("questionEdit/${question.id}")
+                                    navController.navigate("editQuestion/${question.id}")
                                 },
                                 modifier = Modifier.padding(end = 8.dp)
                             ) {

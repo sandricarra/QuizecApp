@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import coil3.compose.rememberAsyncImagePainter
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel

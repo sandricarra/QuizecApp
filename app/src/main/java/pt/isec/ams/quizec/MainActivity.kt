@@ -15,8 +15,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pt.isec.ams.quizec.ui.screens.*
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
@@ -75,6 +73,7 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
             QuestionHistoryScreen(navController = navController, quizId = quizId)
         }
 
+
         composable("quizCreation") {
             QuizCreationScreen(
                 creatorId = authViewModel.creatorId, // Pasa el creatorId al crear el quiz
@@ -88,8 +87,18 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
             QuizAccessCodeScreen(quizId = quizId)
         }
+
+        composable("editQuestion/{questionId}") { backStackEntry ->
+            val questionId = backStackEntry.arguments?.getString("questionId") ?: ""
+            EditQuestionScreen(
+                questionId = questionId,
+                navController = navController
+            )
+        }
+
     }
 }
+
 
 
 
