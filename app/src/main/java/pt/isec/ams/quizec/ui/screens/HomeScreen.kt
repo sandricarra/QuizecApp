@@ -50,18 +50,9 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
 
     // Lista de participantes en espera
 
-    fun toggleAllQuizzesStatus() {
-        viewModel.toggleAllQuizzesStatus(creatorId, context) { newStatus ->
-            quizStatus =
-                newStatus // Actualiza el estado con el valor correcto después de la actualización
-        }
-    }
 
-    LaunchedEffect(creatorId) {
-        viewModel.getParticipants(creatorId) { updatedParticipants ->
-            participants = updatedParticipants
-        }
-    }
+
+
     // LazyColumn para mostrar una lista desplazable de elementos.
     LazyColumn(
         modifier = Modifier
@@ -165,6 +156,22 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
                 )
             }
         }
+        item {
+            Button(
+                onClick = { navController.navigate("manageQuiz") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Cambia el color de fondo del botón.
+            ) {
+                Text(
+                    "Manage Quiz", // Texto dentro del botón.
+                    color = Color.White, // Color de texto blanco para contraste.
+                    style = MaterialTheme.typography.titleMedium // Estilo de texto del botón.
+                )
+            }
+        }
+
 
         // Séptimo item de la lista: botón para cerrar sesión.
         item {
@@ -189,24 +196,7 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
             }
         }
 
-        item {
-            // Aquí va el resto del contenido...
 
-            // Botón para alternar el estado de todos los cuestionarios
-            if (creatorId.isNotBlank()) {
-                Button(
-                    onClick = { toggleAllQuizzesStatus() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                ) {
-                    Text(
-                        text = "Start quizzes ?:  ${quizStatus.name}", // Muestra el estado actual del quiz
-                        color = Color.White
-                    )
-                }
-            }
-        }
         item {
             if (participants.isNotEmpty()) {
                 Text(

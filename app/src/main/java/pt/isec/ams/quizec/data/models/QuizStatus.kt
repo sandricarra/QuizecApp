@@ -5,6 +5,7 @@ enum class QuizStatus {
     AVAILABLE,
     COMPLETED,
     LOCKED,
-    IN_PROGRESS
+    IN_PROGRESS,
+    WAITING
 
 }

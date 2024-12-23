@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec
 
+import ManageQuizScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ import pt.isec.ams.quizec.ui.screens.*
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
 import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
+import pt.isec.ams.quizec.viewmodel.ManageQuizViewModel
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
 import pt.isec.ams.quizec.viewmodel.RegisterViewModel
 
@@ -66,7 +68,7 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
 
         composable("quizAccessScreen/{quizId}") {
             val viewModel = viewModel<QuizScreenViewModel>()
-            QuizAccessScreen( viewModel = viewModel)
+            QuizAccessScreen( viewModel = viewModel,authViewModel.creatorId)
         }
 
 
@@ -97,6 +99,10 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
                 navController = navController
             )
         }
+        composable("manageQuiz") {
+            ManageQuizScreen(navController = navController,creatorId = authViewModel.creatorId, viewModel = viewModel<ManageQuizViewModel>())
+        }
+
 
     }
 }

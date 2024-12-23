@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec.data.models
 
+import User
 import com.google.firebase.firestore.GeoPoint
 
 

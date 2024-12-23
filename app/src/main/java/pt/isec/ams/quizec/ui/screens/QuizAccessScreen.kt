@@ -26,7 +26,7 @@ import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
 
 @Composable
 fun QuizAccessScreen(
-    viewModel: QuizScreenViewModel = viewModel(),
+    viewModel: QuizScreenViewModel = viewModel(),creatorId: String
 ) {
     var quizId by remember { mutableStateOf("") }
     var isQuizStarted by remember { mutableStateOf(false) } // Control del estado de inicio del quiz
@@ -104,18 +104,7 @@ fun QuizAccessScreen(
             isQuizStarted = true // Cambiar al estado de inicio del quiz
         }
     }
-    fun onQuizCompleted(quizId: String, id: String, viewModel: QuizScreenViewModel, context: Context) {
-        viewModel.removeParticipant(
-            quizId = quizId,
-            userName = id.toString(),
-            onSuccess = {
-                Toast.makeText(context, "Participant removed successfully!", Toast.LENGTH_SHORT).show()
-            },
-            onFailure = { exception ->
-                Toast.makeText(context, "Failed to remove participant: ${exception.message}", Toast.LENGTH_SHORT).show()
-            }
-        )
-    }
+
 
 
     fun nextQuestion() {
@@ -134,7 +123,10 @@ fun QuizAccessScreen(
     LaunchedEffect(quizId) {
         if (quizId.isNotBlank()) {
             // Bucle para verificar el estado de quizStatus
+            val userId = "CURRENT_USER_ID" // Obtén el ID del usuario actual
+            viewModel.addUserToWaitingList(quizId, userId)
             while (quizStatus != QuizStatus.AVAILABLE) {
+
                 // Espera y vuelve a verificar el estado cada 3 segundos
                 delay(3000)
                 viewModel.checkQuizStatus(quizId)
@@ -144,7 +136,7 @@ fun QuizAccessScreen(
             // El quiz está disponible, ahora cargamos el quiz y marcamos que ha sido cargado
             isQuizLoaded = true
             isQuizStarted = true
-            viewModel.logQuizParticipation(quizId, quiz?.creatorId ?: "", quiz?.title ?: "")// Marcar como cargado
+
         }
     }
 
@@ -240,12 +232,8 @@ fun QuizAccessScreen(
                 Button(
                     onClick = {
                         // Llamar a la función onQuizCompleted
-                        onQuizCompleted(
-                            quizId = quizId, // Reemplazar con el ID del cuestionario actual
-                            id = userName.toString(), // Reemplazar con el nombre del usuario actual
-                            viewModel = viewModel, // Pasar el ViewModel de la pantalla
-                            context = context // Pasar el contexto de la pantalla
-                        )
+
+                        viewModel.removeUserFromWaitingList(quiz?.id.toString(),creatorId)
                         isQuizStarted = false // Volver al estado inicial
                     },
                     modifier = Modifier.fillMaxWidth()

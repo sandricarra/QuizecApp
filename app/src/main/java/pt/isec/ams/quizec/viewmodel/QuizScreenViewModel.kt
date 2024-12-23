@@ -3,6 +3,7 @@ package pt.isec.ams.quizec.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
@@ -162,45 +163,33 @@ class QuizScreenViewModel : ViewModel() {
         _correctAnswers.value += 1
     }
 
-    fun logQuizParticipation(quizId: String, creatorId: String, userName: String) {
+
+
+    fun addUserToWaitingList(quizId: String, userId: String) {
         val db = FirebaseFirestore.getInstance()
-        val participationData = hashMapOf(
-            "quizId" to quizId,
-            "creatorId" to creatorId,
-            "userName" to userName,
-            "timestamp" to System.currentTimeMillis()
-        )
-        db.collection("quizParticipation").add(participationData)
+        val quizRef = db.collection("quizzes").document(quizId)
+
+        quizRef.update("participants", FieldValue.arrayUnion(userId))
             .addOnSuccessListener {
-                // Registro agregado exitosamente.
+                println("User $userId added to waiting list for quiz $quizId.")
             }
             .addOnFailureListener { exception ->
-                // Maneja el error aquí.
+                println("Failed to add user to waiting list: ${exception.message}")
             }
     }
-    fun removeParticipant(quizId: String, userName: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    fun removeUserFromWaitingList(quizId: String, userId: String) {
         val db = FirebaseFirestore.getInstance()
-        db.collection("quizParticipation")
-            .whereEqualTo("quizId", quizId)
-            .whereEqualTo("userName", userName)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val batch = db.batch()
-                querySnapshot.documents.forEach { document ->
-                    batch.delete(document.reference) // Marca el documento para eliminarlo
-                }
-                batch.commit() // Ejecuta la eliminación en batch
-                    .addOnSuccessListener {
-                        onSuccess() // Notifica éxito
-                    }
-                    .addOnFailureListener { exception ->
-                        onFailure(exception) // Maneja errores
-                    }
+        val quizRef = db.collection("quizzes").document(quizId)
+
+        quizRef.update("waitingUsers", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+                println("User $userId removed from waiting list for quiz $quizId.")
             }
             .addOnFailureListener { exception ->
-                onFailure(exception) // Maneja errores de la consulta
+                println("Failed to remove user from waiting list: ${exception.message}")
             }
     }
+
 
 
 
