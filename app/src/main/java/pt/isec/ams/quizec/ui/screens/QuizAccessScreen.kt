@@ -23,10 +23,13 @@ import androidx.core.app.ActivityCompat
 import android.app.Activity
 import pt.isec.ams.quizec.data.models.QuizStatus
 import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
+import androidx.activity.compose.BackHandler
+import androidx.navigation.NavController
+
 
 @Composable
-fun QuizAccessScreen(
-    viewModel: QuizScreenViewModel = viewModel(),creatorId: String
+fun QuizAccessScreen(navController: NavController,
+                     viewModel: QuizScreenViewModel = viewModel(), creatorId: String
 ) {
     var quizId by remember { mutableStateOf("") }
     var isQuizStarted by remember { mutableStateOf(false) } // Control del estado de inicio del quiz
@@ -161,6 +164,17 @@ fun QuizAccessScreen(
     }
 
     if (quiz?.status == QuizStatus.LOCKED) {
+        BackHandler {
+            // Remover el usuario de la lista de espera al retroceder
+            if (quizId.isNotBlank()) {
+                viewModel.removeUserFromWaitingList(quizId, creatorId)
+            }
+            // Navegar de vuelta al HomeScreen
+            navController.navigate("home") {
+                // Limitar el historial de navegación para evitar regresar al QuizAccessScreen
+                popUpTo("home") { inclusive = true }
+            }
+        }
         // Quiz está bloqueado, mostramos un mensaje
         Column(
             modifier = Modifier
@@ -177,6 +191,7 @@ fun QuizAccessScreen(
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator()
         }
+
     } else {
         if (!isQuizStarted) {
             // Pantalla inicial para introducir el ID del cuestionario

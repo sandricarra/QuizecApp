@@ -68,7 +68,7 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
 
         composable("quizAccessScreen/{quizId}") {
             val viewModel = viewModel<QuizScreenViewModel>()
-            QuizAccessScreen( viewModel = viewModel,authViewModel.creatorId)
+            QuizAccessScreen( navController = navController,viewModel = viewModel,authViewModel.creatorId)
         }
 
 

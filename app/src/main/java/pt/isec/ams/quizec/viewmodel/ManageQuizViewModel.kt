@@ -150,18 +150,24 @@ class ManageQuizViewModel : ViewModel() {
 
     fun loadParticipantsForQuiz(quizId: String) {
         val db = FirebaseFirestore.getInstance()
+
+        // Usamos `addSnapshotListener` para la actualización en tiempo real
         db.collection("quizzes").document(quizId)
-            .get()
-            .addOnSuccessListener { document ->
-                val quiz = document.toObject(Quiz::class.java)
-                quiz?.let {
-                    loadUsersByIds(it.participants, quizId) // Cargar los usuarios por sus IDs
+            .addSnapshotListener { documentSnapshot, exception ->
+                if (exception != null) {
+                    _message.value = "Failed to load quiz: ${exception.message}"
+                    return@addSnapshotListener
+                }
+
+                documentSnapshot?.let { document ->
+                    val quiz = document.toObject(Quiz::class.java)
+                    quiz?.let {
+                        loadUsersByIds(it.participants, quizId) // Cargar los usuarios por sus IDs
+                    }
                 }
             }
-            .addOnFailureListener { exception ->
-                _message.value = "Failed to load participants: ${exception.message}"
-            }
     }
+
     private fun loadUsersByIds(userIds: List<String>, quizId: String) {
         if (userIds.isEmpty()) {
             _participantsForQuiz[quizId]?.value = emptyList()
@@ -170,6 +176,7 @@ class ManageQuizViewModel : ViewModel() {
 
         val db = FirebaseFirestore.getInstance()
 
+        // Usamos `addSnapshotListener` para observar los cambios en tiempo real
         db.collection("users")
             .whereIn("id", userIds)
             .addSnapshotListener { snapshot, exception ->
@@ -178,13 +185,15 @@ class ManageQuizViewModel : ViewModel() {
                     return@addSnapshotListener
                 }
 
-                if (snapshot != null && !snapshot.isEmpty) {
-                    val users = snapshot.documents.mapNotNull { document ->
-                        document.toObject(User::class.java)
+                snapshot?.let { docSnapshot ->
+                    if (docSnapshot.isEmpty) {
+                        _participantsForQuiz[quizId]?.value = emptyList()
+                    } else {
+                        val users = docSnapshot.documents.mapNotNull { document ->
+                            document.toObject(User::class.java)
+                        }
+                        _participantsForQuiz[quizId]?.value = users
                     }
-                    _participantsForQuiz[quizId]?.value = users
-                } else {
-                    _participantsForQuiz[quizId]?.value = emptyList()
                 }
             }
     }
