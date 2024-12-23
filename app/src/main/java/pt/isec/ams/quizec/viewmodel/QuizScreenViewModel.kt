@@ -6,8 +6,11 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
-class QuizScreenViewModel : ViewModel() {
+import pt.isec.ams.quizec.data.models.QuizStatus
 
+class QuizScreenViewModel : ViewModel() {
+    private val _quizStatus = mutableStateOf(QuizStatus.LOCKED)
+    val quizStatus: State<QuizStatus> = _quizStatus
     private val firestore = FirebaseFirestore.getInstance()
 
     // Estado para almacenar el cuestionario
@@ -42,6 +45,16 @@ class QuizScreenViewModel : ViewModel() {
     private val _timeRemaining = mutableStateOf<Long?>(null)
     val timeRemaining: State<Long?> = _timeRemaining
 
+    fun checkQuizStatus(quizId: String) {
+        // Simulación de carga de estado del quiz desde Firebase
+        FirebaseFirestore.getInstance().collection("quizzes")
+            .document(quizId)
+            .get()
+            .addOnSuccessListener { document ->
+                val status = document.get("status") as? String
+                _quizStatus.value = QuizStatus.valueOf(status ?: "BLOCKED")
+            }
+    }
     // Función para cargar el cuestionario y la primera pregunta
     fun loadQuizAndFirstQuestion(quizId: String) {
         _isLoading.value = true

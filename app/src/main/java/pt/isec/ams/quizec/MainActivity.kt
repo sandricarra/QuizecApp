@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pt.isec.ams.quizec.ui.screens.*
 import pt.isec.ams.quizec.viewmodel.AuthViewModel
+import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
 import pt.isec.ams.quizec.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
 import pt.isec.ams.quizec.viewmodel.RegisterViewModel
@@ -58,7 +59,8 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
         composable("home") {
             HomeScreen(
                 navController = navController,
-                creatorId = authViewModel.creatorId
+                creatorId = authViewModel.creatorId,
+                viewModel = HomeScreenViewModel()
             )
         }
 

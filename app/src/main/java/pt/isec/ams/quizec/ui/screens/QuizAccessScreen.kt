@@ -1,6 +1,5 @@
 package pt.isec.ams.quizec.ui.screens
 
-
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -22,8 +21,7 @@ import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
 import androidx.core.app.ActivityCompat
 import android.app.Activity
-
-
+import pt.isec.ams.quizec.data.models.QuizStatus
 @Composable
 fun QuizAccessScreen(
     viewModel: QuizScreenViewModel = viewModel(),
@@ -38,6 +36,8 @@ fun QuizAccessScreen(
     val timeRemaining by viewModel.timeRemaining
 
     val context = LocalContext.current
+    val quizStatus by viewModel.quizStatus
+    var isQuizLoaded by remember { mutableStateOf(false) }
 
     // Estado para manejar permisos de ubicación y posición del usuario
     var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
@@ -69,14 +69,7 @@ fun QuizAccessScreen(
         }
     }
 
-    fun nextQuestion() {
-        viewModel.loadNextQuestion()
-    }
-
-    fun previousQuestion() {
-        viewModel.loadPreviousQuestion()
-    }
-
+    // Mover la función loadQuiz fuera de LaunchedEffect
     fun loadQuiz() {
         if (quizId.isNotBlank()) {
             viewModel.loadQuizAndFirstQuestion(quizId)
@@ -94,7 +87,11 @@ fun QuizAccessScreen(
 
                 // Considerar una distancia de 50 km como límite permitido
                 if (distance[0] > 50000) {
-                    Toast.makeText(context, "You are not in the allowed region for this quiz.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        "You are not in the allowed region for this quiz.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     return
                 }
             }
@@ -103,9 +100,33 @@ fun QuizAccessScreen(
         }
     }
 
+    fun nextQuestion() {
+        viewModel.loadNextQuestion()
+    }
+
+    fun previousQuestion() {
+        viewModel.loadPreviousQuestion()
+    }
+
     fun calculateResults(): String {
         val correctAnswers = viewModel.correctAnswers.value
         return "You got $correctAnswers correct."
+    }
+
+    LaunchedEffect(quizId) {
+        if (quizId.isNotBlank()) {
+            // Bucle para verificar el estado de quizStatus
+            while (quizStatus != QuizStatus.AVAILABLE) {
+                // Espera y vuelve a verificar el estado cada 3 segundos
+                delay(3000)
+                viewModel.checkQuizStatus(quizId)
+                println("Quiz status: $quizStatus")
+            }
+            viewModel.loadQuizAndFirstQuestion(quizId)
+            // El quiz está disponible, ahora cargamos el quiz y marcamos que ha sido cargado
+            isQuizLoaded = true
+            isQuizStarted = true  // Marcar como cargado
+        }
     }
 
     // Comprobar permisos de ubicación al cargar la pantalla
@@ -127,37 +148,8 @@ fun QuizAccessScreen(
         }
     }
 
-
-    if (!isQuizStarted) {
-        // Pantalla inicial para introducir el ID del cuestionario
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            TextField(
-                value = quizId,
-                onValueChange = { quizId = it },
-                label = { Text("Enter Quiz ID") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { loadQuiz() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Load Quiz")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-        }
-    } else if (isQuizFinished) {
-        // Pantalla final con los botones Check Answers y Exit Quiz
+    if (quiz?.status == QuizStatus.LOCKED) {
+        // Quiz está bloqueado, mostramos un mensaje
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -166,166 +158,191 @@ fun QuizAccessScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Quiz Finished!",
+                text = "The quiz is currently locked. Please wait for the creator to unlock it.",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    val results = calculateResults()
-                    Toast.makeText(context, results, Toast.LENGTH_LONG).show()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Check Answers")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    isQuizStarted = false // Volver al estado inicial
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Exit Quiz")
-            }
+            CircularProgressIndicator()
         }
     } else {
-        // Pantalla del cuestionario con preguntas
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            } else if (errorMessage != null) {
-                Text(
-                    text = errorMessage ?: "Unknown error",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+        if (!isQuizStarted) {
+            // Pantalla inicial para introducir el ID del cuestionario
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                TextField(
+                    value = quizId,
+                    onValueChange = { quizId = it },
+                    label = { Text("Enter Quiz ID") },
+                    modifier = Modifier.fillMaxWidth()
                 )
-            } else if (quiz != null && question != null) {
-                Text(
-                    text = "Quiz: ${quiz?.title}",
-                    style = MaterialTheme.typography.headlineMedium
-                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Mostrar el contador de tiempo restante
-                if (timeRemaining != null) {
-                    Text(
-                        text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { loadQuiz() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Load Quiz")
                 }
 
-                // Mostrar la pregunta dependiendo de su tipo
-                when (question?.type) {
-                    QuestionType.P01 -> {
-                        P01(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        } else if (isQuizFinished) {
+            // Pantalla final con los botones Check Answers y Exit Quiz
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Quiz Finished!",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        val results = calculateResults()
+                        Toast.makeText(context, results, Toast.LENGTH_LONG).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Check Answers")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        isQuizStarted = false // Volver al estado inicial
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Exit Quiz")
+                }
+            }
+        } else {
+            // Pantalla del cuestionario con preguntas
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else if (errorMessage != null) {
+                    Text(
+                        text = errorMessage ?: "Unknown error",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                } else if (quiz != null && question != null) {
+                    Text(
+                        text = "Quiz: ${quiz?.title}",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Mostrar el contador de tiempo restante
+                    if (timeRemaining != null) {
+                        Text(
+                            text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Black
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    QuestionType.P02 -> {
-                        P02(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                    // Mostrar la pregunta dependiendo de su tipo
+                    when (question?.type) {
+                        QuestionType.P01 -> {
+                            P01(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    QuestionType.P03 -> {
-                        P03(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                        QuestionType.P02 -> {
+                            P02(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    QuestionType.P04 -> {
-                        P04(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                        QuestionType.P03 -> {
+                            P03(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    QuestionType.P05 -> {
-                        P05(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                        QuestionType.P04 -> {
+                            P04(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    QuestionType.P06 -> {
-                        P06(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                        QuestionType.P05 -> {
+                            P05(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    QuestionType.P07 -> {
-                        P07(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                        QuestionType.P06 -> {
+                            P06(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    QuestionType.P08 -> {
-                        P08(
-                            question = question!!,
-                            onNext = { nextQuestion() },
-                            onPrevious = { previousQuestion() },
-                            viewModel = viewModel
-                        )
-                    }
+                        QuestionType.P07 -> {
+                            P07(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
 
-                    else -> {
-                        Text("Unsupported question type.")
+                        QuestionType.P08 -> {
+                            P08(
+                                question = question!!,
+                                onNext = { nextQuestion() },
+                                onPrevious = { previousQuestion() },
+                                viewModel = viewModel
+                            )
+                        }
+
+                        else -> {
+                            Text("Unsupported question type.")
+                        }
                     }
                 }
             }
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
