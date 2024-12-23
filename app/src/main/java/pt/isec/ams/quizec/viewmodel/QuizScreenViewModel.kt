@@ -181,7 +181,7 @@ class QuizScreenViewModel : ViewModel() {
         val db = FirebaseFirestore.getInstance()
         val quizRef = db.collection("quizzes").document(quizId)
 
-        quizRef.update("waitingUsers", FieldValue.arrayRemove(userId))
+        quizRef.update("participants", FieldValue.arrayRemove(userId))
             .addOnSuccessListener {
                 println("User $userId removed from waiting list for quiz $quizId.")
             }
@@ -189,6 +189,7 @@ class QuizScreenViewModel : ViewModel() {
                 println("Failed to remove user from waiting list: ${exception.message}")
             }
     }
+
 
 
 

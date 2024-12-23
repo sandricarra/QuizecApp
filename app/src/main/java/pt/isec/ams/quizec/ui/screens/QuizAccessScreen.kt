@@ -123,7 +123,7 @@ fun QuizAccessScreen(
     LaunchedEffect(quizId) {
         if (quizId.isNotBlank()) {
             // Bucle para verificar el estado de quizStatus
-            val userId = "CURRENT_USER_ID" // Obtén el ID del usuario actual
+            val userId = creatorId // Obtén el ID del usuario actual
             viewModel.addUserToWaitingList(quizId, userId)
             while (quizStatus != QuizStatus.AVAILABLE) {
 
@@ -133,6 +133,7 @@ fun QuizAccessScreen(
                 println("Quiz status: $quizStatus")
             }
             viewModel.loadQuizAndFirstQuestion(quizId)
+            viewModel.removeUserFromWaitingList(quiz?.id.toString(),creatorId)
             // El quiz está disponible, ahora cargamos el quiz y marcamos que ha sido cargado
             isQuizLoaded = true
             isQuizStarted = true
@@ -233,7 +234,7 @@ fun QuizAccessScreen(
                     onClick = {
                         // Llamar a la función onQuizCompleted
 
-                        viewModel.removeUserFromWaitingList(quiz?.id.toString(),creatorId)
+
                         isQuizStarted = false // Volver al estado inicial
                     },
                     modifier = Modifier.fillMaxWidth()

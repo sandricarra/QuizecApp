@@ -1,9 +1,14 @@
 package pt.isec.ams.quizec.viewmodel
 
+import User
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,6 +21,11 @@ class ManageQuizViewModel : ViewModel() {
     // Estado para manejar el mensaje de retroalimentación
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
+
+    private val _waitingParticipants = MutableStateFlow<List<User>>(emptyList())
+    val waitingParticipants: StateFlow<List<User>> = _waitingParticipants
+    private val _participantsForQuiz = mutableMapOf<String, MutableStateFlow<List<User>>>()
+
 
     // Estado para manejar el nuevo estado de los cuestionarios
     private val _newStatus = MutableStateFlow<QuizStatus?>(null)
@@ -35,7 +45,7 @@ class ManageQuizViewModel : ViewModel() {
                 val quizList = result.documents.mapNotNull { document ->
                     val quiz = document.toObject(Quiz::class.java)
                     if (quiz != null) {
-                        println("Quiz: ${quiz.title}, isAccessControlled: ${quiz.isAccessControlled}")
+                        println("Quiz: ${quiz.title}, Participants: ${quiz.participants.size}")
                     }
                     quiz
                 }
@@ -68,7 +78,8 @@ class ManageQuizViewModel : ViewModel() {
                     val accessControlled = document.getBoolean("accessControlled") ?: false
 
                     if (accessControlled) {
-                        val tempNewStatus = if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
+                        val tempNewStatus =
+                            if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
 
                         if (newStatus == null) {
                             newStatus = tempNewStatus
@@ -90,20 +101,6 @@ class ManageQuizViewModel : ViewModel() {
     }
 
     // Función para obtener los participantes
-    fun getParticipants(creatorId: String, onParticipantsUpdate: (List<String>) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("quizParticipation")
-            .whereEqualTo("creatorId", creatorId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    _message.value = "Failed to fetch participants: ${error.message}"
-                    return@addSnapshotListener
-                }
-
-                val participants = snapshot?.documents?.mapNotNull { it.getString("userName") } ?: emptyList()
-                onParticipantsUpdate(participants)
-            }
-    }
 
     fun toggleQuizStatus(quizId: String) {
         viewModelScope.launch {
@@ -131,7 +128,8 @@ class ManageQuizViewModel : ViewModel() {
                 }
 
                 // Alternar el estado del cuestionario
-                val newStatus = if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
+                val newStatus =
+                    if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
 
                 // Actualizar el estado en Firestore
                 quizRef.update("status", newStatus.name).await() // Esperar la actualización
@@ -150,10 +148,66 @@ class ManageQuizViewModel : ViewModel() {
         }
     }
 
+    fun loadParticipantsForQuiz(quizId: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("quizzes").document(quizId)
+            .get()
+            .addOnSuccessListener { document ->
+                val quiz = document.toObject(Quiz::class.java)
+                quiz?.let {
+                    loadUsersByIds(it.participants, quizId) // Cargar los usuarios por sus IDs
+                }
+            }
+            .addOnFailureListener { exception ->
+                _message.value = "Failed to load participants: ${exception.message}"
+            }
+    }
+    private fun loadUsersByIds(userIds: List<String>, quizId: String) {
+        if (userIds.isEmpty()) {
+            _participantsForQuiz[quizId]?.value = emptyList()
+            return
+        }
 
+        val db = FirebaseFirestore.getInstance()
 
+        db.collection("users")
+            .whereIn("id", userIds)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    _message.value = "Error loading users: ${exception.message}"
+                    return@addSnapshotListener
+                }
 
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val users = snapshot.documents.mapNotNull { document ->
+                        document.toObject(User::class.java)
+                    }
+                    _participantsForQuiz[quizId]?.value = users
+                } else {
+                    _participantsForQuiz[quizId]?.value = emptyList()
+                }
+            }
+    }
 
-
+    fun getParticipantsForQuiz(quizId: String): StateFlow<List<User>> {
+        // Si no existe el StateFlow para este quiz, crear uno nuevo
+        if (!_participantsForQuiz.containsKey(quizId)) {
+            _participantsForQuiz[quizId] = MutableStateFlow(emptyList())
+            loadParticipantsForQuiz(quizId)  // Cargar los participantes al crearlo
+        }
+        return _participantsForQuiz[quizId]!!
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
