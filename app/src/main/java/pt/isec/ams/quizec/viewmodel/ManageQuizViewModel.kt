@@ -247,6 +247,25 @@ class ManageQuizViewModel : ViewModel() {
             }
         }
     }
+    fun forceFinishQuiz(quizId: String) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                val quizRef = db.collection("quizzes").document(quizId)
+                quizRef.update("status", QuizStatus.FINISHED.name).await()
+
+                // Optionally, you can notify participants that the quiz has ended
+                _message.value = "Quiz has been forcefully finished!"
+
+                // Reload the quizzes to reflect the change
+                val creatorId = quizRef.get().await().getString("creatorId") ?: ""
+                loadQuizzesByCreatorId(creatorId)
+
+            } catch (e: Exception) {
+                _message.value = "Failed to force finish quiz: ${e.message}"
+            }
+        }
+    }
 }
 
 

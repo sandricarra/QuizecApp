@@ -131,7 +131,7 @@ fun QuizAccessScreen(navController: NavController,
             while (quizStatus != QuizStatus.AVAILABLE) {
 
                 // Espera y vuelve a verificar el estado cada 3 segundos
-                delay(3000)
+                delay(500)
                 viewModel.checkQuizStatus(quizId)
                 println("Quiz status: $quizStatus")
             }
@@ -140,6 +140,23 @@ fun QuizAccessScreen(navController: NavController,
             // El quiz está disponible, ahora cargamos el quiz y marcamos que ha sido cargado
             isQuizLoaded = true
             isQuizStarted = true
+
+        }
+    }
+    LaunchedEffect(quizId) {
+        if (quizId.isNotBlank()) {
+            // Bucle para verificar el estado de quizStatus
+
+            while (quizStatus != QuizStatus.FINISHED) {
+
+                // Espera y vuelve a verificar el estado cada 3 segundos
+                delay(3000)
+                viewModel.checkQuizStatus(quizId)
+                println("Quiz status: $quizStatus")
+            }
+
+
+
 
         }
     }
@@ -220,7 +237,8 @@ fun QuizAccessScreen(navController: NavController,
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
-        } else if (isQuizFinished) {
+        } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED) {
+
             // Pantalla final con los botones Check Answers y Exit Quiz
             Column(
                 modifier = Modifier
@@ -247,7 +265,7 @@ fun QuizAccessScreen(navController: NavController,
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        // Llamar a la función onQuizCompleted
+
 
 
                         isQuizStarted = false // Volver al estado inicial

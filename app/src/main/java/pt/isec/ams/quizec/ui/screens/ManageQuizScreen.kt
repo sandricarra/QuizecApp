@@ -144,6 +144,14 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         ) {
                             Text("Toggle Show Results Immediately")
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { viewModel.forceFinishQuiz(quiz.id) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Force Finish Quiz")
+                        }
 
                         Divider(modifier = Modifier.padding(vertical = 12.dp))
 
