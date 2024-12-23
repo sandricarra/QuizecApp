@@ -49,8 +49,8 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
     // Lista de participantes en espera
     var participants by remember { mutableStateOf(listOf<String>()) }
     fun toggleAllQuizzesStatus() {
-        viewModel.toggleAllQuizzesStatus(creatorId, context) {
-            Toast.makeText(context, "All quizzes status updated!", Toast.LENGTH_SHORT).show()
+        viewModel.toggleAllQuizzesStatus(creatorId, context) { newStatus ->
+            quizStatus = newStatus // Actualiza el estado con el valor correcto después de la actualización
         }
     }
     // LazyColumn para mostrar una lista desplazable de elementos.
@@ -176,7 +176,11 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
                 )
             }
         }
+
         item {
+            // Aquí va el resto del contenido...
+
+            // Botón para alternar el estado de todos los cuestionarios
             if (creatorId.isNotBlank()) {
                 Button(
                     onClick = { toggleAllQuizzesStatus() },
@@ -185,7 +189,7 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
                         .padding(vertical = 12.dp)
                 ) {
                     Text(
-                        text = "Toggle All Quizzes Status",
+                        text = "Toggle All Quizzes Status: ${quizStatus.name}", // Muestra el estado actual del quiz
                         color = Color.White
                     )
                 }
