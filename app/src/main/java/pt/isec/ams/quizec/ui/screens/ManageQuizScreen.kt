@@ -1,108 +1,157 @@
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import pt.isec.ams.quizec.viewmodel.ManageQuizViewModel
 
+@Composable
+fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel: ManageQuizViewModel) {
+    val message by viewModel.message.collectAsState()
+    val quizzes by viewModel.quizzes.collectAsState()
 
-    import androidx.compose.foundation.layout.Column
-    import androidx.compose.foundation.layout.fillMaxSize
-    import androidx.compose.foundation.layout.fillMaxWidth
-    import androidx.compose.foundation.layout.padding
-    import androidx.compose.foundation.lazy.LazyColumn
-    import androidx.compose.foundation.lazy.items
-    import androidx.compose.material3.Button
-    import androidx.compose.material3.Card
-    import androidx.compose.material3.MaterialTheme
-    import androidx.compose.material3.Text
-    import androidx.compose.runtime.Composable
-    import androidx.compose.runtime.LaunchedEffect
-    import androidx.compose.runtime.collectAsState
-    import androidx.compose.runtime.getValue
-    import androidx.compose.ui.Alignment
-    import androidx.compose.ui.Modifier
-    import androidx.compose.ui.text.AnnotatedString
-    import androidx.compose.ui.text.style.TextAlign
-    import androidx.compose.ui.unit.dp
-    import androidx.navigation.NavController
-    import kotlinx.coroutines.delay
-    import pt.isec.ams.quizec.viewmodel.ManageQuizViewModel
+    LaunchedEffect(Unit) {
+        viewModel.loadQuizzesByCreatorId(creatorId)
+    }
 
-    @Composable
-    fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel: ManageQuizViewModel) {
-        val message by viewModel.message.collectAsState()
-        val newStatus by viewModel.newStatus.collectAsState()
-        val quizzes by viewModel.quizzes.collectAsState()
-
-        LaunchedEffect(Unit) {
-            // Cargar cuestionarios creados por el creador
-            viewModel.loadQuizzesByCreatorId(creatorId)
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Mensaje de retroalimentación
+        message?.let {
+            item {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Red,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Mensaje de retroalimentación
-            message?.let {
-                item {
-                    Text(text = it)
-                }
-            }
-
-            // Nuevo estado
-            newStatus?.let {
-                item {
-                    Text(text = "New Quiz Status: ${it.name}")
-                }
-            }
-            if (quizzes.isEmpty()) {
-                item {
-                    Text(
-                        text = AnnotatedString("You don't have any quizzes created."),
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center)
+        // Si no hay cuestionarios, mostrar mensaje
+        if (quizzes.isEmpty()) {
+            item {
+                Text(
+                    text = AnnotatedString("You don't have any quizzes created."),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
             }
         } else {
-
             // Lista de cuestionarios
             items(quizzes) { quiz ->
-                // Obtener los participantes para este quiz de manera independiente
                 val waitingParticipants by viewModel.getParticipantsForQuiz(quiz.id).collectAsState()
+                val showResultsImmediately by viewModel.getShowResultsImmediately(quiz.id).collectAsState()
+                val geolocationRestricted by viewModel.getGeolocationRestricted(quiz.id).collectAsState()
 
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 8.dp),
+                    elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = quiz.title, style = MaterialTheme.typography.titleMedium)
+                        // Título del cuestionario
+                        Text(
+                            text = quiz.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        // Estado del cuestionario
                         Text(
                             text = "Status: ${quiz.status.name}",
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
-                        Text(
-                            text = "Geolocation Restricted: ${quiz.isGeolocationRestricted}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = "Show Results Immediately: ${quiz.showResultsImmediately}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+
+                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                        // Restricción geolocalizada
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Geolocation Restricted: ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = if (geolocationRestricted) "Yes" else "No",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (geolocationRestricted) Color.Green else Color.Red
+                            )
+                        }
+
+                        // Mostrar resultados inmediatamente
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Show Results Immediately: ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = if (showResultsImmediately) "Yes" else "No",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (showResultsImmediately) Color.Green else Color.Red
+                            )
+                        }
+
+                        // Mostrar tiempo límite
                         Text(
                             text = "Time Limit: ${quiz.timeLimit ?: "No limit"}",
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(vertical = 4.dp)
                         )
+
+                        // Botones de acción
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Button(
                             onClick = { viewModel.toggleQuizStatus(quiz.id) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                         ) {
                             Text("Toggle Quiz Status")
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                        // Título de los participantes
+                        Button(
+                            onClick = { viewModel.toggleGeolocationRestriction(quiz.id) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("Toggle Geolocation Restriction")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Button(
+                            onClick = { viewModel.toggleShowResultsImmediately(quiz.id) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Toggle Show Results Immediately")
+                        }
+
+                        Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        // Participantes esperando
                         Text(
                             text = "Waiting Participants:",
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
 
                         // Lista de participantes
@@ -111,7 +160,8 @@
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp)
+                                        .padding(vertical = 8.dp),
+                                    elevation = CardDefaults.cardElevation(2.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(text = "User: ${user.name}", style = MaterialTheme.typography.bodyMedium)
@@ -122,12 +172,13 @@
                             Text(
                                 text = "No participants yet.",
                                 style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
                 }
             }
         }
-        }
     }
+}

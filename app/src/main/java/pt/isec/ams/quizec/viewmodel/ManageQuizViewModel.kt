@@ -23,9 +23,13 @@ class ManageQuizViewModel : ViewModel() {
     val message: StateFlow<String?> = _message
 
     private val _waitingParticipants = MutableStateFlow<List<User>>(emptyList())
-    val waitingParticipants: StateFlow<List<User>> = _waitingParticipants
+    private val _showResultsImmediatelyMap = mutableMapOf<String, MutableStateFlow<Boolean>>()
+
     private val _participantsForQuiz = mutableMapOf<String, MutableStateFlow<List<User>>>()
 
+    private val _geolocationRestricted = MutableStateFlow(false)
+    val geolocationRestricted: StateFlow<Boolean> = _geolocationRestricted
+    private val _geolocationRestrictedMap = mutableMapOf<String, MutableStateFlow<Boolean>>()
 
     // Estado para manejar el nuevo estado de los cuestionarios
     private val _newStatus = MutableStateFlow<QuizStatus?>(null)
@@ -57,48 +61,8 @@ class ManageQuizViewModel : ViewModel() {
     }
 
 
-    // Función para alternar el estado de todos los cuestionarios
-    fun toggleAllQuizzesStatus(creatorId: String) {
-        viewModelScope.launch {
-            val db = FirebaseFirestore.getInstance()
-            try {
-                val querySnapshot = db.collection("quizzes")
-                    .whereEqualTo("creatorId", creatorId)
-                    .get()
-                    .await() // Esperar a que se complete la consulta
 
-                val batch = db.batch()
-                var newStatus: QuizStatus? = null
 
-                querySnapshot.documents.forEach { document ->
-                    val currentStatus = document.getString("status")?.let {
-                        QuizStatus.valueOf(it)
-                    } ?: QuizStatus.AVAILABLE
-
-                    val accessControlled = document.getBoolean("accessControlled") ?: false
-
-                    if (accessControlled) {
-                        val tempNewStatus =
-                            if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
-
-                        if (newStatus == null) {
-                            newStatus = tempNewStatus
-                        }
-
-                        batch.update(document.reference, "status", tempNewStatus.name)
-                    }
-                }
-
-                batch.commit().await() // Esperar a que se complete el batch
-
-                _message.value = "All quizzes updated successfully!"
-                _newStatus.value = newStatus
-
-            } catch (e: Exception) {
-                _message.value = "Failed to update quiz status: ${e.message}"
-            }
-        }
-    }
 
     // Función para obtener los participantes
 
@@ -206,7 +170,87 @@ class ManageQuizViewModel : ViewModel() {
         }
         return _participantsForQuiz[quizId]!!
     }
+    fun toggleGeolocationRestriction(quizId: String) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                val quizRef = db.collection("quizzes").document(quizId)
+                val quizSnapshot = quizRef.get().await()
+
+                if (!quizSnapshot.exists()) {
+                    _message.value = "Quiz not found."
+                    return@launch
+                }
+
+                // Obtener el estado actual de la restricción de geolocalización
+                val currentGeolocationRestriction =
+                    quizSnapshot.getBoolean("isGeolocationRestricted") ?: false
+
+                // Alternar la restricción de geolocalización
+                val newGeolocationRestriction = !currentGeolocationRestriction
+
+                // Actualizar la restricción en Firestore
+                quizRef.update("isGeolocationRestricted", newGeolocationRestriction).await()
+
+                // Actualizar el estado local
+                _message.value = "Geolocation restriction updated successfully!"
+                _geolocationRestrictedMap[quizId]?.value = newGeolocationRestriction
+
+            } catch (e: Exception) {
+                _message.value = "Failed to update geolocation restriction: ${e.message}"
+            }
+        }
+        // Función para obtener el estado de geolocalización para un quiz específico
+
+    }
+    fun getGeolocationRestricted(quizId: String): StateFlow<Boolean> {
+        // Si no existe el estado para este quiz, crearlo
+        if (!_geolocationRestrictedMap.containsKey(quizId)) {
+            _geolocationRestrictedMap[quizId] = MutableStateFlow(false) // valor inicial
+        }
+        return _geolocationRestrictedMap[quizId]!!
+    }
+    fun getShowResultsImmediately(quizId: String): StateFlow<Boolean> {
+        // Si no existe el estado para este quiz, crearlo
+        if (!_showResultsImmediatelyMap.containsKey(quizId)) {
+            _showResultsImmediatelyMap[quizId] = MutableStateFlow(false) // valor inicial
+        }
+        return _showResultsImmediatelyMap[quizId]!!
+    }
+    fun toggleShowResultsImmediately(quizId: String) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                val quizRef = db.collection("quizzes").document(quizId)
+                val quizSnapshot = quizRef.get().await()
+
+                if (!quizSnapshot.exists()) {
+                    _message.value = "Quiz not found."
+                    return@launch
+                }
+
+                // Obtener el estado actual de "Show Results Immediately"
+                val currentShowResultsImmediately = quizSnapshot.getBoolean("showResultsImmediately") ?: false
+
+                // Alternar el estado de "Show Results Immediately"
+                val newShowResultsImmediately = !currentShowResultsImmediately
+
+                // Actualizar el estado en Firestore
+                quizRef.update("showResultsImmediately", newShowResultsImmediately).await()
+
+                // Actualizar el estado local
+                _message.value = "Show Results Immediately updated successfully!"
+                _showResultsImmediatelyMap[quizId]?.value = newShowResultsImmediately
+
+            } catch (e: Exception) {
+                _message.value = "Failed to update Show Results Immediately: ${e.message}"
+            }
+        }
+    }
 }
+
+
+
 
 
 
