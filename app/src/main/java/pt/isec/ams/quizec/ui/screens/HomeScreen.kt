@@ -12,6 +12,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,12 +46,20 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
 
     // Estado para manejar el estado del cuestionario
     var quizStatus by remember { mutableStateOf(QuizStatus.AVAILABLE) }
+    var participants by remember { mutableStateOf(listOf<String>()) }
 
     // Lista de participantes en espera
-    var participants by remember { mutableStateOf(listOf<String>()) }
+
     fun toggleAllQuizzesStatus() {
         viewModel.toggleAllQuizzesStatus(creatorId, context) { newStatus ->
-            quizStatus = newStatus // Actualiza el estado con el valor correcto después de la actualización
+            quizStatus =
+                newStatus // Actualiza el estado con el valor correcto después de la actualización
+        }
+    }
+
+    LaunchedEffect(creatorId) {
+        viewModel.getParticipants(creatorId) { updatedParticipants ->
+            participants = updatedParticipants
         }
     }
     // LazyColumn para mostrar una lista desplazable de elementos.
@@ -90,7 +99,8 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
         item {
             Text(
                 text = "HOMEPAGE", // Título de la página de inicio.
-                style = MaterialTheme.typography.titleLarge.copy( // Uso de estilo más grande.
+                style = MaterialTheme.typography.titleLarge.copy(
+                    // Uso de estilo más grande.
                     fontWeight = FontWeight.Bold, // Negrita para mayor impacto.
                     color = Color(0xFF6200EE), // Tono morado para el encabezado.
                 ),
@@ -161,7 +171,9 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
             Button(
                 onClick = {
                     navController.navigate("login") { // Navega a la pantalla de login.
-                        popUpTo("home") { inclusive = true } // Remueve todas las pantallas anteriores en la pila, excepto la de login.
+                        popUpTo("home") {
+                            inclusive = true
+                        } // Remueve todas las pantallas anteriores en la pila, excepto la de login.
                     }
                 },
                 modifier = Modifier
@@ -189,7 +201,7 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
                         .padding(vertical = 12.dp)
                 ) {
                     Text(
-                        text = "Toggle All Quizzes Status: ${quizStatus.name}", // Muestra el estado actual del quiz
+                        text = "Start quizzes ?:  ${quizStatus.name}", // Muestra el estado actual del quiz
                         color = Color.White
                     )
                 }

@@ -28,15 +28,20 @@ class HomeScreenViewModel : ViewModel() {
                         QuizStatus.valueOf(it)
                     } ?: QuizStatus.AVAILABLE
 
-                    // Alternar el estado
-                    val tempNewStatus = if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
+                    val accessControlled = document.getBoolean("accessControlled") ?: false
 
-                    // Si no se ha establecido el nuevo estado, lo asignamos (se usará el primer cambio).
-                    if (newStatus == null) {
-                        newStatus = tempNewStatus
+                    // Solo modificar si accessControlled es true
+                    if (accessControlled) {
+                        // Alternar el estado
+                        val tempNewStatus = if (currentStatus == QuizStatus.AVAILABLE) QuizStatus.LOCKED else QuizStatus.AVAILABLE
+
+                        // Si no se ha establecido el nuevo estado, lo asignamos (se usará el primer cambio).
+                        if (newStatus == null) {
+                            newStatus = tempNewStatus
+                        }
+
+                        batch.update(document.reference, "status", tempNewStatus.name) // Actualizar en el batch
                     }
-
-                    batch.update(document.reference, "status", tempNewStatus.name) // Actualizar en el batch
                 }
 
                 batch.commit() // Aplicar todas las actualizaciones del batch
@@ -73,6 +78,20 @@ class HomeScreenViewModel : ViewModel() {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onError(it) }
     }
+    fun getParticipants(creatorId: String, onParticipantsUpdate: (List<String>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("quizParticipation")
+            .whereEqualTo("creatorId", creatorId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    // Manejar errores.
+                    return@addSnapshotListener
+                }
+                val participants = snapshot?.documents?.mapNotNull { it.getString("userName") } ?: emptyList()
+                onParticipantsUpdate(participants)
+            }
+    }
+
 
 
 }

@@ -46,13 +46,25 @@ class QuizScreenViewModel : ViewModel() {
     val timeRemaining: State<Long?> = _timeRemaining
 
     fun checkQuizStatus(quizId: String) {
-        // Simulación de carga de estado del quiz desde Firebase
-        FirebaseFirestore.getInstance().collection("quizzes")
+        firestore.collection("quizzes")
             .document(quizId)
             .get()
             .addOnSuccessListener { document ->
-                val status = document.get("status") as? String
-                _quizStatus.value = QuizStatus.valueOf(status ?: "BLOCKED")
+                if (document.exists()) {
+                    val accessControlled = document.getBoolean("accessControlled") ?: true
+                    val status = document.getString("status") ?: "LOCKED"
+
+                    if (!accessControlled) {
+                        _quizStatus.value = QuizStatus.AVAILABLE
+                    } else {
+                        _quizStatus.value = QuizStatus.valueOf(status)
+                    }
+                } else {
+                    handleError("Quiz not found")
+                }
+            }
+            .addOnFailureListener { exception ->
+                handleError(exception.message ?: "Error checking quiz status")
             }
     }
     // Función para cargar el cuestionario y la primera pregunta
@@ -149,6 +161,49 @@ class QuizScreenViewModel : ViewModel() {
     fun registerCorrectAnswer() {
         _correctAnswers.value += 1
     }
+
+    fun logQuizParticipation(quizId: String, creatorId: String, userName: String) {
+        val db = FirebaseFirestore.getInstance()
+        val participationData = hashMapOf(
+            "quizId" to quizId,
+            "creatorId" to creatorId,
+            "userName" to userName,
+            "timestamp" to System.currentTimeMillis()
+        )
+        db.collection("quizParticipation").add(participationData)
+            .addOnSuccessListener {
+                // Registro agregado exitosamente.
+            }
+            .addOnFailureListener { exception ->
+                // Maneja el error aquí.
+            }
+    }
+    fun removeParticipant(quizId: String, userName: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("quizParticipation")
+            .whereEqualTo("quizId", quizId)
+            .whereEqualTo("userName", userName)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val batch = db.batch()
+                querySnapshot.documents.forEach { document ->
+                    batch.delete(document.reference) // Marca el documento para eliminarlo
+                }
+                batch.commit() // Ejecuta la eliminación en batch
+                    .addOnSuccessListener {
+                        onSuccess() // Notifica éxito
+                    }
+                    .addOnFailureListener { exception ->
+                        onFailure(exception) // Maneja errores
+                    }
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception) // Maneja errores de la consulta
+            }
+    }
+
+
+
 }
 
 
