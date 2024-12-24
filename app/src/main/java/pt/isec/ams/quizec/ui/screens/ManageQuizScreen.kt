@@ -17,6 +17,9 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
     val message by viewModel.message.collectAsState()
     val quizzes by viewModel.quizzes.collectAsState()
 
+
+
+
     LaunchedEffect(Unit) {
         viewModel.loadQuizzesByCreatorId(creatorId)
     }
@@ -54,8 +57,11 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
             // Lista de cuestionarios
             items(quizzes) { quiz ->
                 val waitingParticipants by viewModel.getParticipantsForQuiz(quiz.id).collectAsState()
-                val showResultsImmediately by viewModel.getShowResultsImmediately(quiz.id).collectAsState()
                 val geolocationRestricted by viewModel.getGeolocationRestricted(quiz.id).collectAsState()
+                val showResultsImmediately by viewModel.getShowResultsImmediately(quiz.id).collectAsState()
+                val playingUsers by viewModel.getPlayingUsersForQuiz(quiz.id).collectAsState()
+                val quizStatus by viewModel.getQuizStatus(quiz.id).collectAsState()
+
 
                 Card(
                     modifier = Modifier
@@ -73,7 +79,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
 
                         // Estado del cuestionario
                         Text(
-                            text = "Status: ${quiz.status.name}",
+                            text = "Status: ${quizStatus?.name}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -119,8 +125,9 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         // Botones de acción
                         Spacer(modifier = Modifier.height(12.dp))
 
+                        // Botón para alternar el estado del cuestionario
                         Button(
-                            onClick = { viewModel.toggleQuizStatus(quiz.id) },
+                            onClick = { viewModel.toggleQuizStatus(quiz.id) }, // Asegúrate de pasar el ID correcto
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                         ) {
@@ -179,6 +186,37 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         } else {
                             Text(
                                 text = "No participants yet.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        // Usuarios jugando
+                        Text(
+                            text = "Playing Users:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+
+                        // Lista de usuarios jugando
+                        if (playingUsers.isNotEmpty()) {
+                            playingUsers.forEach { user ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    elevation = CardDefaults.cardElevation(2.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(text = "User: ${user.name}", style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "No users playing yet.",
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center

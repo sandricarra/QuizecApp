@@ -20,6 +20,7 @@ data class Quiz(
     val showResultsImmediately: Boolean =true, // Si se muestran los resultados inmediatamente al terminar
     val participants: List<String> = listOf(), // Lista de IDs de participantes, no se como usarlo aun
     val status: QuizStatus = QuizStatus.AVAILABLE, // Estado del cuestionario (disponible, en progreso, finalizado)
-    val answers: Map<String, List<Answer>>  = mapOf() // Mapa de respuestas por ID de pregunta y lista de respuestas tampoco se como usarlo aun
+    val answers: Map<String, List<Answer>>  = mapOf(), // Mapa de respuestas por ID de pregunta y lista de respuestas tampoco se como usarlo aun
+    val playingUsers: List<String> = listOf() // Lista de usuarios jugando el quiz // Lista de IDs de usuarios que están jugando el cuestionario
 )
 

@@ -40,7 +40,7 @@ fun QuizAccessScreen(navController: NavController,
     val isQuizFinished by viewModel.isQuizFinished
     val timeRemaining by viewModel.timeRemaining
 
-    val userName = quiz?.creatorId // Define el nombre del usuario
+
 
 
     val context = LocalContext.current
@@ -50,6 +50,17 @@ fun QuizAccessScreen(navController: NavController,
     // Estado para manejar permisos de ubicación y posición del usuario
     var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    LaunchedEffect(viewModel.quizStatus.value) {
+        if (viewModel.quizStatus.value == QuizStatus.IN_PROGRESS) {
+            viewModel.startTimer() // Iniciar el temporizador cuando el quiz esté disponible
+        }
+    }
+    LaunchedEffect(quizId) {
+        if (quizId.isNotBlank()) {
+            viewModel.observeQuizStatus(quizId) // Observar el estado del quiz
+        }
+    }
 
     // Función para verificar permisos y obtener la ubicación
     fun checkLocationPermissionsAndFetch() {
@@ -126,8 +137,8 @@ fun QuizAccessScreen(navController: NavController,
     LaunchedEffect(quizId) {
         if (quizId.isNotBlank()) {
             // Bucle para verificar el estado de quizStatus
-            val userId = creatorId // Obtén el ID del usuario actual
-            viewModel.addUserToWaitingList(quizId, userId)
+
+
             while (quizStatus != QuizStatus.AVAILABLE) {
 
                 // Espera y vuelve a verificar el estado cada 3 segundos
@@ -152,6 +163,7 @@ fun QuizAccessScreen(navController: NavController,
                 // Espera y vuelve a verificar el estado cada 3 segundos
                 delay(3000)
                 viewModel.checkQuizStatus(quizId)
+                viewModel.updateQuizStatus(quizId)
                 println("Quiz status: $quizStatus")
             }
 
@@ -176,23 +188,30 @@ fun QuizAccessScreen(navController: NavController,
             // Finalizar el cuestionario cuando el tiempo se agote
             viewModel.finishQuiz()
             isQuizStarted = false
+            viewModel.updateQuizStatusToFinished(quizId)
             Toast.makeText(context, "Time's up! Quiz finished.", Toast.LENGTH_LONG).show()
         }
     }
 
+
     if (quiz?.status == QuizStatus.LOCKED) {
+        viewModel.addUserToWaitingList(quizId, creatorId)
+
+        // Manejar el botón de retroceso
         BackHandler {
             // Remover el usuario de la lista de espera al retroceder
             if (quizId.isNotBlank()) {
                 viewModel.removeUserFromWaitingList(quizId, creatorId)
             }
+
             // Navegar de vuelta al HomeScreen
             navController.navigate("home") {
                 // Limitar el historial de navegación para evitar regresar al QuizAccessScreen
                 popUpTo("home") { inclusive = true }
             }
         }
-        // Quiz está bloqueado, mostramos un mensaje
+
+        // Mostrar mensaje de espera
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -208,9 +227,10 @@ fun QuizAccessScreen(navController: NavController,
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator()
         }
-
     } else {
         if (!isQuizStarted) {
+            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
+            viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
             // Pantalla inicial para introducir el ID del cuestionario
             Column(
                 modifier = Modifier
@@ -239,6 +259,8 @@ fun QuizAccessScreen(navController: NavController,
             }
         } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED) {
 
+            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
+            viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
             // Pantalla final con los botones Check Answers y Exit Quiz
             Column(
                 modifier = Modifier
@@ -253,11 +275,27 @@ fun QuizAccessScreen(navController: NavController,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Mostrar el contador de tiempo restante
+                if (timeRemaining != null) {
+                    Text(
+                        text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
                 Button(
                     onClick = {
-                        val results = calculateResults()
-                        Toast.makeText(context, results, Toast.LENGTH_LONG).show()
+                        if (quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED) {
+                            val results = calculateResults()
+                            Toast.makeText(context, results, Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(context, "Please wait until the end of the quiz to see the answers.", Toast.LENGTH_LONG).show()
+                        }
                     },
+                    enabled = quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED   ,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Check Answers")
@@ -265,17 +303,32 @@ fun QuizAccessScreen(navController: NavController,
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-
-
-
                         isQuizStarted = false // Volver al estado inicial
+                        viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
+
+
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Exit Quiz")
                 }
             }
-        } else {
+        }
+        else {
+            BackHandler {
+                // Remover el usuario de la lista de espera al retroceder
+                if (quizId.isNotBlank()) {
+                    viewModel.removeUserFromWaitingList(quizId, creatorId)
+                    viewModel.removeUserFromPlayingList(quizId, creatorId)
+                }
+                // Navegar de vuelta al HomeScreen
+                navController.navigate("home") {
+                    // Limitar el historial de navegación para evitar regresar al QuizAccessScreen
+                    popUpTo("home") { inclusive = true }
+                }
+            }
+            viewModel.addUserToPlayingList(quiz?.id.toString(), creatorId)
+            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
             // Pantalla del cuestionario con preguntas
             Column(
                 modifier = Modifier

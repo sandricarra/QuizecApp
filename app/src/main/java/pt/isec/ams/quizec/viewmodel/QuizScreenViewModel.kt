@@ -3,20 +3,30 @@ package pt.isec.ams.quizec.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.data.models.QuizStatus
 
 class QuizScreenViewModel : ViewModel() {
-    private val _quizStatus = mutableStateOf(QuizStatus.LOCKED)
-    val quizStatus: State<QuizStatus> = _quizStatus
+
     private val firestore = FirebaseFirestore.getInstance()
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message
 
     // Estado para almacenar el cuestionario
     private val _quiz = mutableStateOf<Quiz?>(null)
     val quiz: State<Quiz?> = _quiz
+    private val _quizStatus = mutableStateOf(QuizStatus.LOCKED)
+    val quizStatus: State<QuizStatus> = _quizStatus
 
     // Estado para almacenar la pregunta actual
     private val _question = mutableStateOf<Question?>(null)
@@ -45,6 +55,44 @@ class QuizScreenViewModel : ViewModel() {
     // Estado para el tiempo restante
     private val _timeRemaining = mutableStateOf<Long?>(null)
     val timeRemaining: State<Long?> = _timeRemaining
+
+    private val initialPlayingUsers = mutableSetOf<String>()
+
+    private var timerJob: Job? = null
+
+    fun observeQuizStatus(quizId: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("quizzes").document(quizId)
+            .addSnapshotListener { documentSnapshot, exception ->
+                if (exception != null) {
+                    _errorMessage.value = "Failed to load quiz status: ${exception.message}"
+                    return@addSnapshotListener
+                }
+
+                documentSnapshot?.let { document ->
+                    val status = document.getString("status")?.let {
+                        QuizStatus.valueOf(it)
+                    } ?: QuizStatus.LOCKED
+
+                    _quizStatus.value = status
+                }
+            }
+    }
+    fun startTimer() {
+        timerJob?.cancel() // Cancelar cualquier temporizador existente
+        timerJob = viewModelScope.launch {
+            while (_timeRemaining.value != null && _timeRemaining.value!! > 0) {
+                delay(1000L) // Esperar 1 segundo
+                _timeRemaining.value = _timeRemaining.value?.minus(1)
+            }
+            if (_timeRemaining.value == 0L) {
+                finishQuiz()
+            }
+        }
+    }
+    fun stopTimer() {
+        timerJob?.cancel()
+    }
 
     fun checkQuizStatus(quizId: String) {
         firestore.collection("quizzes")
@@ -148,7 +196,8 @@ class QuizScreenViewModel : ViewModel() {
 
     fun finishQuiz() {
         _isQuizFinished.value = true
-        _isLoading.value = false // Detener cualquier indicador de carga
+        _isLoading.value = false
+        stopTimer() // Detener cualquier indicador de carga
     }
 
     fun decrementTimeRemaining() {
@@ -189,12 +238,103 @@ class QuizScreenViewModel : ViewModel() {
                 println("Failed to remove user from waiting list: ${exception.message}")
             }
     }
+    fun addUserToPlayingList(quizId: String, userId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val quizRef = db.collection("quizzes").document(quizId)
 
+        quizRef.update("playingUsers", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+                println("User $userId added to players list for quiz $quizId.")
+            }
+            .addOnFailureListener { exception ->
+                println("Failed to add user to player list: ${exception.message}")
+            }
+    }
+    fun removeUserFromPlayingList(quizId: String, userId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val quizRef = db.collection("quizzes").document(quizId)
 
+        quizRef.update("playingUsers", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+                println("User $userId removed from player list for quiz $quizId.")
+            }
+            .addOnFailureListener { exception ->
+                println("Failed to remove user from player list: ${exception.message}")
+            }
+    }
+    fun updateQuizStatus(quizId: String) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            val quizRef = db.collection("quizzes").document(quizId)
+            val quizSnapshot = quizRef.get().await()
+
+            if (!quizSnapshot.exists()) {
+                _message.value = "Quiz not found."
+                return@launch
+            }
+
+            val playingUsers = quizSnapshot.get("playingUsers") as? List<String> ?: emptyList()
+
+            // Cambiar el estado a IN_PROGRESS si hay jugadores
+            if (playingUsers.isNotEmpty() && _quizStatus.value != QuizStatus.IN_PROGRESS) {
+                quizRef.update("status", QuizStatus.IN_PROGRESS.name).await()
+                _quizStatus.value = QuizStatus.IN_PROGRESS
+                initialPlayingUsers.clear()
+                initialPlayingUsers.addAll(playingUsers)
+            }
+
+            // Cambiar el estado a FINISHED solo si todos los jugadores iniciales han salido
+            if (initialPlayingUsers.isNotEmpty() && initialPlayingUsers.all { it !in playingUsers }) {
+                quizRef.update("status", QuizStatus.FINISHED.name).await()
+                _quizStatus.value = QuizStatus.FINISHED
+                _timeRemaining.value = 0L // Establecer el tiempo restante a cero
+                initialPlayingUsers.clear() // Limpiar la lista inicial
+            }
+
+            _message.value = "Quiz status updated successfully!"
+        }
+    }
+
+    fun updateQuizStatusToFinished(quizId: String) {
+        viewModelScope.launch {
+            try {
+                val db = FirebaseFirestore.getInstance()
+                val quizRef = db.collection("quizzes").document(quizId)
+                val quizSnapshot = quizRef.get().await()
+
+                if (!quizSnapshot.exists()) {
+                    _errorMessage.value = "Quiz not found."
+                    return@launch
+                }
+
+                val playingUsers = quizSnapshot.get("playingUsers") as? List<String> ?: emptyList()
+
+                // Cambiar el estado a FINISHED solo si todos los jugadores iniciales han salido
+                if (initialPlayingUsers.isNotEmpty() && initialPlayingUsers.all { it !in playingUsers }) {
+                    quizRef.update("status", QuizStatus.FINISHED.name).await()
+
+                    _message.value = "Quiz status updated to FINISHED successfully!"
+                    _timeRemaining.value = 0L // Establecer el tiempo restante a cero
+                    initialPlayingUsers.clear() // Limpiar la lista inicial
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to update quiz status: ${e.message}"
+            }
+        }
+    }
 
 
 
 }
+
+
+
+
+
+
+
+
+
 
 
 
