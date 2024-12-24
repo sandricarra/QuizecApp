@@ -61,6 +61,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                 val showResultsImmediately by viewModel.getShowResultsImmediately(quiz.id).collectAsState()
                 val playingUsers by viewModel.getPlayingUsersForQuiz(quiz.id).collectAsState()
                 val quizStatus by viewModel.getQuizStatus(quiz.id).collectAsState()
+                val anonymousResults by viewModel.getAnonymousResultsForQuiz(quiz.id).collectAsState()
 
 
                 Card(
@@ -222,9 +223,49 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                 textAlign = TextAlign.Center
                             )
                         }
+                        Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        // Resultados anónimos
+                        Text(
+                            text = "Anonymous Results:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+
+                        // Lista de resultados anónimos
+                        if (anonymousResults.isNotEmpty()) {
+                            anonymousResults.forEach { result ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    elevation = CardDefaults.cardElevation(2.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(text = "Correct Answers: $result", style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "No results yet.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.clearResultsForQuiz(quiz.id) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Clear Results")
+                        }
+                    }
                     }
                 }
             }
         }
     }
-}
+

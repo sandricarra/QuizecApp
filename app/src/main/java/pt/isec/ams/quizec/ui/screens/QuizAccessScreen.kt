@@ -24,9 +24,15 @@ import android.app.Activity
 import pt.isec.ams.quizec.data.models.QuizStatus
 import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.R
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizAccessScreen(navController: NavController,
                      viewModel: QuizScreenViewModel = viewModel(), creatorId: String
@@ -41,6 +47,7 @@ fun QuizAccessScreen(navController: NavController,
     val timeRemaining by viewModel.timeRemaining
 
 
+    val correctAnswers by viewModel.correctAnswers
 
 
     val context = LocalContext.current
@@ -61,6 +68,13 @@ fun QuizAccessScreen(navController: NavController,
             viewModel.observeQuizStatus(quizId) // Observar el estado del quiz
         }
     }
+    LaunchedEffect(isQuizFinished) {
+        if (isQuizFinished) {
+            viewModel.saveQuizResult(quizId, creatorId, correctAnswers, quiz?.questions?.size ?: 0)
+        }
+
+    }
+
 
     // Función para verificar permisos y obtener la ubicación
     fun checkLocationPermissionsAndFetch() {
@@ -83,7 +97,11 @@ fun QuizAccessScreen(navController: NavController,
                     1001
                 )
             } else {
-                Toast.makeText(context, "Cannot request permissions in this context", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Cannot request permissions in this context",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -91,34 +109,43 @@ fun QuizAccessScreen(navController: NavController,
     // Mover la función loadQuiz fuera de LaunchedEffect
     fun loadQuiz() {
         if (quizId.isNotBlank()) {
-            viewModel.loadQuizAndFirstQuestion(quizId)
 
-            // Verificar si el cuestionario tiene restricciones de ubicación
-            val quizData = viewModel.quiz.value
-            if (quizData?.isGeolocationRestricted == true && userLocation != null && quizData.location != null) {
-                val userLat = userLocation!!.first
-                val userLon = userLocation!!.second
-                val quizLat = quizData.location.latitude
-                val quizLon = quizData.location.longitude
+            viewModel.hasUserPlayedQuiz(quizId, creatorId) { hasPlayed ->
+                if (hasPlayed) {
+                    // Mostrar mensaje si el usuario ya ha jugado el quiz
+                    Toast.makeText(context, "You have already played this quiz", Toast.LENGTH_LONG)
+                        .show()
+                } else {
+                    viewModel.loadQuizAndFirstQuestion(quizId)
 
-                val distance = FloatArray(1)
-                Location.distanceBetween(userLat, userLon, quizLat, quizLon, distance)
 
-                // Considerar una distancia de 50 km como límite permitido
-                if (distance[0] > 50000) {
-                    Toast.makeText(
-                        context,
-                        "You are not in the allowed region for this quiz.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return
+                    // Verificar si el cuestionario tiene restricciones de ubicación
+                    val quizData = viewModel.quiz.value
+                    if (quizData?.isGeolocationRestricted == true && userLocation != null && quizData.location != null) {
+                        val userLat = userLocation!!.first
+                        val userLon = userLocation!!.second
+                        val quizLat = quizData.location.latitude
+                        val quizLon = quizData.location.longitude
+
+                        val distance = FloatArray(1)
+                        Location.distanceBetween(userLat, userLon, quizLat, quizLon, distance)
+
+                        // Considerar una distancia de 50 km como límite permitido
+                        if (distance[0] > 50000) {
+                            Toast.makeText(
+                                context,
+                                "You are not in the allowed region for this quiz.",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                        }
+                    }
+
+                    isQuizStarted = true // Cambiar al estado de inicio del quiz
                 }
             }
-
-            isQuizStarted = true // Cambiar al estado de inicio del quiz
         }
     }
-
 
 
     fun nextQuestion() {
@@ -146,8 +173,8 @@ fun QuizAccessScreen(navController: NavController,
                 viewModel.checkQuizStatus(quizId)
                 println("Quiz status: $quizStatus")
             }
-            viewModel.loadQuizAndFirstQuestion(quizId)
-            viewModel.removeUserFromWaitingList(quiz?.id.toString(),creatorId)
+            loadQuiz()
+            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
             // El quiz está disponible, ahora cargamos el quiz y marcamos que ha sido cargado
             isQuizLoaded = true
             isQuizStarted = true
@@ -166,8 +193,6 @@ fun QuizAccessScreen(navController: NavController,
                 viewModel.updateQuizStatus(quizId)
                 println("Quiz status: $quizStatus")
             }
-
-
 
 
         }
@@ -231,36 +256,85 @@ fun QuizAccessScreen(navController: NavController,
         if (!isQuizStarted) {
             viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
             viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
-            // Pantalla inicial para introducir el ID del cuestionario
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .background(MaterialTheme.colorScheme.background),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
+                verticalArrangement = Arrangement.Center
             ) {
+                // Imagen o logo
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo), // Cambia esto por el ID de tu logo
+                    contentDescription = "App Logo",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .padding(bottom = 32.dp)
+                )
+
+                // Texto de bienvenida
+                Text(
+                    text = "Welcome to Quizec!",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                // Campo de texto para ingresar el ID del cuestionario
                 TextField(
                     value = quizId,
                     onValueChange = { quizId = it },
                     label = { Text("Enter Quiz ID") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text("e.g., ABC123") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    ),
+                    singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Botón para cargar el cuestionario
                 Button(
                     onClick = { loadQuiz() },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    ),
+                    shape = MaterialTheme.shapes.medium
                 ) {
-                    Text("Load Quiz")
+                    Text("Load Quiz", style = MaterialTheme.typography.bodyLarge)
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Mensaje opcional
+                Text(
+                    text = "Please enter the Quiz ID to proceed",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    textAlign = TextAlign.Center
+                )
             }
-        } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED) {
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+        } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED || timeRemaining == 0L) {
 
             viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
             viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
+
             // Pantalla final con los botones Check Answers y Exit Quiz
             Column(
                 modifier = Modifier
@@ -292,10 +366,14 @@ fun QuizAccessScreen(navController: NavController,
                             val results = calculateResults()
                             Toast.makeText(context, results, Toast.LENGTH_LONG).show()
                         } else {
-                            Toast.makeText(context, "Please wait until the end of the quiz to see the answers.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                context,
+                                "Please wait until the end of the quiz to see the answers.",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     },
-                    enabled = quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED   ,
+                    enabled = quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED || timeRemaining == 0L,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Check Answers")
@@ -313,8 +391,7 @@ fun QuizAccessScreen(navController: NavController,
                     Text("Exit Quiz")
                 }
             }
-        }
-        else {
+        } else {
             BackHandler {
                 // Remover el usuario de la lista de espera al retroceder
                 if (quizId.isNotBlank()) {
@@ -445,5 +522,6 @@ fun QuizAccessScreen(navController: NavController,
         }
     }
 }
+
 
 

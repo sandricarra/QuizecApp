@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
+import pt.isec.ams.quizec.data.models.QuizResult
 import pt.isec.ams.quizec.data.models.QuizStatus
 
 class QuizScreenViewModel : ViewModel() {
@@ -321,6 +323,54 @@ class QuizScreenViewModel : ViewModel() {
                 _errorMessage.value = "Failed to update quiz status: ${e.message}"
             }
         }
+    }
+
+    fun saveQuizResult(quizId: String, userId: String, correctAnswers: Int, totalQuestions: Int) {
+        // Consultar el número de intentos anteriores
+        firestore.collection("results")
+            .whereEqualTo("quizId", quizId)
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val attemptNumber = querySnapshot.size() + 1 // Incrementar el contador
+
+                // Crear el objeto QuizResult
+                val quizResult = QuizResult(
+                    quizId = quizId,
+                    userId = userId,
+                    correctAnswers = correctAnswers,
+                    totalQuestions = totalQuestions,
+                    attemptNumber = attemptNumber
+                )
+
+                // Guardar los resultados en Firebase
+                firestore.collection("results")
+                    .add(quizResult)
+                    .addOnSuccessListener { documentReference ->
+                        Log.d("QuizScreenViewModel", "Quiz result saved with ID: ${documentReference.id}")
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("QuizScreenViewModel", "Error saving quiz result: ${exception.message}")
+                    }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("QuizScreenViewModel", "Error querying previous attempts: ${exception.message}")
+            }
+    }
+    fun hasUserPlayedQuiz(quizId: String, userId: String, onResult: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("results")
+            .whereEqualTo("quizId", quizId)
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Llamar al callback con el resultado
+                onResult(querySnapshot.documents.isNotEmpty())
+            }
+            .addOnFailureListener { exception ->
+                // En caso de error, se puede manejar aquí
+                onResult(false) // O manejar el error de otra manera
+            }
     }
 
 

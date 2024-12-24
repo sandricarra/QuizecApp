@@ -46,7 +46,7 @@ class ManageQuizViewModel : ViewModel() {
 
     private val _playingUsersForQuiz = mutableMapOf<String, MutableStateFlow<List<User>>>()
 
-
+    private val _anonymousResultsForQuiz = mutableMapOf<String, MutableStateFlow<List<Int>>>()
 
     // Función para cargar los cuestionarios del creatorId
     fun loadQuizzesByCreatorId(creatorId: String) {
@@ -151,7 +151,7 @@ class ManageQuizViewModel : ViewModel() {
                 // Actualizar el tiempo restante al timeLimit si el estado cambia a AVAILABLE
                 if (newStatus == QuizStatus.AVAILABLE) {
                     val timeLimit = quizSnapshot.getLong("timeLimit") ?: 0L
-                    quizRef.update("timeRemaining", timeLimit * 60).await() // Convertir minutos a segundos
+                    quizRef.update("timeRemaining", timeLimit ).await()
                 }
 
                 // Actualizar el estado local
@@ -402,7 +402,56 @@ class ManageQuizViewModel : ViewModel() {
                 }
             }
     }
+    fun getAnonymousResultsForQuiz(quizId: String): StateFlow<List<Int>> {
+        if (!_anonymousResultsForQuiz.containsKey(quizId)) {
+            _anonymousResultsForQuiz[quizId] = MutableStateFlow(emptyList())
+            loadAnonymousResultsForQuiz(quizId)
+        }
+        return _anonymousResultsForQuiz[quizId]!!
+    }
+    private fun loadAnonymousResultsForQuiz(quizId: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("results")
+            .whereEqualTo("quizId", quizId)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    _message.value = "Error loading results: ${exception.message}"
+                    return@addSnapshotListener
+                }
 
+                snapshot?.let { docSnapshot ->
+                    if (docSnapshot.isEmpty) {
+                        _anonymousResultsForQuiz[quizId]?.value = emptyList()
+                    } else {
+                        val results = docSnapshot.documents.mapNotNull { document ->
+                            document.getLong("correctAnswers")?.toInt()
+                        }
+                        _anonymousResultsForQuiz[quizId]?.value = results
+                    }
+                }
+            }
+    }
+    fun clearResultsForQuiz(quizId: String) {
+        viewModelScope.launch {
+            val db = FirebaseFirestore.getInstance()
+            try {
+                // Obtener todos los resultados asociados al quizId
+                val resultsQuery = db.collection("results")
+                    .whereEqualTo("quizId", quizId)
+                    .get()
+                    .await()
+
+                // Borrar cada documento de resultados
+                resultsQuery.documents.forEach { document ->
+                    db.collection("results").document(document.id).delete().await()
+                }
+
+                _message.value = "Results for quiz $quizId cleared successfully!"
+            } catch (e: Exception) {
+                _message.value = "Failed to clear results for quiz $quizId: ${e.message}"
+            }
+        }
+    }
 
 
 }
