@@ -26,6 +26,7 @@ import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
@@ -252,85 +253,96 @@ fun QuizAccessScreen(navController: NavController,
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator()
         }
-    } else {
-        if (!isQuizStarted) {
-            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
-            viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .background(MaterialTheme.colorScheme.background),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Imagen o logo
-                Image(
-                    painter = painterResource(id = R.drawable.ic_logo), // Cambia esto por el ID de tu logo
-                    contentDescription = "App Logo",
+        } else {
+            if (!isQuizStarted) {
+                viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
+                viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
+                LazyColumn(
                     modifier = Modifier
-                        .size(150.dp)
-                        .padding(bottom = 32.dp)
-                )
-
-                // Texto de bienvenida
-                Text(
-                    text = "Welcome to Quizec!",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Campo de texto para ingresar el ID del cuestionario
-                TextField(
-                    value = quizId,
-                    onValueChange = { quizId = it },
-                    label = { Text("Enter Quiz ID") },
-                    placeholder = { Text("e.g., ABC123") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    ),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Botón para cargar el cuestionario
-                Button(
-                    onClick = { loadQuiz() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
-                    ),
-                    shape = MaterialTheme.shapes.medium
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .background(MaterialTheme.colorScheme.background),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top
                 ) {
-                    Text("Load Quiz", style = MaterialTheme.typography.bodyLarge)
+                    // Imagen o logo
+                    item {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo), // Cambia esto por el ID de tu logo
+                            contentDescription = "App Logo",
+                            modifier = Modifier
+                                .size(150.dp)
+                                .padding(bottom = 32.dp)
+                        )
+                    }
+
+                    // Texto de bienvenida
+                    item {
+                        Text(
+                            text = "Start playing!",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    // Campo de texto para ingresar el ID del cuestionario
+                    item {
+                        TextField(
+                            value = quizId,
+                            onValueChange = { quizId = it },
+                            label = { Text("Enter Quiz ID") },
+                            placeholder = { Text("e.g., ABC123") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            colors = TextFieldDefaults.textFieldColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            ),
+                            singleLine = true
+                        )
+                    }
+
+
+
+                    // Botón para cargar el cuestionario
+                    item {
+                        Button(
+                            onClick = { loadQuiz() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = Color.White
+                            ),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text("Load Quiz", style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+
+
+
+                    // Mensaje opcional
+                    item {
+                        Text(
+                            text = "Please enter the Quiz ID to proceed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
 
-                // Mensaje opcional
-                Text(
-                    text = "Please enter the Quiz ID to proceed",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-        } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED || timeRemaining == 0L) {
+                Spacer(modifier = Modifier.height(16.dp))
+            } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED || timeRemaining == 0L) {
 
             viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
             viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
