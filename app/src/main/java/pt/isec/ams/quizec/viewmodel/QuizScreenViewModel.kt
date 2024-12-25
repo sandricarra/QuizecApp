@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec.viewmodel
 
+import android.location.Location
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -212,6 +213,45 @@ class QuizScreenViewModel : ViewModel() {
     // Función para registrar una respuesta correcta
     fun registerCorrectAnswer() {
         _correctAnswers.value += 1
+    }
+    fun getQuizGeolocationRestriction(quizId: String, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val quizSnapshot = FirebaseFirestore.getInstance()
+                    .collection("quizzes")
+                    .document(quizId)
+                    .get()
+                    .await()
+
+                val isGeolocationRestricted = quizSnapshot.getBoolean("isGeolocationRestricted") ?: false
+                callback(isGeolocationRestricted)
+            } catch (e: Exception) {
+                _message.value = "Failed to fetch quiz geolocation restriction: ${e.message}"
+                callback(false)
+            }
+        }
+    }
+    fun getQuizLocation(quizId: String, callback: (Pair<Double, Double>?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val quizSnapshot = FirebaseFirestore.getInstance()
+                    .collection("quizzes")
+                    .document(quizId)
+                    .get()
+                    .await()
+
+                // Obtener la ubicación como un objeto GeoPoint
+                val geoPoint = quizSnapshot.get("location") as? com.google.firebase.firestore.GeoPoint
+                if (geoPoint != null) {
+                    callback(Pair(geoPoint.latitude, geoPoint.longitude))
+                } else {
+                    callback(null)
+                }
+            } catch (e: Exception) {
+                _message.value = "Failed to fetch quiz location: ${e.message}"
+                callback(null)
+            }
+        }
     }
 
 

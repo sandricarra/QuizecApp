@@ -110,43 +110,72 @@ fun QuizAccessScreen(navController: NavController,
     // Mover la función loadQuiz fuera de LaunchedEffect
     fun loadQuiz() {
         if (quizId.isNotBlank()) {
-
             viewModel.hasUserPlayedQuiz(quizId, creatorId) { hasPlayed ->
                 if (hasPlayed) {
                     // Mostrar mensaje si el usuario ya ha jugado el quiz
                     Toast.makeText(context, "You have already played this quiz", Toast.LENGTH_LONG)
                         .show()
                 } else {
-                    viewModel.loadQuizAndFirstQuestion(quizId)
+                    // Verificar si el cuestionario tiene restricciones de geolocalización
+                    viewModel.getQuizGeolocationRestriction(quizId) { isGeolocationRestricted ->
+                        if (isGeolocationRestricted) {
+                            // Si hay restricción de geolocalización, verificar la ubicación del usuario
+                            if (userLocation == null) {
+                                Toast.makeText(
+                                    context,
+                                    "Unable to fetch your location. Please enable location services.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                return@getQuizGeolocationRestriction
+                            }
 
+                            // Obtener las coordenadas del quiz
+                            viewModel.getQuizLocation(quizId) { quizLocation ->
+                                if (quizLocation == null) {
+                                    Toast.makeText(
+                                        context,
+                                        "Quiz location not found.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    return@getQuizLocation
+                                }
 
-                    // Verificar si el cuestionario tiene restricciones de ubicación
-                    val quizData = viewModel.quiz.value
-                    if (quizData?.isGeolocationRestricted == true && userLocation != null && quizData.location != null) {
-                        val userLat = userLocation!!.first
-                        val userLon = userLocation!!.second
-                        val quizLat = quizData.location.latitude
-                        val quizLon = quizData.location.longitude
+                                // Calcular la distancia entre el usuario y el quiz
+                                val distance = FloatArray(1)
+                                Location.distanceBetween(
+                                    userLocation!!.first,
+                                    userLocation!!.second,
+                                    quizLocation.first, // latitude
+                                    quizLocation.second, // longitude
+                                    distance
+                                )
 
-                        val distance = FloatArray(1)
-                        Location.distanceBetween(userLat, userLon, quizLat, quizLon, distance)
+                                // Verificar si el usuario está dentro del radio permitido (20 km)
+                                if (distance[0] > 20000) { // 20 km en metros
+                                    Toast.makeText(
+                                        context,
+                                        "You are not within the allowed region (20 km) to play this quiz.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    return@getQuizLocation
+                                }
 
-                        // Considerar una distancia de 50 km como límite permitido
-                        if (distance[0] > 50000) {
-                            Toast.makeText(
-                                context,
-                                "You are not in the allowed region for this quiz.",
-                                Toast.LENGTH_LONG
-                            ).show()
-
+                                // Si el usuario está dentro del radio permitido, cargar el quiz
+                                viewModel.loadQuizAndFirstQuestion(quizId)
+                                isQuizStarted = true
+                            }
+                        } else {
+                            // Si no hay restricción de geolocalización, cargar el quiz directamente
+                            viewModel.loadQuizAndFirstQuestion(quizId)
+                            isQuizStarted = true
                         }
                     }
-
-                    isQuizStarted = true // Cambiar al estado de inicio del quiz
                 }
             }
         }
     }
+
+
 
 
     fun nextQuestion() {

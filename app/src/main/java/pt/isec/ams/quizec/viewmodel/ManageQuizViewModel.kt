@@ -336,13 +336,23 @@ class ManageQuizViewModel : ViewModel() {
             val db = FirebaseFirestore.getInstance()
             try {
                 val quizRef = db.collection("quizzes").document(quizId)
+
+                // Actualizar el estado del cuestionario a FINISHED
                 quizRef.update("status", QuizStatus.FINISHED.name).await()
-                quizRef.update("timeRemaining", 0L).await() // Establecer el tiempo restante a cero
 
-                // Optionally, you can notify participants that the quiz has ended
-                _message.value = "Quiz has been forcefully finished!"
+                // Establecer el tiempo restante a cero
+                quizRef.update("timeRemaining", 0L).await()
 
-                // Reload the quizzes to reflect the change
+                // Limpiar la lista de waiting users
+                quizRef.update("waitingUsers", emptyList<String>()).await()
+
+                // Limpiar la lista de playing users
+                quizRef.update("playingUsers", emptyList<String>()).await()
+
+                // Notificar que el cuestionario ha sido finalizado
+                _message.value = "Quiz has been forcefully finished and user lists cleared!"
+
+                // Recargar la lista de cuestionarios para reflejar los cambios
                 val creatorId = quizRef.get().await().getString("creatorId") ?: ""
                 loadQuizzesByCreatorId(creatorId)
 
