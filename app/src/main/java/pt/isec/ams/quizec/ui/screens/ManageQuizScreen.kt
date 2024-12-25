@@ -242,7 +242,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     elevation = CardDefaults.cardElevation(2.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(text = "Correct Answers: $result", style = MaterialTheme.typography.bodyMedium)
+                                        Text(text = "User x results: $result", style = MaterialTheme.typography.bodyMedium)
                                     }
                                 }
                             }
