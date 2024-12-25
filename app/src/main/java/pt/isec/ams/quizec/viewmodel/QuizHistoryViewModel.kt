@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.utils.IdGenerator
+import pt.isec.ams.quizec.utils.IdGeneratorQ
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,12 +47,6 @@ class QuizHistoryViewModel : ViewModel() {
             }
     }
 
-    fun filterByParticipation() {
-        currentUser?.let { user ->
-            _filteredQuizzes.value = _quizzes.value.filter { it.participants.contains(user.id) }
-        }
-    }
-
     fun filterByStatus(status: String) {
         selectedStatus = status
         _filteredQuizzes.value = when (status) {
@@ -85,13 +81,6 @@ class QuizHistoryViewModel : ViewModel() {
                 // Manejar errores al cargar los cuestionarios
                 println("Error loading quizzes: ${exception.message}")
             }
-    }
-
-    // Función para filtrar los cuestionarios según el texto ingresado
-    fun filterByQuery(query: String) {
-        _filteredQuizzes.value = _quizzes.value.filter {
-            it.title.contains(query, ignoreCase = true)
-        }
     }
 
     // Formatear la fecha de creación para mostrarla en la UI
@@ -135,20 +124,65 @@ class QuizHistoryViewModel : ViewModel() {
             }
     }
 
-    // Función para duplicar un cuestionario
     fun duplicateQuiz(quiz: Quiz) {
+        val newQuizId = IdGenerator.generateUniqueQuizId()
         val newQuiz = quiz.copy(
-            id = IdGenerator.generateUniqueQuizId(), // Generar un nuevo ID único
-            title = "${quiz.title} (Duplicate)" // Modificar el título
+            id = newQuizId,
+            title = "${quiz.title} (Duplicate)",
+            questions = listOf()
         )
-        db.collection("quizzes").document(newQuiz.id)
+
+        db.collection("quizzes").document(newQuizId)
             .set(newQuiz)
             .addOnSuccessListener {
-                // Recargar la lista de cuestionarios tras duplicar
-                loadQuizzes()
+                duplicateQuestions(quiz.questions, newQuizId) { newQuestionIds ->
+                    updateQuizWithNewQuestions(newQuizId, newQuestionIds)
+                }
             }
             .addOnFailureListener { exception ->
                 println("Error duplicating quiz: ${exception.message}")
+            }
+    }
+
+    private fun duplicateQuestions(questionIds: List<String>, newQuizId: String, onComplete: (List<String>) -> Unit) {
+        val newQuestionIds = mutableListOf<String>()
+        questionIds.forEach { questionId ->
+            db.collection("questions").document(questionId).get()
+                .addOnSuccessListener { document ->
+                    val question = document.toObject(Question::class.java)
+                    if (question != null) {
+                        val newQuestionId = IdGeneratorQ.generateUniqueQuizCode()
+                        val newQuestion = question.copy(
+                            id = newQuestionId,
+                            quizId = newQuizId
+                        )
+                        db.collection("questions").document(newQuestionId)
+                            .set(newQuestion)
+                            .addOnSuccessListener {
+                                newQuestionIds.add(newQuestionId)
+                                if (newQuestionIds.size == questionIds.size) {
+                                    onComplete(newQuestionIds)
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                println("Error duplicating question: ${exception.message}")
+                            }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    println("Error fetching question: ${exception.message}")
+                }
+        }
+    }
+
+    private fun updateQuizWithNewQuestions(newQuizId: String, newQuestionIds: List<String>) {
+        db.collection("quizzes").document(newQuizId)
+            .update("questions", newQuestionIds)
+            .addOnSuccessListener {
+                loadQuizzes()
+            }
+            .addOnFailureListener { exception ->
+                println("Error updating quiz with new questions: ${exception.message}")
             }
     }
 }
