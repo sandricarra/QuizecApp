@@ -1,5 +1,6 @@
 package pt.isec.ams.quizec.viewmodel
 
+import User
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,11 +25,51 @@ class QuizHistoryViewModel : ViewModel() {
 
     // Estado seleccionado para filtrar cuestionarios
     var selectedStatus = "All"
+    var currentUser: User? = null // Usuario actual
 
     init {
         // Cargar los cuestionarios al inicializar el ViewModel
         loadQuizzes()
     }
+
+    fun loadUser(userId: String) {
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    currentUser = document.toObject(User::class.java)
+                    loadQuizzes()
+                }
+            }
+            .addOnFailureListener {
+                println("Error loading user: ${it.message}")
+            }
+    }
+
+    fun filterByParticipation() {
+        currentUser?.let { user ->
+            _filteredQuizzes.value = _quizzes.value.filter { it.participants.contains(user.id) }
+        }
+    }
+
+    fun filterByStatus(status: String) {
+        selectedStatus = status
+        _filteredQuizzes.value = when (status) {
+            "All" -> _quizzes.value
+            "CreatedQuizzes" -> {
+                currentUser?.let { user ->
+                    _quizzes.value.filter { it.creatorId == user.id }
+                } ?: emptyList()
+            }
+            "ParticipatedQuizzes" -> {
+                currentUser?.let { user ->
+                    _quizzes.value.filter { it.participants.contains(user.id) }
+                } ?: emptyList()
+            }
+            else -> _quizzes.value
+        }
+    }
+
+
 
     // Función para cargar los cuestionarios desde Firestore
     private fun loadQuizzes() {
@@ -50,16 +91,6 @@ class QuizHistoryViewModel : ViewModel() {
     fun filterByQuery(query: String) {
         _filteredQuizzes.value = _quizzes.value.filter {
             it.title.contains(query, ignoreCase = true)
-        }
-    }
-
-    // Función para filtrar los cuestionarios por estado
-    fun filterByStatus(status: String) {
-        selectedStatus = status
-        _filteredQuizzes.value = if (status == "All") {
-            _quizzes.value
-        } else {
-            _quizzes.value.filter { it.status.name == status.uppercase() }
         }
     }
 

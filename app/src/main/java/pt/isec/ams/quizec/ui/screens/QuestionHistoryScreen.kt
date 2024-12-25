@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,11 +18,12 @@ import pt.isec.ams.quizec.viewmodel.QuestionHistoryViewModel
 fun QuestionHistoryScreen(
     navController: NavController,
     quizId: String,
+    userId: String,
     viewModel: QuestionHistoryViewModel = viewModel()
 ) {
     // Observar las preguntas del cuestionario desde el ViewModel
-    val questions = viewModel.questions.collectAsState(initial = emptyList())
-
+    val questions by viewModel.questions.collectAsState(initial = emptyList())
+    val creatorId by viewModel.creatorId.collectAsState(initial = null)
 
     // Cargar preguntas al entrar en la pantalla
     LaunchedEffect(quizId) {
@@ -40,8 +42,8 @@ fun QuestionHistoryScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
-            items(questions.value.size) { index ->
-                val question = questions.value[index]
+            items(questions.size) { index ->
+                val question = questions[index]
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -51,28 +53,31 @@ fun QuestionHistoryScreen(
                         // Título de la pregunta
                         Text(text = question.title, style = MaterialTheme.typography.titleMedium)
 
-                        // Botones de acciones (Editar, Duplicar, Eliminar)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row {
-                            Button(
-                                onClick = {
-                                    navController.navigate("editQuestion/${question.id}")
-                                },
-                                modifier = Modifier.padding(end = 8.dp)
-                            ) {
-                                Text("Edit")
-                            }
-                            Button(
-                                onClick = { viewModel.duplicateQuestion(question, quizId) },
-                                modifier = Modifier.padding(end = 8.dp)
-                            ) {
-                                Text("Duplicate")
-                            }
-                            Button(
-                                onClick = { viewModel.deleteQuestion(question.id, quizId)  },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                            ) {
-                                Text("Delete", color = MaterialTheme.colorScheme.onError)
+                        // Mostrar botones solo si el usuario es el creador
+                        if (creatorId == userId) {
+                            // Botones de acciones (Editar, Duplicar, Eliminar)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row {
+                                Button(
+                                    onClick = {
+                                        navController.navigate("editQuestion/${question.id}")
+                                    },
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text("Edit")
+                                }
+                                Button(
+                                    onClick = { viewModel.duplicateQuestion(question, quizId) },
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text("Duplicate")
+                                }
+                                Button(
+                                    onClick = { viewModel.deleteQuestion(question.id, quizId) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Text("Delete", color = MaterialTheme.colorScheme.onError)
+                                }
                             }
                         }
                     }
@@ -81,3 +86,4 @@ fun QuestionHistoryScreen(
         }
     }
 }
+

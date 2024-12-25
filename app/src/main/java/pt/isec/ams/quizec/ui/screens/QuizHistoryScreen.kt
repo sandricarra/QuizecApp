@@ -10,16 +10,18 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import pt.isec.ams.quizec.viewmodel.QuizHistoryViewModel
 
 @Composable
-fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewModel = viewModel()) {
+fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewModel = viewModel(), userId: String) {
+
+    // Cargar el usuario al inicio
+    LaunchedEffect(userId) {
+        viewModel.loadUser(userId)
+    }
 
     // Observar la lista de cuestionarios filtrados desde el ViewModel
     val quizzes = viewModel.filteredQuizzes.collectAsState(initial = emptyList())
-    val coroutineScope = rememberCoroutineScope()
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
         modifier = Modifier
@@ -49,7 +51,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                         .padding(vertical = 8.dp),
                     onClick = {
                         // Navegar al historial de preguntas del cuestionario seleccionado
-                        navController.navigate("questionHistory/${quiz.id}")
+                        navController.navigate("questionHistory/${quiz.id}/$userId")
                     }
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -60,24 +62,24 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row {
 
-                            // Botón para eliminar el cuestionario
-                            Button(
-                                onClick = { viewModel.deleteQuiz(quiz.id) },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                                modifier = Modifier.padding(end = 8.dp)
-                            ) {
-                                Text("Delete", color = MaterialTheme.colorScheme.onError)
+                        // Botones solo visibles para cuestionarios creados
+                        if (quiz.creatorId == viewModel.currentUser?.id) {
+                            Row {
+                                Button(
+                                    onClick = { viewModel.deleteQuiz(quiz.id) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Text("Delete", color = MaterialTheme.colorScheme.onError)
+                                }
+
+                                Button(
+                                    onClick = { viewModel.duplicateQuiz(quiz) }
+                                ) {
+                                    Text("Duplicate")
+                                }
                             }
-
-                            // Botón para duplicar el cuestionario
-                            Button(
-                                onClick = { viewModel.duplicateQuiz(quiz) }
-                            ) {
-                                Text("Duplicate")
-                            }
-
                         }
                     }
                 }
@@ -86,7 +88,6 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
     }
 }
 
-// Componente para mostrar el menú desplegable de filtro por estado
 @Composable
 fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
@@ -96,7 +97,7 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
             Text(text = "Filter: $selectedStatus")
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            listOf("All", "Available", "Completed", "Locked").forEach { status ->
+            listOf("All", "CreatedQuizzes", "ParticipatedQuizzes").forEach { status ->
                 DropdownMenuItem(
                     text = { Text(status) },
                     onClick = {
@@ -108,6 +109,7 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
         }
     }
 }
+
 
 
 

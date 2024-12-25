@@ -1,10 +1,13 @@
 package pt.isec.ams.quizec.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import pt.isec.ams.quizec.data.models.Question
+import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.utils.IdGeneratorQ
 
 class QuestionHistoryViewModel : ViewModel() {
@@ -13,6 +16,9 @@ class QuestionHistoryViewModel : ViewModel() {
     // Lista de preguntas del cuestionario
     private val _questions = MutableStateFlow<List<Question>>(emptyList())
     val questions: StateFlow<List<Question>> get() = _questions
+
+    private val _creatorId = MutableStateFlow<String?>(null)
+    val creatorId: StateFlow<String?> = _creatorId
 
     // Obtener una pregunta específica por su ID y almacenarla en una lista (incluso si solo es una)
     suspend fun getQuestionById(questionId: String) {
@@ -28,17 +34,28 @@ class QuestionHistoryViewModel : ViewModel() {
 
     // Cargar preguntas asociadas a un cuestionario
     fun loadQuestions(quizId: String) {
-        db.collection("questions")
-            .whereEqualTo("quizId", quizId) // Filtrar preguntas por `quizId`
-            .get()
-            .addOnSuccessListener { result ->
-                val questionList = result.documents.mapNotNull { document ->
-                    document.toObject(Question::class.java)?.copy(id = document.id)
-                }
-                _questions.value = questionList
+        // Primero, cargar el cuestionario para obtener el creatorId
+        db.collection("quizzes").document(quizId).get()
+            .addOnSuccessListener { document ->
+                val quiz = document.toObject(Quiz::class.java)
+                _creatorId.value = quiz?.creatorId
+
+                // Luego, cargar las preguntas asociadas al cuestionario
+                db.collection("questions")
+                    .whereEqualTo("quizId", quizId)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        val questionList = result.documents.mapNotNull { doc ->
+                            doc.toObject(Question::class.java)?.copy(id = doc.id)
+                        }
+                        _questions.value = questionList
+                    }
+                    .addOnFailureListener { exception ->
+                        println("Error loading questions: ${exception.message}")
+                    }
             }
             .addOnFailureListener { exception ->
-                println("Error loading questions: ${exception.message}")
+                println("Error loading quiz: ${exception.message}")
             }
     }
 

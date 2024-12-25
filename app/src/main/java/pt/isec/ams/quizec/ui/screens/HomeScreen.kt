@@ -45,7 +45,7 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
     val context = LocalContext.current
 
     // Estado para manejar el estado del cuestionario
-    var quizStatus by remember { mutableStateOf(QuizStatus.AVAILABLE) }
+   var userid by remember { mutableStateOf("") }
     var participants by remember { mutableStateOf(listOf<String>()) }
 
     // Lista de participantes en espera
@@ -142,7 +142,8 @@ fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeSc
         item {
             Button(
                 onClick = {
-                    navController.navigate("quizHistory") // Navega a la pantalla de historial de cuestionarios.
+                    navController.navigate("quizHistory/$creatorId")
+                    // Navega a la pantalla de historial de cuestionarios.
                 },
                 modifier = Modifier
                     .fillMaxWidth() // Ocupa todo el ancho disponible.

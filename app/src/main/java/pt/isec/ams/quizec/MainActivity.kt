@@ -72,9 +72,10 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
         }
 
 
-        composable("questionHistory/{quizId}") { backStackEntry ->
+        composable("questionHistory/{quizId}/{userId}") { backStackEntry ->
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
-            QuestionHistoryScreen(navController = navController, quizId = quizId)
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            QuestionHistoryScreen(navController = navController, quizId = quizId, userId = userId)
         }
 
 
@@ -83,9 +84,11 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
                 creatorId = authViewModel.creatorId, // Pasa el creatorId al crear el quiz
             )
         }
-        composable("quizHistory") {
-            QuizHistoryScreen(navController = navController)
+        composable("quizHistory/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            QuizHistoryScreen(navController = navController, userId = userId)
         }
+
 
         composable("quizAccessCode/{quizId}") { backStackEntry ->
             val quizId = backStackEntry.arguments?.getString("quizId") ?: ""
