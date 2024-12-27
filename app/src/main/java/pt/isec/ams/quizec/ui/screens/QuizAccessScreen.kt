@@ -25,6 +25,8 @@ import androidx.core.app.ActivityCompat
 import android.app.Activity
 import pt.isec.ams.quizec.data.models.QuizStatus
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +38,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
+import com.google.android.gms.location.LocationServices
+import com.google.firebase.firestore.GeoPoint
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
@@ -46,30 +50,76 @@ import pt.isec.ams.quizec.data.models.Quiz
 fun QuizAccessScreen(navController: NavController,
                      viewModel: QuizScreenViewModel = viewModel(), creatorId: String
 ) {
-    var quizId by remember { mutableStateOf("") }
+
     var isQuizStarted by remember { mutableStateOf(false) } // Control del estado de inicio del quiz
     // Usa collectAsState para observar los StateFlows
     val quiz by viewModel.quiz.collectAsState()
     val question by viewModel.question.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
+
     val isQuizFinished by viewModel.isQuizFinished.collectAsState()
     val timeRemaining by viewModel.timeRemaining.collectAsState()
     val correctAnswers by viewModel.correctAnswers.collectAsState()
     val quizStatus by viewModel.quizStatus.collectAsState()
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Start) }
 
 
 
 
 
-    val context = LocalContext.current
+
+
+
+
+
 
     var isQuizLoaded by remember { mutableStateOf(false) }
 
     // Estado para manejar permisos de ubicación y posición del usuario
-    var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
-    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val context = LocalContext.current
+
+    var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
+
+    val viewModel: QuizScreenViewModel = viewModel()
+    val fusedLocationProviderClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    var quizId by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.Start) }
+
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                viewModel.getLocation(fusedLocationProviderClient) { location ->
+                    userLocation = location
+                }
+            } else {
+                Toast.makeText(context, "Location permission denied", Toast.LENGTH_LONG).show()
+            }
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            viewModel.getLocation(fusedLocationProviderClient) { location ->
+                userLocation = location
+            }
+        } else {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    // Verificar permisos de ubicación y obtener la ubicación del usuario
+
+
+
+    // Observar userLocation como State
+
+
+
+
+
 
     /*LaunchedEffect(viewModel.quizStatus.value) {
         if (viewModel.quizStatus.value == QuizStatus.IN_PROGRESS) {
@@ -87,6 +137,8 @@ fun QuizAccessScreen(navController: NavController,
         }
 
     }
+
+
 
 
 
@@ -139,10 +191,7 @@ fun QuizAccessScreen(navController: NavController,
         }
     }*/
 
-    // Comprobar permisos de ubicación al cargar la pantalla
-    LaunchedEffect(Unit) {
-        viewModel.checkLocationPermissionsAndFetch(context, locationManager)
-    }
+
 
     // Iniciar el contador cuando el cuestionario se cargue
     LaunchedEffect(timeRemaining) {
@@ -520,6 +569,8 @@ fun QuizAccessScreen(navController: NavController,
             StartScreen(
                 quizId = quizId,
                 onQuizIdChange = { quizId = it },
+
+                creatorId = creatorId,
                 onStartQuiz = {
                     viewModel.hasUserPlayedQuiz(quizId, creatorId) { hasPlayed ->
                         if (hasPlayed) {
@@ -529,7 +580,7 @@ fun QuizAccessScreen(navController: NavController,
                                 currentScreen = Screen.Waiting
                             } else if (quizStatus == QuizStatus.AVAILABLE) {
                                 // Verificar si la ubicación es necesaria
-                                if (quiz?.isGeolocationRestricted == true && userLocation == null) {
+                                if (quiz?.isGeolocationRestricted == true && userLocation == null ) {
                                     currentScreen = Screen.Start
                                     viewModel.removeUserFromPlayingList(quizId, creatorId)
                                     Toast.makeText(
@@ -628,7 +679,12 @@ fun WaitingScreen1(navController: NavController, viewModel: QuizScreenViewModel,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StartScreen(quizId: String, onQuizIdChange: (String) -> Unit, onStartQuiz: () -> Unit) {
+fun StartScreen(
+    quizId: String,
+    creatorId: String, // Añade creatorId como parámetro
+    onQuizIdChange: (String) -> Unit,
+    onStartQuiz: () -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -765,6 +821,11 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val timeRemaining by viewModel.timeRemaining.collectAsState()
+    val context = LocalContext.current
+    val quiz by viewModel.quiz.collectAsState()
+    val totalQuestions = quiz?.questions?.size ?: 0
+    val currentQuestionIndex = viewModel.currentQuestionIndex.value
+    val isQuestionAnswered = question?.let { viewModel.isQuestionAnswered(it.id) } ?: false
 
     Column(
         modifier = Modifier
@@ -802,10 +863,14 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                 QuestionType.P01 -> {
                     P01(
                         question = question!!,
-                        onNext = { viewModel.loadNextQuestion()
+                        onNext = {
+                            viewModel.loadNextQuestion()
                         },
                         onPrevious = { viewModel.loadPreviousQuestion() },
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        context = context,
+                        isQuestionAnswered = isQuestionAnswered
+
                     )
                 }
 
@@ -814,7 +879,9 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                         question = question!!,
                         onNext = { viewModel.loadNextQuestion() },
                         onPrevious = { viewModel.loadPreviousQuestion() },
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        context = context,
+                        isQuestionAnswered = isQuestionAnswered
                     )
                 }
 
@@ -823,7 +890,10 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                         question = question!!,
                         onNext = { viewModel.loadNextQuestion() },
                         onPrevious = { viewModel.loadPreviousQuestion() },
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        context = context,
+                        isQuestionAnswered = isQuestionAnswered
+
                     )
                 }
 
@@ -832,43 +902,46 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                         question = question!!,
                         onNext = { viewModel.loadNextQuestion() },
                         onPrevious = { viewModel.loadPreviousQuestion() },
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        context = context,
+                        isQuestionAnswered = isQuestionAnswered
+
                     )
                 }
 
                 QuestionType.P05 -> {
                     P05(
                         question = question!!,
-                        onNext = { viewModel.loadNextQuestion() },
-                        onPrevious = { viewModel.loadPreviousQuestion() },
+                        isQuestionAnswered = isQuestionAnswered,
                         viewModel = viewModel
+
                     )
                 }
 
                 QuestionType.P06 -> {
                     P06(
                         question = question!!,
-                        onNext = { viewModel.loadNextQuestion() },
-                        onPrevious = { viewModel.loadPreviousQuestion() },
+                        isQuestionAnswered = isQuestionAnswered,
                         viewModel = viewModel
+
                     )
                 }
 
                 QuestionType.P07 -> {
                     P07(
                         question = question!!,
-                        onNext = { viewModel.loadNextQuestion() },
-                        onPrevious = { viewModel.loadPreviousQuestion() },
+                        isQuestionAnswered = isQuestionAnswered,
                         viewModel = viewModel
+
                     )
                 }
 
                 QuestionType.P08 -> {
                     P08(
                         question = question!!,
-                        onNext = { viewModel.loadNextQuestion() },
-                        onPrevious = { viewModel.loadPreviousQuestion() },
+                        isQuestionAnswered = isQuestionAnswered,
                         viewModel = viewModel
+
                     )
                 }
 
@@ -876,16 +949,47 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                     Text("Unsupported question type.")
                 }
             }
-
-            // Simulación de finalización del cuestionario
-            Button(onClick = onQuizFinished
-
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Finish Quiz")
+                // Flechas de navegación
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = { viewModel.loadPreviousQuestion() },
+                        enabled = currentQuestionIndex > 0, // Deshabilitar si es la primera pregunta
+                        modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+                    ) {
+                        Text("⬅\uFE0F")
+                    }
+                    Button(
+                        onClick = { viewModel.loadNextQuestion() },
+                        enabled = currentQuestionIndex < totalQuestions - 1, // Deshabilitar si es la última pregunta
+                        modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+                    ) {
+                        Text("➡\uFE0F")
+                    }
+                }
+
+                // Botón "Finish Quiz"
+                Spacer(modifier = Modifier.height(16.dp)) // Espacio entre las flechas y el botón
+                Button(
+                    onClick = onQuizFinished,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Finish Quiz")
+                }
             }
         }
     }
 }
+
+
 
 @Composable
 fun PresentationScreen(
@@ -926,6 +1030,7 @@ fun PresentationScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Mostrar la imagen del quiz si está disponible
             it.imageUrl?.let { imageUrl ->
                 Image(
                     painter = rememberAsyncImagePainter(imageUrl),
@@ -936,12 +1041,14 @@ fun PresentationScreen(
                     contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-            } ?: run {   Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "No image selected",
-                tint = Color.Gray,
-                modifier = Modifier.size(100.dp)
-            )
+            } ?: run {
+                // Mostrar un ícono predeterminado si no hay imagen
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "No image selected",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(100.dp)
+                )
             }
         }
 
