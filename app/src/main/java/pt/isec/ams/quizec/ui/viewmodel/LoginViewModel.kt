@@ -1,6 +1,7 @@
 // LoginViewModel.kt
 package pt.isec.ams.quizec.ui.viewmodel
 
+import androidx.core.app.ActivityCompat.recreate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,16 @@ class LoginViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _loginState = MutableLiveData<LoginState?>() // Permitir valores nulos
     val loginState: LiveData<LoginState?> get() = _loginState
+
+    // Estado para el idioma seleccionado
+    private val _selectedLanguage = MutableLiveData<String>("en") // Estado inicial en portugués
+    val selectedLanguage: LiveData<String> get() = _selectedLanguage
+
+    // Función para cambiar el idioma
+    fun setLanguage(language: String) {
+        _selectedLanguage.value = language
+
+    }
 
     fun login(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
@@ -28,6 +39,7 @@ class LoginViewModel : ViewModel() {
         _loginState.value = null // Ahora es posible asignar null
     }
 }
+
 
 
 

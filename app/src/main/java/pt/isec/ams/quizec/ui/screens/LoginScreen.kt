@@ -4,6 +4,8 @@ package pt.isec.ams.quizec.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -13,7 +15,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -26,12 +30,12 @@ import pt.isec.ams.quizec.ui.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
 
-    // Estado mutable para almacenar el email y la contraseña introducidos por el usuario
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
-
-    // Observa el estado de login del ViewModel para actualizar la UI según el estado
+    val selectedLanguage by viewModel.selectedLanguage.observeAsState("pt")
     val loginState by viewModel.loginState.observeAsState()
+    var expanded by remember { mutableStateOf(false) }
+
 
 
     // Contenedor de los elementos de la pantalla, alineado al centro
@@ -51,6 +55,34 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
             Image(
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = "Logo"
+            )
+        }
+        // Botón para cambiar el idioma
+        Button(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.change_language))
+        }
+
+        // Menú desplegable para seleccionar el idioma
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                onClick = {
+                    viewModel.setLanguage("en")
+                    expanded = false
+                },
+                text = { Text(stringResource(R.string.language_english)) }
+            )
+            DropdownMenuItem(
+                onClick = {
+                    viewModel.setLanguage("pt")
+                    expanded = false
+                },
+                text = { Text(stringResource(R.string.language_portuguese)) }
             )
         }
         // Campo de texto para el email

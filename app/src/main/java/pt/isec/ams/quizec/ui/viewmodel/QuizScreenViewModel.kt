@@ -1,6 +1,7 @@
 package pt.isec.ams.quizec.ui.viewmodel
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -14,8 +15,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +29,10 @@ import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.data.models.QuizResult
 import pt.isec.ams.quizec.data.models.QuizStatus
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class QuizScreenViewModel : ViewModel() {
 
@@ -37,7 +44,7 @@ class QuizScreenViewModel : ViewModel() {
 
 
     // Estado para almacenar el índice de la pregunta actual
-    private val _currentQuestionIndex = mutableStateOf<Int>(-1)
+    private val _currentQuestionIndex = mutableStateOf(0) // Usa MutableState
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
 
 
@@ -73,36 +80,67 @@ class QuizScreenViewModel : ViewModel() {
     private val _quizStatus = MutableStateFlow(QuizStatus.AVAILABLE)
     val quizStatus: StateFlow<QuizStatus> = _quizStatus
 
+    private val _isQuestionAnswered = mutableStateOf(false) // Estado para controlar si la pregunta ha sido respondida
+    val isQuestionAnswered: State<Boolean> = _isQuestionAnswered
 
-    // Función para verificar permisos y obtener la ubicación
-    fun checkLocationPermissionsAndFetch(context: Context, locationManager: LocationManager) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            // Permisos concedidos, obtener la ubicación
-            val provider = LocationManager.GPS_PROVIDER
-            val location = locationManager.getLastKnownLocation(provider)
-            location?.let {
-                _userLocation.value = Pair(it.latitude, it.longitude)
-            } ?: Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_SHORT).show()
-        } else {
-            if (context is Activity) {
-                ActivityCompat.requestPermissions(
-                    context,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    1001
-                )
-            } else {
-                Toast.makeText(
-                    context,
-                    "Cannot request permissions in this context",
-                    Toast.LENGTH_SHORT
-                ).show()
+    private val _answeredQuestions = mutableSetOf<String>()
+     @SuppressLint("MissingPermission")
+     fun getLocation(fusedLocationProviderClient: FusedLocationProviderClient, onLocationRetrieved: (GeoPoint?) -> Unit) {
+        fusedLocationProviderClient.lastLocation
+            .addOnSuccessListener { location ->
+                if (location != null) {
+                    onLocationRetrieved(GeoPoint(location.latitude, location.longitude))
+                } else {
+                    onLocationRetrieved(null)
+                }
+            }
+            .addOnFailureListener {
+                onLocationRetrieved(null)
+            }
+    }
+
+    // Función para obtener la restricción de geolocalización y las coordenadas del quiz
+    fun getQuizGeolocationRestriction(quizId: String, callback: (Boolean, GeoPoint?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val quizSnapshot = firestore.collection("quizzes").document(quizId).get().await()
+                val isGeolocationRestricted = quizSnapshot.getBoolean("isGeolocationRestricted") ?: false
+                val geoPoint = quizSnapshot.get("location") as? GeoPoint
+                callback(isGeolocationRestricted, geoPoint)
+            } catch (e: Exception) {
+                callback(false, null)
             }
         }
     }
+
+    // Función para calcular la distancia entre dos puntos geográficos
+    fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371 // Radio de la Tierra en km
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return R * c
+    }
+
+    // Función para verificar si el usuario está dentro del rango permitido
+    fun isUserWithinRange(userLocation: GeoPoint?, quizLocation: GeoPoint?): Boolean {
+        if (userLocation == null || quizLocation == null) return false
+        val distance = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            quizLocation.latitude,
+            quizLocation.longitude
+        )
+        return distance <= 20 // 20 km
+    }
+
+
+
+
+
 
 
     fun loadQuiz(quizId: String, context: Context,creatorId : String) {
@@ -281,13 +319,29 @@ class QuizScreenViewModel : ViewModel() {
     }
 
     fun loadNextQuestion() {
-        navigateToQuestion(1)
+        val totalQuestions = _quiz.value?.questions?.size ?: 0
+        if (_currentQuestionIndex.value < totalQuestions - 1) {
+            _currentQuestionIndex.value += 1
+            _isQuestionAnswered.value = false // Reiniciar el estado al cambiar de pregunta
+            loadQuestionById(_quiz.value?.questions?.get(_currentQuestionIndex.value) ?: return)
+        }
     }
 
     fun loadPreviousQuestion() {
-        navigateToQuestion(-1)
+        if (_currentQuestionIndex.value > 0) {
+            _currentQuestionIndex.value -= 1
+            _isQuestionAnswered.value = false // Reiniciar el estado al cambiar de pregunta
+            loadQuestionById(_quiz.value?.questions?.get(_currentQuestionIndex.value) ?: return)
+        }
     }
 
+    fun isQuestionAnswered(questionId: String): Boolean {
+        return questionId in _answeredQuestions // Verificar si la pregunta ya ha sido respondida
+    }
+
+    fun markQuestionAsAnswered(questionId: String) {
+        _answeredQuestions.add(questionId) // Marcar la pregunta como respondida
+    }
     private fun navigateToQuestion(step: Int) {
         val currentIndex = currentQuestionIndex.value
         val questions = quiz.value?.questions ?: return

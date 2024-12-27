@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Quizec</string>
+    <string name="email">Email</string>
+    <string name="password">Senha</string>
+    <string name="login">Entrar</string>
+    <string name="register">Registrar</string>
+    <string name="change_language">Mudar Idioma</string>
+    <string name="language_english">Inglês</string>
+    <string name="language_portuguese">Português</string>
+</resources>

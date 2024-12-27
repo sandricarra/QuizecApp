@@ -10,6 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,6 +27,7 @@ import pt.isec.ams.quizec.ui.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.ui.viewmodel.ManageQuizViewModel
 import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 import pt.isec.ams.quizec.ui.viewmodel.RegisterViewModel
+import java.util.Locale
 
 
 class MainActivity : ComponentActivity() {
@@ -39,6 +45,21 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun QuizecApp() {
         val navController = rememberNavController()
+        val context = LocalContext.current
+        val configuration = LocalConfiguration.current
+        val viewModel: LoginViewModel = viewModel()
+
+        // Observa el idioma seleccionado
+        val selectedLanguage by viewModel.selectedLanguage.observeAsState("en")
+
+        // Cambia la configuración de idioma cuando cambia el idioma seleccionado
+        LaunchedEffect(selectedLanguage) {
+            val locale = Locale(selectedLanguage)
+            Locale.setDefault(locale)
+            configuration.setLocale(locale)
+            context.resources.updateConfiguration(configuration, context.resources.displayMetrics)
+        }
+
         Scaffold(
             modifier = androidx.compose.ui.Modifier.systemBarsPadding(), // Asegura que la UI respete las áreas del sistema
         ) { innerPadding ->
