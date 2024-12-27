@@ -1,6 +1,5 @@
 package pt.isec.ams.quizec.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,8 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
@@ -38,13 +39,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
-import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 
+
 @Composable
 fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -54,16 +54,25 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
         // Mostrar imagen si está disponible
         question.imageUrl?.let { imageUrl ->
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Question Image",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(vertical = 8.dp),
-                contentScale = ContentScale.Crop
-            )
+            if (imageUrl != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = "Question Image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "No image selected",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         }
+
 
         Row(
             modifier = Modifier
@@ -122,18 +131,6 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    // Registrar respuesta en Firebase
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""), // Asegúrate de que no sea nulo
-                        "questionType" to "P01", // Tipo de pregunta como String
-                        "selectedAnswer" to (selectedAnswer ?: "None"), // Respuesta seleccionada como String
-                        "correctAnswer" to (question.correctAnswers.firstOrNull() ?: "None"), // Respuesta correcta como String
-                        "isCorrect" to isCorrect, // Boolean para la validación
-                        "timestamp" to System.currentTimeMillis() // Long para la marca de tiempo
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener { Log.d("Firebase", "Response saved successfully!") }
-                        .addOnFailureListener { e -> Log.e("Firebase", "Error saving response", e) }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -160,7 +157,6 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -232,17 +228,6 @@ fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P02",
-                        "selectedAnswer" to (selectedAnswer ?: "None"),
-                        "correctAnswer" to (question.correctAnswers.firstOrNull() ?: "None"),
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener { Log.d("Firebase", "Response saved successfully!") }
-                        .addOnFailureListener { e -> Log.e("Firebase", "Error saving response", e) }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -269,7 +254,6 @@ fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     var selectedAnswers by remember { mutableStateOf(setOf<String>()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -349,17 +333,6 @@ fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P03",
-                        "selectedAnswers" to selectedAnswers.toList(),
-                        "correctAnswers" to question.correctAnswers,
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener { Log.d("Firebase", "Response saved successfully!") }
-                        .addOnFailureListener { e -> Log.e("Firebase", "Error saving response", e) }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -386,7 +359,6 @@ fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     val (selectedPairs, setSelectedPairs) = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -501,21 +473,6 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P04",
-                        "selectedAnswers" to selectedPairs.toList(),
-                        "correctAnswers" to pairs.toList(),
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener {
-                            Log.d("Firebase", "Response saved successfully!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firebase", "Error saving response", e)
-                        }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -541,7 +498,6 @@ fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     val items = remember { mutableStateOf(question.options.shuffled().toMutableList()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -640,21 +596,6 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P05",
-                        "selectedAnswers" to items.value.toList(),
-                        "correctAnswers" to question.correctAnswers,
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener {
-                            Log.d("Firebase", "Response saved successfully!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firebase", "Error saving response", e)
-                        }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -681,7 +622,6 @@ fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -757,21 +697,6 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P06",
-                        "selectedAnswers" to userAnswers.value,
-                        "correctAnswers" to question.correctAnswers,
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener {
-                            Log.d("Firebase", "Response saved successfully!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firebase", "Error saving response", e)
-                        }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -798,7 +723,6 @@ fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     val selectedAssociations = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -903,28 +827,11 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
             }
             Button(
                 onClick = {
-                    isCorrect =
-                        selectedAssociations.value.toSet() == concepts.zip(question.correctAnswers)
-                            .toSet()
+                    isCorrect = selectedAssociations.value.toSet() == concepts.zip(question.correctAnswers).toSet()
                     isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P07",
-                        "selectedAnswers" to selectedAssociations.value,
-                        "correctAnswers" to concepts.zip(question.correctAnswers),
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener {
-                            Log.d("Firebase", "Response saved successfully!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firebase", "Error saving response", e)
-                        }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {
@@ -952,7 +859,6 @@ fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
 @Composable
 fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
-    val db = FirebaseFirestore.getInstance()
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
@@ -1045,21 +951,6 @@ fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                    val response = hashMapOf(
-                        "questionId" to (question.id ?: ""),
-                        "questionType" to "P08",
-                        "selectedAnswers" to userAnswers.value,
-                        "correctAnswers" to question.correctAnswers,
-                        "isCorrect" to isCorrect,
-                        "timestamp" to System.currentTimeMillis()
-                    )
-                    db.collection("responses").add(response)
-                        .addOnSuccessListener {
-                            Log.d("Firebase", "Response saved successfully!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e("Firebase", "Error saving response", e)
-                        }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isAnswerChecked) {

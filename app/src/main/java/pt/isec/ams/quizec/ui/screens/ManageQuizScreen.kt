@@ -20,9 +20,11 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
 
 
 
+
     LaunchedEffect(Unit) {
         viewModel.loadQuizzesByCreatorId(creatorId)
     }
+
 
     LazyColumn(
         modifier = Modifier
@@ -62,7 +64,10 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                 val playingUsers by viewModel.getPlayingUsersForQuiz(quiz.id).collectAsState()
                 val quizStatus by viewModel.getQuizStatus(quiz.id).collectAsState()
                 val anonymousResults by viewModel.getAnonymousResultsForQuiz(quiz.id).collectAsState()
-
+                LaunchedEffect(geolocationRestricted, showResultsImmediately) {
+                    viewModel.getGeolocationRestricted(quiz.id)
+                    viewModel.getShowResultsImmediately(quiz.id)
+                }
 
                 Card(
                     modifier = Modifier

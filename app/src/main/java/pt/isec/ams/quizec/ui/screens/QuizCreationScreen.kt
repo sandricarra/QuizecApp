@@ -263,7 +263,12 @@ fun QuizCreationScreen(
                                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             }
                         } else {
-                            creatorLocation = null
+                            requestLocation(
+                                context,
+                                fusedLocationProviderClient
+                            ) { location ->
+                                creatorLocation = location
+                            }
                         }
                     }
                 )
