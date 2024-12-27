@@ -3,6 +3,7 @@ package pt.isec.ams.quizec.ui.screens
 import android.graphics.Paint
 import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +31,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.math.cos
@@ -91,6 +95,11 @@ fun ResultsScreen(questionId: String) {
                 "P01" -> ViewResultsP01(questionId, questionTitle)
                 "P02" -> ViewResultsP02(questionId, questionTitle, questionOptions)
                 "P03" -> ViewResultsP03(questionId, questionTitle, questionOptions)
+                "P04" -> ViewResultsP04(questionId, questionTitle)
+                "P05" -> ViewResultsP05(questionId, questionTitle)
+                "P06" -> ViewResultsP06(questionId, questionTitle)
+                "P07" -> ViewResultsP04(questionId, questionTitle)
+                "P08" -> ViewResultsP06(questionId, questionTitle)
                 else -> Text(
                     text = "Unsupported question type: $questionType",
                     modifier = Modifier.fillMaxSize(),
@@ -360,8 +369,244 @@ fun ViewResultsP03(questionId: String, questionTitle: String, questionOptions: L
     }
 }
 
+@Composable
+fun ViewResultsP04(questionId: String, questionTitle: String) {
+    val db = FirebaseFirestore.getInstance()
+    var isLoading by remember { mutableStateOf(true) }
+    var selectedAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
+    var correctAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    // Cargar los datos de Firebase
+    LaunchedEffect(questionId) {
+        db.collection("responses")
+            .whereEqualTo("questionId", questionId)
+            .get()
+            .addOnSuccessListener { documents ->
+                // Obtener las respuestas seleccionadas por los usuarios
+                selectedAnswers = documents.flatMap {
+                    val selectedPairs = it.data["selectedAnswers"] as? List<Map<String, String>> ?: emptyList()
+                    selectedPairs.map { pair ->
+                        val leftOption = pair["first"] ?: ""
+                        val rightOption = pair["second"] ?: ""
+                        "$leftOption ➔ $rightOption"
+                    }
+                }
+                // Obtener las respuestas correctas
+                correctAnswers = documents.flatMap {
+                    val correctPairs = it.data["correctAnswers"] as? List<Map<String, String>> ?: emptyList()
+                    correctPairs.map { pair ->
+                        val leftOption = pair["first"] ?: ""
+                        val rightOption = pair["second"] ?: ""
+                        "$leftOption ➔ $rightOption"
+                    }
+                }
+                isLoading = false
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error fetching results", e)
+                isLoading = false
+            }
+    }
 
+    // UI para mostrar los resultados
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Text(
+                text = "Results for $questionTitle",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Contar cuántas veces se seleccionó cada combinación
+            val allOptionCounts = selectedAnswers.groupingBy { it }.eachCount()
+
+            // Ordenar las combinaciones por la cantidad de selecciones de forma descendente
+            val sortedOptionCounts = allOptionCounts.entries.sortedByDescending { it.value }
+
+            // Mostrar todas las combinaciones posibles y cuántas veces fueron seleccionadas
+            sortedOptionCounts.forEach { (option, count) ->
+                val isCorrect = option in correctAnswers
+                val icon = if (isCorrect) "✔️" else "❌"
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .background(if (isCorrect) Color(0xFFDFF0D8) else Color(0xFFF2DEDE))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "$icon $option: $count",
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
+}
+@Composable
+fun ViewResultsP05(questionId: String, questionTitle: String) {
+    val db = FirebaseFirestore.getInstance()
+    var isLoading by remember { mutableStateOf(true) }
+    var selectedAnswers by remember { mutableStateOf<List<List<String>>>(emptyList()) }
+    var correctAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    // Cargar los datos de Firebase
+    LaunchedEffect(questionId) {
+        db.collection("responses")
+            .whereEqualTo("questionId", questionId)
+            .get()
+            .addOnSuccessListener { documents ->
+                val allSelectedAnswers = mutableListOf<List<String>>()
+                documents.forEach { document ->
+                    val answers = document.get("selectedAnswers") as? List<String> ?: emptyList()
+                    allSelectedAnswers.add(answers)
+                }
+                selectedAnswers = allSelectedAnswers
+                correctAnswers = documents.firstOrNull()?.get("correctAnswers") as? List<String> ?: emptyList()
+                isLoading = false
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error fetching results", e)
+                isLoading = false
+            }
+    }
+
+    // UI para mostrar los resultados
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Text(
+                text = "Results for $questionTitle",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Mostrar las respuestas seleccionadas y correctas
+            correctAnswers.forEachIndexed { index, correctAnswer ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "${index + 1}.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    selectedAnswers.forEach { answers ->
+                        val answer = answers.getOrNull(index) ?: ""
+                        val isCorrectAnswer = correctAnswer == answer
+                        val icon = if (isCorrectAnswer) "✔️" else "❌"
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .background(if (isCorrectAnswer) Color(0xFFDFF0D8) else Color(0xFFF2DEDE))
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = "$icon $answer",
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@Composable
+fun ViewResultsP06(questionId: String, questionTitle: String) {
+    val db = FirebaseFirestore.getInstance()
+    var isLoading by remember { mutableStateOf(true) }
+    var selectedAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
+    var correctAnswers by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    // Cargar los datos de Firebase
+    LaunchedEffect(questionId) {
+        db.collection("responses")
+            .whereEqualTo("questionId", questionId)
+            .get()
+            .addOnSuccessListener { documents ->
+                // Obtener las respuestas seleccionadas por los usuarios
+                selectedAnswers = documents.flatMap {
+                    it.data["selectedAnswers"] as? List<String> ?: emptyList()
+                }
+                // Obtener las respuestas correctas
+                correctAnswers = documents.firstOrNull()?.get("correctAnswers") as? List<String> ?: emptyList()
+                isLoading = false
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error fetching results", e)
+                isLoading = false
+            }
+    }
+
+    // UI para mostrar los resultados
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Text(
+                text = "Results for $questionTitle",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Contar cuántas veces se seleccionó cada opción
+            val allOptionCounts = selectedAnswers.groupingBy { it }.eachCount()
+
+            // Ordenar las opciones por la cantidad de selecciones de forma descendente
+            val sortedOptionCounts = allOptionCounts.entries.sortedByDescending { it.value }
+
+            // Mostrar todas las opciones posibles y cuántas veces fueron seleccionadas
+            sortedOptionCounts.forEach { (option, count) ->
+                val isCorrect = option in correctAnswers
+                val icon = if (isCorrect) "✔️" else "❌"
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .background(if (isCorrect) Color(0xFFDFF0D8) else Color(0xFFF2DEDE))
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "$icon $option: $count",
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+    }
+}
 
 
 @Composable
