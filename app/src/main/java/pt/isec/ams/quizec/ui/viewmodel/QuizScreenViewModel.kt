@@ -1,9 +1,17 @@
 package pt.isec.ams.quizec.ui.viewmodel
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FieldValue
@@ -25,50 +33,161 @@ class QuizScreenViewModel : ViewModel() {
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
 
-    // Estado para almacenar el cuestionario
-    private val _quiz = mutableStateOf<Quiz?>(null)
-    val quiz: State<Quiz?> = _quiz
-    private val _quizStatus = mutableStateOf(QuizStatus.LOCKED)
-    val quizStatus: State<QuizStatus> = _quizStatus
 
-    // Estado para almacenar la pregunta actual
-    private val _question = mutableStateOf<Question?>(null)
-    val question: State<Question?> = _question
 
-    // Estado de carga
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
-
-    // Estado de error
-    private val _errorMessage = mutableStateOf<String?>(null)
-    val errorMessage: State<String?> = _errorMessage
 
     // Estado para almacenar el índice de la pregunta actual
     private val _currentQuestionIndex = mutableStateOf<Int>(-1)
     val currentQuestionIndex: State<Int> = _currentQuestionIndex
 
-    // Estado para almacenar las respuestas correctas
-    private val _correctAnswers = mutableStateOf(0)
-    val correctAnswers: State<Int> = _correctAnswers
 
-    // Estado para indicar si el cuestionario ha terminado
-    private val _isQuizFinished = mutableStateOf(false)
-    val isQuizFinished: State<Boolean> = _isQuizFinished
 
-    // Estado para el tiempo restante
-    private val _timeRemaining = mutableStateOf<Long?>(null)
-    val timeRemaining: State<Long?> = _timeRemaining
+
+    private val _userLocation = mutableStateOf<Pair<Double, Double>?>(null)
+    val userLocation: State<Pair<Double, Double>?> = _userLocation
 
     private val initialPlayingUsers = mutableSetOf<String>()
 
     private var timerJob: Job? = null
+    private val _quiz = MutableStateFlow<Quiz?>(null)
+    val quiz: StateFlow<Quiz?> = _quiz
+
+    private val _question = MutableStateFlow<Question?>(null)
+    val question: StateFlow<Question?> = _question
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _isQuizFinished = MutableStateFlow(false)
+    val isQuizFinished: StateFlow<Boolean> = _isQuizFinished
+
+    private val _timeRemaining = MutableStateFlow<Long?>(null)
+    val timeRemaining: StateFlow<Long?> = _timeRemaining
+
+    private val _correctAnswers = MutableStateFlow(0)
+    val correctAnswers: StateFlow<Int> = _correctAnswers
+
+    private val _quizStatus = MutableStateFlow(QuizStatus.AVAILABLE)
+    val quizStatus: StateFlow<QuizStatus> = _quizStatus
+
+
+    // Función para verificar permisos y obtener la ubicación
+    fun checkLocationPermissionsAndFetch(context: Context, locationManager: LocationManager) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permisos concedidos, obtener la ubicación
+            val provider = LocationManager.GPS_PROVIDER
+            val location = locationManager.getLastKnownLocation(provider)
+            location?.let {
+                _userLocation.value = Pair(it.latitude, it.longitude)
+            } ?: Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_SHORT).show()
+        } else {
+            if (context is Activity) {
+                ActivityCompat.requestPermissions(
+                    context,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1001
+                )
+            } else {
+                Toast.makeText(
+                    context,
+                    "Cannot request permissions in this context",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+
+    fun loadQuiz(quizId: String, context: Context,creatorId : String) {
+        _isLoading.value = true
+        _errorMessage.value = null
+
+        hasUserPlayedQuiz(quizId, creatorId) { hasPlayed ->
+            if (hasPlayed) {
+                Toast.makeText(context, "You have already played this quiz", Toast.LENGTH_LONG).show()
+                _isLoading.value = false
+            } else {
+                getQuizGeolocationRestriction(quizId) { isGeolocationRestricted ->
+                    if (isGeolocationRestricted) {
+                        if (_userLocation.value == null) {
+                            Toast.makeText(
+                                context,
+                                "Unable to fetch your location. Please enable location services.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            _isLoading.value = false
+                            return@getQuizGeolocationRestriction
+                        }
+
+                        getQuizLocation(quizId) { quizLocation ->
+                            if (quizLocation == null) {
+                                Toast.makeText(context, "Quiz location not found.", Toast.LENGTH_LONG).show()
+                                _isLoading.value = false
+                                return@getQuizLocation
+                            }
+
+                            val distance = FloatArray(1)
+                            Location.distanceBetween(
+                                _userLocation.value!!.first,
+                                _userLocation.value!!.second,
+                                quizLocation.first,
+                                quizLocation.second,
+                                distance
+                            )
+
+                            if (distance[0] > 20000) {
+                                Toast.makeText(
+                                    context,
+                                    "You are not within the allowed region (20 km) to play this quiz.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                _isLoading.value = false
+                                return@getQuizLocation
+                            }
+
+                            loadQuizData(quizId)
+                        }
+                    } else {
+                        loadQuizData(quizId)
+                    }
+                }
+            }
+        }
+    }
+    private fun loadQuizData(quizId: String) {
+        firestore.collection("quizzes").document(quizId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val quiz = document.toObject(Quiz::class.java)
+                    _quiz.value = quiz
+                    quiz?.questions?.firstOrNull()?.let { loadQuestionById(it) }
+                    _timeRemaining.value = quiz?.timeLimit?.toLong()?.times(60)
+                } else {
+                    handleError("Quiz not found")
+                }
+                _isLoading.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(exception.message ?: "Error loading quiz")
+                _isLoading.value = false
+            }
+    }
+
+
+
 
     fun observeQuizStatus(quizId: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("quizzes").document(quizId)
+        firestore.collection("quizzes").document(quizId)
             .addSnapshotListener { documentSnapshot, exception ->
                 if (exception != null) {
-                    _errorMessage.value = "Failed to load quiz status: ${exception.message}"
+                    // Manejar el error si es necesario
                     return@addSnapshotListener
                 }
 
@@ -81,6 +200,7 @@ class QuizScreenViewModel : ViewModel() {
                 }
             }
     }
+
     fun startTimer() {
         timerJob?.cancel() // Cancelar cualquier temporizador existente
         timerJob = viewModelScope.launch {
@@ -119,26 +239,7 @@ class QuizScreenViewModel : ViewModel() {
                 handleError(exception.message ?: "Error checking quiz status")
             }
     }
-    // Función para cargar el cuestionario y la primera pregunta
-    fun loadQuizAndFirstQuestion(quizId: String) {
-        _isLoading.value = true
-        _errorMessage.value = null
 
-        firestore.collection("quizzes").document(quizId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val quiz = document.toObject(Quiz::class.java)
-                    _quiz.value = quiz
-                    quiz?.questions?.firstOrNull()?.let { loadQuestionById(it) }
-                    _timeRemaining.value = quiz?.timeLimit?.toLong()?.times(60) // minutes to seconds
-                } else {
-                    handleError("Quiz not found")
-                }
-            }
-            .addOnFailureListener { exception ->
-                handleError(exception.message ?: "Error loading quiz")
-            }
-    }
 
     private fun loadQuestionById(questionId: String) {
         _isLoading.value = true // Inicia el estado de carga
@@ -149,6 +250,8 @@ class QuizScreenViewModel : ViewModel() {
                     if (question != null) {
                         _question.value = question
                         updateQuestionIndex(questionId)
+                        Log.d("QuestionScreen", "Image URL: ${question.imageUrl}")
+
                     } else {
                         handleError("Question data is null")
                     }
@@ -398,37 +501,36 @@ class QuizScreenViewModel : ViewModel() {
             }
     }
     fun hasUserPlayedQuiz(quizId: String, userId: String, onResult: (Boolean) -> Unit) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("results")
+        firestore.collection("results")
             .whereEqualTo("quizId", quizId)
             .whereEqualTo("userId", userId)
             .get()
             .addOnSuccessListener { querySnapshot ->
-                // Llamar al callback con el resultado
                 onResult(querySnapshot.documents.isNotEmpty())
             }
             .addOnFailureListener { exception ->
-                // En caso de error, se puede manejar aquí
-                onResult(false) // O manejar el error de otra manera
+                // Manejar el error si es necesario
+                onResult(false)
             }
     }
-
+    fun updateQuizStatusToFinished2(quizId: String) {
+        viewModelScope.launch {
+            try {
+                val quizRef = firestore.collection("quizzes").document(quizId)
+                quizRef.update("status", QuizStatus.FINISHED.name)
+                    .addOnSuccessListener {
+                        _quizStatus.value = QuizStatus.FINISHED
+                        Log.d("QuizScreenViewModel", "Quiz status updated to FINISHED")
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("QuizScreenViewModel", "Failed to update quiz status: ${exception.message}")
+                    }
+            } catch (e: Exception) {
+                Log.e("QuizScreenViewModel", "Error updating quiz status: ${e.message}")
+            }
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
