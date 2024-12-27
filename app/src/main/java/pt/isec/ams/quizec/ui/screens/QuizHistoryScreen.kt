@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -29,7 +30,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Título de la pantalla
-        Text(text = "My Quiz History", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "My Quiz History \uD83D\uDCC3", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -48,10 +49,12 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF)),
                     onClick = {
                         // Navegar al historial de preguntas del cuestionario seleccionado
                         navController.navigate("questionHistory/${quiz.id}/$userId")
                     }
+
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Mostrar el título y la fecha de creación del cuestionario
@@ -67,7 +70,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                             Row {
                                 Button(
                                     onClick = { viewModel.deleteQuiz(quiz.id) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                                     modifier = Modifier.padding(end = 8.dp)
                                 ) {
                                     Text("Delete", color = MaterialTheme.colorScheme.onError)

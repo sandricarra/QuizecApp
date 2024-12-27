@@ -3,12 +3,14 @@ package pt.isec.ams.quizec.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -47,7 +49,9 @@ fun QuestionHistoryScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF)),
+
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Título de la pregunta
@@ -89,7 +93,7 @@ fun QuestionHistoryScreen(
                                 ) {
                                     Button(
                                         onClick = { viewModel.deleteQuestion(question.id, quizId) },
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                                         modifier = Modifier
                                             .weight(1f)
                                     ) {

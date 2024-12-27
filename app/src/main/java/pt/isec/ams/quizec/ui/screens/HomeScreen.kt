@@ -162,7 +162,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 modifier = Modifier
                     .fillMaxWidth() // Ocupa todo el ancho disponible.
                     .padding(vertical = 12.dp), // Añade un padding vertical más grande.
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // Color rojo para el botón de logout.
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary) // Color rojo para el botón de logout.
             ) {
                 Text(
                     "Logout", // Texto dentro del botón.
