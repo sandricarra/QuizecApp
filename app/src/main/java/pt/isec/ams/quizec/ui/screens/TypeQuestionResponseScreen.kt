@@ -1,7 +1,6 @@
 package pt.isec.ams.quizec.ui.screens
 
-import android.content.Context
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,10 +12,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
@@ -31,7 +28,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,21 +36,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
+import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 
-
 @Composable
-fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel,context: Context,isQuestionAnswered: Boolean) {
+fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
-
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -66,7 +59,8 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
                 contentDescription = "Question Image",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .height(200.dp)
+                    .padding(vertical = 8.dp),
                 contentScale = ContentScale.Crop
             )
         }
@@ -79,7 +73,7 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
         ) {
             RadioButton(
                 selected = selectedAnswer == "True",
-                onClick = { if (!isQuestionAnswered) selectedAnswer = "True" },
+                onClick = { if (!isAnswerChecked) selectedAnswer = "True" },
                 enabled = !isAnswerChecked
             )
             Text(text = "True", modifier = Modifier.padding(start = 8.dp))
@@ -88,7 +82,7 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
             RadioButton(
                 selected = selectedAnswer == "False",
-                onClick = { if (!isQuestionAnswered) selectedAnswer = "False" },
+                onClick = { if (!isAnswerChecked) selectedAnswer = "False" },
                 enabled = !isAnswerChecked
             )
             Text(text = "False", modifier = Modifier.padding(start = 8.dp))
@@ -96,7 +90,7 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -107,55 +101,69 @@ fun P01(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewMode
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
+                    // Verificar si la respuesta está correcta
                     isCorrect = selectedAnswer == question.correctAnswers.firstOrNull()
-                    viewModel.markQuestionAsAnswered(question.id)
-
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    // Registrar respuesta en Firebase
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""), // Asegúrate de que no sea nulo
+                        "questionType" to "P01", // Tipo de pregunta como String
+                        "selectedAnswer" to (selectedAnswer ?: "None"), // Respuesta seleccionada como String
+                        "correctAnswer" to (question.correctAnswers.firstOrNull() ?: "None"), // Respuesta correcta como String
+                        "isCorrect" to isCorrect, // Boolean para la validación
+                        "timestamp" to System.currentTimeMillis() // Long para la marca de tiempo
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener { Log.d("Firebase", "Response saved successfully!") }
+                        .addOnFailureListener { e -> Log.e("Firebase", "Error saving response", e) }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
 
-
-
 @Composable
-fun P02(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean // Estado para controlar si la pregunta ha sido respondida
-) {
+fun P02(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -183,8 +191,8 @@ fun P02(
                 ) {
                     RadioButton(
                         selected = selectedAnswer == option,
-                        onClick = { if (!isQuestionAnswered) selectedAnswer = option },
-                        enabled = !isQuestionAnswered
+                        onClick = { if (!isAnswerChecked) selectedAnswer = option },
+                        enabled = !isAnswerChecked
                     )
                     Text(text = option, modifier = Modifier.padding(start = 8.dp))
                 }
@@ -193,7 +201,7 @@ fun P02(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -204,53 +212,67 @@ fun P02(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
                     isCorrect = selectedAnswer == question.correctAnswers.firstOrNull()
-                    viewModel.markQuestionAsAnswered(question.id) // Marcar la pregunta como respondida
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P02",
+                        "selectedAnswer" to (selectedAnswer ?: "None"),
+                        "correctAnswer" to (question.correctAnswers.firstOrNull() ?: "None"),
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener { Log.d("Firebase", "Response saved successfully!") }
+                        .addOnFailureListener { e -> Log.e("Firebase", "Error saving response", e) }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
 
-
 @Composable
-fun P03(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean
-) {
+fun P03(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     var selectedAnswers by remember { mutableStateOf(setOf<String>()) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -279,7 +301,7 @@ fun P03(
                     Checkbox(
                         checked = selectedAnswers.contains(option),
                         onCheckedChange = { isChecked ->
-                            if (!isQuestionAnswered) {
+                            if (!isAnswerChecked) {
                                 selectedAnswers = if (isChecked) {
                                     selectedAnswers + option
                                 } else {
@@ -287,7 +309,7 @@ fun P03(
                                 }
                             }
                         },
-                        enabled = !isQuestionAnswered
+                        enabled = !isAnswerChecked
                     )
                     Text(text = option, modifier = Modifier.padding(start = 8.dp))
                 }
@@ -296,7 +318,7 @@ fun P03(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -307,53 +329,67 @@ fun P03(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
                     isCorrect = selectedAnswers == question.correctAnswers.toSet()
-                    viewModel.markQuestionAsAnswered(question.id)
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P03",
+                        "selectedAnswers" to selectedAnswers.toList(),
+                        "correctAnswers" to question.correctAnswers,
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener { Log.d("Firebase", "Response saved successfully!") }
+                        .addOnFailureListener { e -> Log.e("Firebase", "Error saving response", e) }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
 
-
 @Composable
-fun P04(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean
-) {
+fun P04(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     val (selectedPairs, setSelectedPairs) = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     // Dividir las opciones en pares
     val pairs = question.options.map { option ->
@@ -401,7 +437,7 @@ fun P04(
                         text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = !isQuestionAnswered) { expanded = true }
+                            .clickable(enabled = !isAnswerChecked) { expanded = true }
                             .background(Color.LightGray)
                             .padding(8.dp)
                     )
@@ -412,7 +448,7 @@ fun P04(
                         shuffledRightOptions.forEach { right ->
                             DropdownMenuItem(
                                 onClick = {
-                                    if (!isQuestionAnswered) {
+                                    if (!isAnswerChecked) {
                                         selectedOption = right
                                         expanded = false
                                         val updatedPairs = selectedPairs.toMutableList()
@@ -434,7 +470,7 @@ fun P04(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -445,52 +481,70 @@ fun P04(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
                     isCorrect = selectedPairs.toSet() == pairs.toSet()
-                    viewModel.markQuestionAsAnswered(question.id)
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P04",
+                        "selectedAnswers" to selectedPairs.toList(),
+                        "correctAnswers" to pairs.toList(),
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener {
+                            Log.d("Firebase", "Response saved successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firebase", "Error saving response", e)
+                        }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
-
 @Composable
-fun P05(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean
-) {
+fun P05(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     val items = remember { mutableStateOf(question.options.shuffled().toMutableList()) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -523,32 +577,30 @@ fun P05(
 
                 Text(text = item, modifier = Modifier.weight(1f).padding(start = 8.dp))
 
-                IconButton(
-                    onClick = {
-                        if (index > 0 && !isQuestionAnswered) {
-                            val updatedItems = items.value.toMutableList()
-                            val temp = updatedItems[index]
-                            updatedItems[index] = updatedItems[index - 1]
-                            updatedItems[index - 1] = temp
-                            items.value = updatedItems
-                        }
-                    },
-                    enabled = !isQuestionAnswered
+                IconButton(onClick = {
+                    if (index > 0) {
+                        val updatedItems = items.value.toMutableList()
+                        val temp = updatedItems[index]
+                        updatedItems[index] = updatedItems[index - 1]
+                        updatedItems[index - 1] = temp
+                        items.value = updatedItems
+                    }
+                },
+                    enabled = !isAnswerChecked
                 ) {
                     Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move up")
                 }
 
-                IconButton(
-                    onClick = {
-                        if (index < items.value.size - 1 && !isQuestionAnswered) {
-                            val updatedItems = items.value.toMutableList()
-                            val temp = updatedItems[index]
-                            updatedItems[index] = updatedItems[index + 1]
-                            updatedItems[index + 1] = temp
-                            items.value = updatedItems
-                        }
-                    },
-                    enabled = !isQuestionAnswered
+                IconButton(onClick = {
+                    if (index < items.value.size - 1) {
+                        val updatedItems = items.value.toMutableList()
+                        val temp = updatedItems[index]
+                        updatedItems[index] = updatedItems[index + 1]
+                        updatedItems[index + 1] = temp
+                        items.value = updatedItems
+                    }
+                },
+                    enabled = !isAnswerChecked
                 ) {
                     Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move down")
                 }
@@ -557,7 +609,7 @@ fun P05(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -568,53 +620,71 @@ fun P05(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
                     isCorrect = items.value == question.correctAnswers
-                    viewModel.markQuestionAsAnswered(question.id)
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P05",
+                        "selectedAnswers" to items.value.toList(),
+                        "correctAnswers" to question.correctAnswers,
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener {
+                            Log.d("Firebase", "Response saved successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firebase", "Error saving response", e)
+                        }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
 
-
 @Composable
-fun P06(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean
-) {
+fun P06(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -640,7 +710,7 @@ fun P06(
                 TextField(
                     value = userAnswers.value[index],
                     onValueChange = { newAnswer ->
-                        if (!isQuestionAnswered) {
+                        if (!isAnswerChecked) {
                             val updatedAnswers = userAnswers.value.toMutableList()
                             updatedAnswers[index] = newAnswer
                             userAnswers.value = updatedAnswers
@@ -649,15 +719,14 @@ fun P06(
                     modifier = Modifier
                         .background(Color.LightGray)
                         .padding(8.dp),
-                    label = { Text("Enter Answer ${index + 1}") },
-                    enabled = !isQuestionAnswered // Deshabilitar el campo si la pregunta ya ha sido respondida
+                    label = { Text("Enter Answer ${index + 1}") }
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -668,52 +737,71 @@ fun P06(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
                     isCorrect = userAnswers.value == question.correctAnswers
-                    viewModel.markQuestionAsAnswered(question.id)
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P06",
+                        "selectedAnswers" to userAnswers.value,
+                        "correctAnswers" to question.correctAnswers,
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener {
+                            Log.d("Firebase", "Response saved successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firebase", "Error saving response", e)
+                        }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
 
 @Composable
-fun P07(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean
-) {
+fun P07(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     val selectedAssociations = remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     // Conceptos y definiciones
     val concepts = question.options
@@ -756,7 +844,7 @@ fun P07(
                         text = if (selectedDefinition.isEmpty()) "Select a definition" else selectedDefinition,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = !isQuestionAnswered) { expanded = true }
+                            .clickable { expanded = true }
                             .background(Color.LightGray)
                             .padding(8.dp)
                     )
@@ -767,7 +855,7 @@ fun P07(
                         definitions.forEach { definition ->
                             DropdownMenuItem(
                                 onClick = {
-                                    if (!isQuestionAnswered) {
+                                    if (!isAnswerChecked) {
                                         selectedDefinition = definition
                                         expanded = false
                                         val updatedAssociations = selectedAssociations.value.toMutableList()
@@ -789,7 +877,7 @@ fun P07(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -800,54 +888,74 @@ fun P07(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
-                    isCorrect = selectedAssociations.value.toSet() == concepts.zip(question.correctAnswers).toSet()
-                    viewModel.markQuestionAsAnswered(question.id)
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
+                    isCorrect =
+                        selectedAssociations.value.toSet() == concepts.zip(question.correctAnswers)
+                            .toSet()
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P07",
+                        "selectedAnswers" to selectedAssociations.value,
+                        "correctAnswers" to concepts.zip(question.correctAnswers),
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener {
+                            Log.d("Firebase", "Response saved successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firebase", "Error saving response", e)
+                        }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
 
 
 
-
 @Composable
-fun P08(
-    question: Question,
-    onNext: () -> Unit,
-    onPrevious: () -> Unit,
-    viewModel: QuizScreenViewModel,
-    context: Context,
-    isQuestionAnswered: Boolean
-) {
+fun P08(question: Question, onNext: () -> Unit, onPrevious: () -> Unit, viewModel: QuizScreenViewModel) {
+    val db = FirebaseFirestore.getInstance()
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
+    var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
-    val showResults by viewModel.quiz.collectAsState()
-    val shouldShowResults = showResults?.showResultsImmediately ?: false
 
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
@@ -877,7 +985,7 @@ fun P08(
                     Text(
                         text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
                         modifier = Modifier
-                            .clickable(enabled = !isQuestionAnswered) { expanded = true }
+                            .clickable { expanded = true }
                             .background(Color.LightGray)
                             .padding(8.dp)
                     )
@@ -888,7 +996,7 @@ fun P08(
                         question.correctAnswers.forEach { option ->
                             DropdownMenuItem(
                                 onClick = {
-                                    if (!isQuestionAnswered) {
+                                    if (!isAnswerChecked) {
                                         selectedOption = option
                                         expanded = false
                                         val updatedAnswers = userAnswers.value.toMutableList()
@@ -906,7 +1014,7 @@ fun P08(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isQuestionAnswered && shouldShowResults) {
+        if (isAnswerChecked) {
             Text(
                 text = if (isCorrect) "Correct!" else "Incorrect!",
                 color = if (isCorrect) Color.Green else Color.Red,
@@ -917,37 +1025,65 @@ fun P08(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            onClick = {
-                if (!isQuestionAnswered) {
+        // Distribución de los botones
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Button(
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("⬅\uFE0F")
+            }
+            Button(
+                onClick = {
                     isCorrect = userAnswers.value == question.correctAnswers
-                    viewModel.markQuestionAsAnswered(question.id)
+                    isAnswerChecked = true
                     if (isCorrect) {
                         viewModel.registerCorrectAnswer()
                     }
-                } else {
-                    // Mostrar mensaje informativo
-                    Toast.makeText(context, "This question has already been submitted.", Toast.LENGTH_SHORT).show()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isQuestionAnswered) {
-                    if (shouldShowResults) {
+                    val response = hashMapOf(
+                        "questionId" to (question.id ?: ""),
+                        "questionType" to "P08",
+                        "selectedAnswers" to userAnswers.value,
+                        "correctAnswers" to question.correctAnswers,
+                        "isCorrect" to isCorrect,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                    db.collection("responses").add(response)
+                        .addOnSuccessListener {
+                            Log.d("Firebase", "Response saved successfully!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Firebase", "Error saving response", e)
+                        }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAnswerChecked) {
                         if (isCorrect) Color.Green else Color.Red
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
-            ),
-            enabled = !isQuestionAnswered, // Deshabilitar el botón después de pulsarlo
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Answer")
+                    } else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("✅")
+            }
+            Button(
+                onClick = {
+                    isAnswerChecked = false
+                    onNext()
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+            ) {
+                Text("➡\uFE0F")
+            }
         }
     }
 }
+
+
 
 
 
