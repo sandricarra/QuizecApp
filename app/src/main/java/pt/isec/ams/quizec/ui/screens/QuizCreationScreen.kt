@@ -34,7 +34,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
 
 @Composable

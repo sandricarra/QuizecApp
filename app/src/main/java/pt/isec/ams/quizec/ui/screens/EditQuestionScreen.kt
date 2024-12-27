@@ -1,7 +1,7 @@
 package pt.isec.ams.quizec.ui.screens
 
 import androidx.compose.runtime.Composable
-import pt.isec.ams.quizec.viewmodel.QuestionHistoryViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuestionHistoryViewModel
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState

@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import pt.isec.ams.quizec.viewmodel.QuestionHistoryViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuestionHistoryViewModel
 
 @Composable
 fun QuestionHistoryScreen(
@@ -55,28 +55,55 @@ fun QuestionHistoryScreen(
 
                         // Mostrar botones solo si el usuario es el creador
                         if (creatorId == userId) {
-                            // Botones de acciones (Editar, Duplicar, Eliminar)
+                            // Botones de acciones (Editar, Duplicar, Eliminar, Resultados)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Row {
-                                Button(
-                                    onClick = {
-                                        navController.navigate("editQuestion/${question.id}")
-                                    },
-                                    modifier = Modifier.padding(end = 8.dp)
+
+                            Column {
+                                // Fila 1: Editar y Duplicar
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Espacio entre botones
                                 ) {
-                                    Text("Edit")
+                                    Button(
+                                        onClick = {
+                                            navController.navigate("editQuestion/${question.id}")
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                    ) {
+                                        Text("Edit")
+                                    }
+                                    Button(
+                                        onClick = { viewModel.duplicateQuestion(question, quizId) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                    ) {
+                                        Text("Duplicate")
+                                    }
                                 }
-                                Button(
-                                    onClick = { viewModel.duplicateQuestion(question, quizId) },
-                                    modifier = Modifier.padding(end = 8.dp)
+
+                                // Fila 2: Eliminar y Ver Resultados
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Espacio entre botones
                                 ) {
-                                    Text("Duplicate")
-                                }
-                                Button(
-                                    onClick = { viewModel.deleteQuestion(question.id, quizId) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                                ) {
-                                    Text("Delete", color = MaterialTheme.colorScheme.onError)
+                                    Button(
+                                        onClick = { viewModel.deleteQuestion(question.id, quizId) },
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                    ) {
+                                        Text("Delete", color = MaterialTheme.colorScheme.onError)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            navController.navigate("resultsScreen/${question.id}")
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                    ) {
+                                        Text("View Results")
+                                    }
                                 }
                             }
                         }
@@ -86,4 +113,5 @@ fun QuestionHistoryScreen(
         }
     }
 }
+
 

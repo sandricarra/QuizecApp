@@ -18,11 +18,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 import androidx.core.app.ActivityCompat
 import android.app.Activity
 import pt.isec.ams.quizec.data.models.QuizStatus
-import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -352,8 +351,6 @@ fun QuizAccessScreen(navController: NavController,
                             Text("Load Quiz", style = MaterialTheme.typography.bodyLarge)
                         }
                     }
-
-
 
                     // Mensaje opcional
                     item {

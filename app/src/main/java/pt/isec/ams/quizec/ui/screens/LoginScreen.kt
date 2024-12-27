@@ -13,11 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import pt.isec.ams.quizec.R
-import pt.isec.ams.quizec.viewmodel.LoginState
-import pt.isec.ams.quizec.viewmodel.LoginViewModel
+import pt.isec.ams.quizec.ui.viewmodel.LoginState
+import pt.isec.ams.quizec.ui.viewmodel.LoginViewModel
 
 // Composable que representa la pantalla de login
 @Composable

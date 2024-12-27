@@ -16,12 +16,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pt.isec.ams.quizec.ui.screens.*
-import pt.isec.ams.quizec.viewmodel.AuthViewModel
-import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
-import pt.isec.ams.quizec.viewmodel.LoginViewModel
-import pt.isec.ams.quizec.viewmodel.ManageQuizViewModel
-import pt.isec.ams.quizec.viewmodel.QuizScreenViewModel
-import pt.isec.ams.quizec.viewmodel.RegisterViewModel
+import pt.isec.ams.quizec.ui.viewmodel.AuthViewModel
+import pt.isec.ams.quizec.ui.viewmodel.LoginViewModel
+import pt.isec.ams.quizec.ui.viewmodel.ManageQuizViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
+import pt.isec.ams.quizec.ui.viewmodel.RegisterViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +61,6 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
             HomeScreen(
                 navController = navController,
                 creatorId = authViewModel.creatorId,
-                viewModel = HomeScreenViewModel()
             )
         }
 
@@ -106,6 +104,10 @@ fun AppNavHost(navController: NavHostController, innerPadding: PaddingValues, au
             ManageQuizScreen(navController = navController,creatorId = authViewModel.creatorId, viewModel = viewModel<ManageQuizViewModel>())
         }
 
+        composable("resultsScreen/{questionId}") { backStackEntry ->
+            val questionId = backStackEntry.arguments?.getString("questionId") ?: ""
+            ResultsScreen(questionId = questionId)
+        }
 
     }
 }

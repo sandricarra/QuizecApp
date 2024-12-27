@@ -1,4 +1,4 @@
-package pt.isec.ams.quizec.viewmodel
+package pt.isec.ams.quizec.ui.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel

@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.UserRole
-import pt.isec.ams.quizec.viewmodel.RegisterState
-import pt.isec.ams.quizec.viewmodel.RegisterViewModel
+import pt.isec.ams.quizec.ui.viewmodel.RegisterState
+import pt.isec.ams.quizec.ui.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {

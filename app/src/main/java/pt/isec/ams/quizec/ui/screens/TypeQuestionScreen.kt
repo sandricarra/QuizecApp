@@ -37,7 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
 @Composable
 fun P01Question(

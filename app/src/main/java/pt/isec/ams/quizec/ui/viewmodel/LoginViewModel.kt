@@ -1,5 +1,5 @@
 // LoginViewModel.kt
-package pt.isec.ams.quizec.viewmodel
+package pt.isec.ams.quizec.ui.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,7 +17,8 @@ class LoginViewModel : ViewModel() {
                 if (task.isSuccessful) {
                     _loginState.value = LoginState.Success
                 } else {
-                    _loginState.value = LoginState.Error(task.exception?.message ?: "Error desconocido")
+                    _loginState.value =
+                        LoginState.Error(task.exception?.message ?: "Error desconocido")
                 }
             }
     }

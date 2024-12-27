@@ -42,6 +42,7 @@ android {
     }
 }
 
+
 dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
@@ -55,10 +56,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.firebase.auth.ktx)
-
     implementation("io.coil-kt.coil3:coil-compose:3.0.3")
     // Agrega la dependencia de Navegación de Compose
     implementation("androidx.navigation:navigation-compose:2.5.3")
+
+    // MPAndroidChart (Gráficos)
+    //implementation("com.github.PhilJay:MPAndroidChart:v3.1.0") // O la versión v3.1.1 si está disponible
 
     // Dependencias necesarias Compose/Material3/ViewModel, etc
     implementation("androidx.compose.material3:material3:1.0.0")
@@ -72,6 +75,7 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
     implementation(libs.play.services.location)
+    implementation(libs.androidx.foundation.layout.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

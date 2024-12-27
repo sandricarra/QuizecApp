@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import pt.isec.ams.quizec.data.models.Quiz
-import pt.isec.ams.quizec.viewmodel.QuizCreationViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
 @Composable
 fun QuizAccessCodeScreen(quizId: String, viewModel: QuizCreationViewModel = viewModel()) {

@@ -1,22 +1,16 @@
 package pt.isec.ams.quizec.ui.screens
 
-
-
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,32 +20,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.ui.platform.LocalContext
-
-
-
-
 import pt.isec.ams.quizec.R
-import pt.isec.ams.quizec.data.models.QuizStatus
-import pt.isec.ams.quizec.viewmodel.HomeScreenViewModel
-
-
-
 
 
 @Composable
-fun HomeScreen(navController: NavController, creatorId: String,viewModel: HomeScreenViewModel) {
+fun HomeScreen(navController: NavController, creatorId: String) {
 
-    val context = LocalContext.current
-
-    // Estado para manejar el estado del cuestionario
-   var userid by remember { mutableStateOf("") }
-    var participants by remember { mutableStateOf(listOf<String>()) }
-
-    // Lista de participantes en espera
-
-
-
+    val participants by remember { mutableStateOf(listOf<String>()) }
 
     // LazyColumn para mostrar una lista desplazable de elementos.
     LazyColumn(

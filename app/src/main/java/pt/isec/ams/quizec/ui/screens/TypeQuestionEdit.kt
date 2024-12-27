@@ -39,7 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.rememberAsyncImagePainter
-import pt.isec.ams.quizec.viewmodel.QuestionHistoryViewModel
+import pt.isec.ams.quizec.ui.viewmodel.QuestionHistoryViewModel
 @Composable
 fun EditP01Question(
     questionId: String,

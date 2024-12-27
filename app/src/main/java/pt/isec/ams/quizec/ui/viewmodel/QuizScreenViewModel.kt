@@ -1,4 +1,4 @@
-package pt.isec.ams.quizec.viewmodel
+package pt.isec.ams.quizec.ui.viewmodel
 
 import android.location.Location
 import android.util.Log
