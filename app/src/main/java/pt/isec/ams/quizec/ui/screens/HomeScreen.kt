@@ -36,7 +36,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
         horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente.
     ) {
         // Primer item de la lista: logo de la aplicación.
-        item {
+       item {
             Image(
                 painter = painterResource(id = R.drawable.ic_logo), // Carga la imagen del logo.
                 contentDescription = null, // Descripción de la imagen (para accesibilidad).

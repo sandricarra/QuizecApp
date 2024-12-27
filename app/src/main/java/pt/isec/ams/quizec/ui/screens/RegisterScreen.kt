@@ -3,19 +3,18 @@ package pt.isec.ams.quizec.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,166 +34,148 @@ import pt.isec.ams.quizec.data.models.UserRole
 import pt.isec.ams.quizec.ui.viewmodel.RegisterState
 import pt.isec.ams.quizec.ui.viewmodel.RegisterViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
-    // Estados para manejar los campos de entrada del formulario
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val name = remember { mutableStateOf("") }
-
-    // Estado para manejar el rol seleccionado (por defecto, Student)
     var role by remember { mutableStateOf<UserRole>(UserRole.STUDENT) }
-
-    // Estado para controlar la visibilidad del DropdownMenu
     var isDropdownOpen by remember { mutableStateOf(false) }
-
-    // Observamos el estado de registro desde el ViewModel
     val registerState by viewModel.registerState.observeAsState()
-
-    // Estado para controlar el mensaje de error
     val errorMessage = remember { mutableStateOf<String?>(null) }
 
-    // Efecto que maneja la navegación y la presentación de mensajes de error
     LaunchedEffect(registerState) {
         when (registerState) {
             is RegisterState.Success -> {
-                // Si el registro es exitoso, redirige al login y cierra la pantalla de registro
                 navController.navigate("login") {
                     popUpTo("register") { inclusive = true }
                 }
             }
-
             is RegisterState.Error -> {
-                // Si hay un error, muestra el mensaje de error
                 errorMessage.value = (registerState as RegisterState.Error).message
             }
-
             else -> Unit
         }
-
-        // Reinicia el estado del registro después de la navegación
         viewModel.resetRegisterState()
     }
 
-    // Diseño de la pantalla de registro
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), // Espaciado alrededor de toda la columna
-        horizontalAlignment = Alignment.CenterHorizontally, // Centra horizontalmente
-        verticalArrangement = Arrangement.Center // Centra verticalmente
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        // Muestra el logo en la parte superior con un tamaño adecuado
         Image(
             painter = painterResource(id = R.drawable.ic_logo),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp) // Espaciado entre el logo y el formulario
+                .padding(bottom = 16.dp)
         )
 
-        // Campo para ingresar el nombre
         TextField(
             value = name.value,
-            onValueChange = { name.value = it }, // Actualiza el nombre
+            onValueChange = { name.value = it },
             label = { Text("Name") },
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD) // Azul clarito
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp) // Espaciado entre los campos
+                .padding(bottom = 8.dp)
         )
 
-        // Campo para ingresar el correo electrónico
         TextField(
             value = email.value,
-            onValueChange = { email.value = it }, // Actualiza el correo electrónico
+            onValueChange = { email.value = it },
             label = { Text("Email") },
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD) // Azul clarito
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp) // Espaciado entre los campos
+                .padding(bottom = 8.dp)
         )
 
-        // Campo para ingresar la contraseña, con transformación visual para ocultarla
         TextField(
             value = password.value,
-            onValueChange = { password.value = it }, // Actualiza la contraseña
+            onValueChange = { password.value = it },
             label = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(), // Oculta la contraseña
+            visualTransformation = PasswordVisualTransformation(),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD) // Azul clarito
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp) // Espaciado entre los campos
+                .padding(bottom = 8.dp)
         )
 
-        // Botón para abrir el DropdownMenu y seleccionar el rol
         Button(
             onClick = { isDropdownOpen = !isDropdownOpen },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp), // Espaciado entre el botón y el siguiente campo
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Color de fondo
+                .padding(bottom = 8.dp)
         ) {
-            Text("Select Role", color = Color.White) // Texto blanco para el botón
+            Text("Select Role", color = Color.White)
         }
 
-        // Menú desplegable para seleccionar el rol (Student o Teacher)
         DropdownMenu(
             expanded = isDropdownOpen,
-            onDismissRequest = { isDropdownOpen = false }, // Cierra el menú si se toca fuera
-            modifier = Modifier.fillMaxWidth() // Asegura que el DropdownMenu tenga el mismo ancho que el botón
+            onDismissRequest = { isDropdownOpen = false },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Opción para seleccionar el rol de Student
             DropdownMenuItem(
                 onClick = { role = UserRole.STUDENT; isDropdownOpen = false },
-                text = { Text("Student") }
+                text = { Text("Student\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83C\uDF93") }
             )
-
-            // Opción para seleccionar el rol de Teacher
             DropdownMenuItem(
                 onClick = { role = UserRole.TEACHER; isDropdownOpen = false },
-                text = { Text("Teacher") }
+                text = { Text("Teacher\uD83E\uDDD1\uD83C\uDFFB\u200D\uD83C\uDFEB") }
             )
         }
 
-        // Muestra el rol seleccionado con un diseño más estilizado
         Text(
             text = "Selected Role: ${role.name}",
             modifier = Modifier
-                .align(Alignment.CenterHorizontally) // Centra el texto horizontalmente
-                .padding(vertical = 8.dp), // Espaciado alrededor del texto
+                .align(Alignment.CenterHorizontally)
+                .padding(vertical = 8.dp),
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray // Color gris para diferenciarlo del resto del texto
+            color = Color.Gray
         )
 
-
-        // Botón para enviar el formulario y registrar al usuario
         Button(
             onClick = {
-                // Llama a la función de registro en el ViewModel
                 viewModel.register(
                     email.value,
                     password.value,
                     name.value,
-                    UserRole.valueOf(role.name) // Convierte el rol a UserRole
+                    UserRole.valueOf(role.name)
                 )
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp), // Espaciado antes del mensaje de error
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Color de fondo
+                .padding(bottom = 8.dp)
         ) {
-            Text("Register", color = Color.White) // Texto blanco para el botón
+            Text("Register", color = Color.White)
         }
 
-        // Si hay un mensaje de error, lo muestra en un Snackbar
         errorMessage.value?.let { message ->
             Snackbar(
-                modifier = Modifier.padding(8.dp), // Añadir padding alrededor del Snackbar
-                action = {
-                    // Acciones del Snackbar (si las hay)
-                }
+                modifier = Modifier.padding(8.dp),
+                action = {}
             ) {
                 Text(text = message)
             }
         }
     }
 }
+
+
+
+
+
+
+
 

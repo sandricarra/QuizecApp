@@ -637,7 +637,7 @@ fun StartScreen(quizId: String, onQuizIdChange: (String) -> Unit, onStartQuiz: (
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        item {
+       item {
             Image(
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = "App Logo",
