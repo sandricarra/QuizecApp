@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -143,7 +144,8 @@ fun ViewResultsP01(questionId: String, questionTitle: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isLoading) {
@@ -228,7 +230,8 @@ fun ViewResultsP02(questionId: String, questionTitle: String, questionOptions: L
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isLoading) {
@@ -319,7 +322,8 @@ fun ViewResultsP03(questionId: String, questionTitle: String, questionOptions: L
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isLoading) {
@@ -412,7 +416,8 @@ fun ViewResultsP04(questionId: String, questionTitle: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isLoading) {
@@ -566,7 +571,8 @@ fun ViewResultsP06(questionId: String, questionTitle: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isLoading) {
@@ -613,11 +619,11 @@ fun ViewResultsP06(questionId: String, questionTitle: String) {
 fun BarChart(
     data: List<Int>,
     labels: List<String>,
-    colors: List<androidx.compose.ui.graphics.Color>,
+    colors: List<Color>,
     modifier: Modifier = Modifier
 ) {
     val maxDataValue = data.maxOrNull() ?: 1
-    val barWidthFraction = 0.2f
+    val barWidthFraction = 0.6f
 
     Box(
         contentAlignment = Alignment.Center,
@@ -634,7 +640,7 @@ fun BarChart(
             for (i in 0..5) {
                 val y = size.height - i * yStepHeight
                 drawLine(
-                    color = androidx.compose.ui.graphics.Color.Gray,
+                    color = Color.Gray,
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
                     strokeWidth = 2f
@@ -657,10 +663,11 @@ fun BarChart(
                 val barX = barSpacing * index + barSpacing / 2 - barWidth / 2
                 val barY = size.height - barHeight
 
-                drawRect(
+                drawRoundRect(
                     color = colors[index],
                     topLeft = Offset(barX, barY),
-                    size = Size(barWidth, barHeight)
+                    size = Size(barWidth, barHeight),
+                    cornerRadius = CornerRadius(8f, 8f)
                 )
 
                 drawContext.canvas.nativeCanvas.drawText(
@@ -700,14 +707,12 @@ fun PieChart(
     colors: List<Color>,
     modifier: Modifier = Modifier
 ) {
-    // Configuración del tamaño del gráfico
-    val size = 300f  // tamaño del gráfico
+    val size = 300f
     val radius = size / 2f
     var startAngle = 0f
     val total = data.sum()
 
     Canvas(modifier = modifier.size(size.dp)) {
-        // Dibujar cada sector del pie
         data.forEachIndexed { index, value ->
             val sweepAngle = if (total > 0) 360f * (value.toFloat() / total) else 0f
             drawArc(
@@ -721,7 +726,6 @@ fun PieChart(
             startAngle += sweepAngle
         }
 
-        // Etiquetas de los segmentos
         startAngle = 0f
         data.forEachIndexed { index, value ->
             val sweepAngle = if (total > 0) 360f * (value.toFloat() / total) else 0f
@@ -729,15 +733,15 @@ fun PieChart(
             val labelX = size / 2 + radius / 2 * cos(Math.toRadians(middleAngle.toDouble())).toFloat()
             val labelY = size / 2 + radius / 2 * sin(Math.toRadians(middleAngle.toDouble())).toFloat()
 
-            // Dibujar etiquetas
             drawContext.canvas.nativeCanvas.apply {
                 drawText(
                     labels[index],
                     labelX,
                     labelY,
-                    android.graphics.Paint().apply {
+                    Paint().apply {
                         textSize = 20f
                         color = android.graphics.Color.BLACK
+                        textAlign = Paint.Align.CENTER
                     }
                 )
             }
@@ -745,6 +749,9 @@ fun PieChart(
         }
     }
 }
+
+
+
 
 
 
