@@ -175,6 +175,8 @@ class QuizHistoryViewModel : ViewModel() {
         }
     }
 
+
+
     private fun updateQuizWithNewQuestions(newQuizId: String, newQuestionIds: List<String>) {
         db.collection("quizzes").document(newQuizId)
             .update("questions", newQuestionIds)
