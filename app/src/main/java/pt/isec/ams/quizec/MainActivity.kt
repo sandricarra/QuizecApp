@@ -32,7 +32,11 @@ import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 import pt.isec.ams.quizec.ui.viewmodel.RegisterViewModel
 import java.util.Locale
 import android.util.Log
-
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 
 
 class MainActivity : ComponentActivity() {
@@ -72,12 +76,27 @@ class MainActivity : ComponentActivity() {
         }*/
         languageViewModel.checkAndSetLanguage(context)
 
-        Scaffold(
-            modifier = Modifier.systemBarsPadding(), // Asegura que la UI respete las áreas del sistema
-        ) { innerPadding ->
-            AppNavHost(navController, innerPadding, authViewModel = viewModel())
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Imagen de fondo
+            Image(
+                painter = painterResource(id = R.drawable.background),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Contenido principal
+            Scaffold(
+                modifier = Modifier.systemBarsPadding(),
+            ) { innerPadding ->
+                AppNavHost(navController, innerPadding, authViewModel = viewModel())
+            }
         }
     }
+
+
 
     @Composable
     fun AppNavHost(
@@ -161,8 +180,9 @@ class MainActivity : ComponentActivity() {
             }
 
         }
-    }
-}
+
+    }}
+
 
 
 
