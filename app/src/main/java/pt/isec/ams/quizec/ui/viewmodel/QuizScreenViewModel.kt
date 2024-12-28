@@ -13,6 +13,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -39,6 +41,8 @@ class QuizScreenViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
+    private val _quizNotFound = MutableLiveData<Boolean>(false)
+    val quizNotFound: LiveData<Boolean> get() = _quizNotFound
 
 
 
@@ -207,16 +211,20 @@ class QuizScreenViewModel : ViewModel() {
                     _quiz.value = quiz
                     quiz?.questions?.firstOrNull()?.let { loadQuestionById(it) }
                     _timeRemaining.value = quiz?.timeLimit?.toLong()?.times(60)
+                    _quizNotFound.value = false // Quiz found
                 } else {
                     handleError("Quiz not found")
+                    _quizNotFound.value = true // Quiz not found
                 }
                 _isLoading.value = false
             }
             .addOnFailureListener { exception ->
                 handleError(exception.message ?: "Error loading quiz")
                 _isLoading.value = false
+                _quizNotFound.value = true
             }
     }
+
 
 
 

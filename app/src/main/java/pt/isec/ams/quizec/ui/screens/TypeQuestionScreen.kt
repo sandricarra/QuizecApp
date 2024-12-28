@@ -34,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
@@ -60,7 +62,7 @@ fun P01Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange, // Actualizar el título usando el estado compartido
-            label = { Text("Enter Question Title") },
+            label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
@@ -70,7 +72,7 @@ fun P01Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -86,12 +88,12 @@ fun P01Question(
             ) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "No image selected",
+                    contentDescription =   stringResource(R.string.select_image),
                     tint = Color.Gray,
                     modifier = Modifier.size(100.dp)
                 )
                 Text(
-                    text = "No image selected",
+                    text = stringResource(R.string.no_image_selected),
                     color = Color.Gray,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -152,7 +154,7 @@ fun P02Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
+            label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -160,7 +162,7 @@ fun P02Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -203,7 +205,7 @@ fun P02Question(
                         onOptionsChange(updatedOptions)
                     },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
-                    label = { Text("Option ${index + 1}") }
+                    label = { Text(stringResource(R.string.option_label) + " ${index + 1}") }
                 )
                 IconButton(
                     onClick = {
@@ -213,7 +215,7 @@ fun P02Question(
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove option")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_option))
                 }
             }
         }
@@ -223,7 +225,7 @@ fun P02Question(
             onClick = { onOptionsChange(options + "") }, // Añadir una opción vacía
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Add Option")
+            Text(stringResource(R.string.add_option))
         }
     }
 }
@@ -252,7 +254,7 @@ fun P03Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
+            label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -260,7 +262,7 @@ fun P03Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -277,7 +279,7 @@ fun P03Question(
             onClick = { imagePickerLauncher.launch("image/*") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Select Image")
+            Text(stringResource(R.string.select_image))
         }
 
         // Opciones para la pregunta
@@ -320,7 +322,7 @@ fun P03Question(
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove option")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_option))
                 }
             }
         }
@@ -330,7 +332,7 @@ fun P03Question(
             onClick = { onOptionsChange(options + "") }, // Añadir una opción vacía
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Add Option")
+            Text(stringResource(R.string.add_option))
         }
     }
 }
@@ -356,7 +358,7 @@ fun P04Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
+            label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -364,7 +366,7 @@ fun P04Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -381,7 +383,7 @@ fun P04Question(
             onClick = { imagePickerLauncher.launch("image/*") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Select Image")
+            Text(stringResource(R.string.select_image))
         }
 
         // Pares de elementos para emparejar
@@ -427,7 +429,7 @@ fun P04Question(
                     updatedPairs.removeAt(index)
                     onPairsChange(updatedPairs)
                 }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove pair")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_pair))
                 }
             }
         }
@@ -437,7 +439,7 @@ fun P04Question(
             onClick = { onPairsChange(pairs + ("" to "")) }, // Añadir un par vacío
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Add Pair")
+            Text(stringResource(R.string.add_pair))
         }
     }
 }
@@ -461,7 +463,7 @@ fun P05Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
+            label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -469,7 +471,7 @@ fun P05Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -477,7 +479,7 @@ fun P05Question(
             )
         } else {
             Text(
-                "No image selected",
+                stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -491,7 +493,7 @@ fun P05Question(
 
         // Lista de elementos a ordenar
         Text(
-            "Order the following items:",
+            stringResource(R.string.items_to_sort),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -522,7 +524,7 @@ fun P05Question(
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Remove item")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_item))
                 }
             }
         }
@@ -533,7 +535,7 @@ fun P05Question(
             modifier = Modifier.padding(vertical = 8.dp),
             enabled = items.size < 6 // Máximo 6 elementos
         ) {
-            Text("Add Item")
+            Text(stringResource(R.string.add_item))
         }
     }
 }
@@ -566,7 +568,7 @@ fun P06Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title: Enter Sentence with Blanks (use {} for blanks)") },
+            label = { Text(stringResource(R.string.question_tittle_label_black)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             placeholder = { Text("Example: The {} is {}.") }
         )
@@ -575,7 +577,7 @@ fun P06Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -583,7 +585,7 @@ fun P06Question(
             )
         } else {
             Text(
-                "No image selected",
+                stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -592,12 +594,12 @@ fun P06Question(
             onClick = { imagePickerLauncher.launch("image/*") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Select Image")
+            Text(stringResource(R.string.select_image))
         }
 
         // Opciones para completar los espacios en blanco
         Text(
-            "Options:",
+            stringResource(R.string.options),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -614,7 +616,7 @@ fun P06Question(
                         onOptionsChange(updatedOptions)
                     },
                     modifier = Modifier.weight(1f),
-                    label = { Text("Option ${index + 1}") }
+                    label = { Text(stringResource(R.string.option_label) + " ${index + 1}") }
                 )
                 IconButton(onClick = {
                     val updatedOptions = options.toMutableList()
@@ -631,12 +633,12 @@ fun P06Question(
             onClick = { onOptionsChange(options + "") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Add Option")
+            Text(stringResource(R.string.add_option))
         }
 
         // Selección de respuestas correctas para cada espacio en blanco
         Text(
-            "Correct Answers:",
+            stringResource(R.string.correct_answers),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -651,7 +653,7 @@ fun P06Question(
                         onClick = { dropdownExpandedStates[index] = true },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text(answer.ifEmpty { "Select Answer" })
+                        Text(answer.ifEmpty { stringResource(R.string.select_answer) })
                     }
                     DropdownMenu(
                         expanded = dropdownExpandedStates[index],
@@ -694,7 +696,7 @@ fun P07Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title") },
+            label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -702,7 +704,7 @@ fun P07Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -710,7 +712,7 @@ fun P07Question(
             )
         } else {
             Text(
-                "No image selected",
+                stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -719,12 +721,12 @@ fun P07Question(
             onClick = { imagePickerLauncher.launch("image/*") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Select Image")
+            Text(stringResource(R.string.select_image))
         }
 
         // Asociaciones de imagen o concepto
         Text(
-            "Associations:",
+            stringResource(R.string.associations),
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(vertical = 8.dp)
         )
@@ -742,7 +744,7 @@ fun P07Question(
                         // Actualizamos el primer valor del par
                         associations[index] = updatedItem to association.second
                     },
-                    label = { Text("Concept or Item") },
+                    label = { Text(stringResource(R.string.concept_or_item)) },
                     modifier = Modifier.weight(1f)
                 )
                 // Descripción o definición
@@ -752,7 +754,7 @@ fun P07Question(
                         // Actualizamos el segundo valor del par
                         associations[index] = association.first to updatedDescription
                     },
-                    label = { Text("Description or Definition") },
+                    label = { Text(stringResource(R.string.description_or_definition)) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -791,7 +793,7 @@ fun P08Question(
         TextField(
             value = questionTitle,
             onValueChange = onTitleChange,
-            label = { Text("Enter Question Title: Enter Sentence with Blanks (use {} for blanks)") },
+            label = { Text(stringResource(R.string.question_tittle_label_black)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             placeholder = { Text("Example: The {} is {}.") }
         )
@@ -800,7 +802,7 @@ fun P08Question(
         if (imageUrl != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = "Selected Image",
+                contentDescription = stringResource(R.string.select_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp),
@@ -808,7 +810,7 @@ fun P08Question(
             )
         } else {
             Text(
-                "No image selected",
+                stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray
             )
@@ -817,7 +819,7 @@ fun P08Question(
             onClick = { imagePickerLauncher.launch("image/*") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Select Image")
+            Text(stringResource(R.string.select_image))
         }
 
         // Respuestas para los espacios en blanco
@@ -840,7 +842,7 @@ fun P08Question(
                         onAnswersChange(updatedAnswers)
                     },
                     modifier = Modifier.weight(1f),
-                    label = { Text("Enter Answer ${index + 1}") }
+                    label = { Text(stringResource(R.string.answer_label) + " ${index + 1}") }
                 )
             }
         }
@@ -850,7 +852,7 @@ fun P08Question(
             onClick = { onAnswersChange(answers + "") },
             modifier = Modifier.padding(vertical = 8.dp)
         ) {
-            Text("Add Blank")
+            Text(stringResource(R.string.add_blank))
         }
     }
 }
@@ -883,6 +885,6 @@ fun AddQuestionButton(
         },
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("Add Question")
+        Text(stringResource(R.string.add_question))
     }
 }

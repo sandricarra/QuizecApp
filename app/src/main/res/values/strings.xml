@@ -7,4 +7,92 @@
     <string name="change_language">Change Language</string>
     <string name="language_english">English</string>
     <string name="language_portuguese">Portuguese</string>
+    <string name="no_questions_found">No questions found.</string>">
+    <string name="create_quiz_button">Create Quiz</string>
+    <string name="join_quiz_button">Join Quiz</string>
+    <string name="quiz_history_button">Quiz History</string>
+    <string name="logout_button">Logout</string>
+    <string name="welcome_message">Welcome to Quizec!</string>
+    <string name="homepage_title">HOMEPAGE</string>
+    <string name="quizCreation">Quiz Creation</string>
+    <string name="manage_quiz_button">Manage Quiz</string>
+    <string name="create_quiz">Create Quiz</string>
+    <string name="quiz_title">Quiz Title</string>
+    <string name="description">Description</string>
+    <string name="time_limit">Time Limit (minutes)</string>
+    <string name="restrict_by_geolocation">Restrict by Geolocation</string>
+    <string name="access_controlled">Access Controlled (Quiz starts when the creator wants)</string>
+    <string name="show_results_immediately">Show Results Immediately (Show results after finishing)</string>
+    <string name="select_image">Select Image</string>
+    <string name="select_question_type">Select Question Type</string>
+    <string name="added_questions">Added Questions</string>
+    <string name="no_questions_added">No questions added yet.</string>
+    <string name="title">Title</string>
+    <string name="type">Type</string>
+    <string name="correct_answers">Correct Answers</string>
+    <string name="save_quiz">Save Quiz</string>
+    <string name="quiz_access_code">Quiz Access Code: %s</string>
+
+    <!-- Mensajes de error y notificaciones -->
+    <string name="location_not_available">No se pudo obtener la ubicación.</string>
+    <string name="location_error">Error al obtener la ubicación.</string>
+    <string name="location_permission_denied">Ubicación no permitida. No se puede habilitar la restricción por geolocalización.</string>
+    <string name="no_image_selected">No image selected</string>
+
+    <!-- Opciones de preguntas -->
+    <string name="True">True</string>
+    <string name="False">False</string>
+    <string name="item_1">Item 1</string>
+    <string name="item_2">Item 2</string>
+    <string name="sun">Sun</string>
+    <string name="moon">Moon</string>
+    <string name="star">Star</string>
+
+    <string name="name_label">Name</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="select_role_button">Select Role</string>
+    <string name="student_role">Student 🧑‍🏫</string>
+    <string name="teacher_role">Teacher 🧑‍🏫</string>
+    <string name="selected_role">Selected Role: %1$s</string>
+    <string name="register_button">Register</string>
+    <string name="name_empty_error">Name cannot be empty.</string>
+    <string name="email_empty_error">Email cannot be empty.</string>
+    <string name="password_empty_error">Password cannot be empty.</string>
+    <string name="invalid_email_format_error">Invalid email format.</string>
+
+
+
+    <string name="enter_question_title">Enter Question Title</string>
+
+    <string name="true_or_false_question">True or False Question</string>
+    <string name="options">Options:</string>
+    <string name="matching_pairs">Matching Pairs:</string>
+
+    <string name="add_pair">Add Pair</string>
+
+    <string name="remove_pair">Remove pair</string>
+
+    <string name="question_title_label">Enter Question Title</string>
+    <string name= "question_tittle_label_black">"Enter Question Title: Enter Sentence with Blanks (use {} for blanks)"</string>
+    <string name= "associations"> "Associations:"</string>
+    <string name="order_the_items">Order the following items:</string>
+    <string name="add_item">Add Item</string>
+    <string name="add_blank">Add Blank</string>
+    <string name="answers">Answers:</string>
+    <string name="add_answer">Add Answer</string>
+    <string name="answer_label">Answer</string>"
+    <string name="option_label">Option</string>
+    <string name="items_to_sort">Items to Sort</string>
+    <string name="add_question">Add Question</string>
+
+
+
+    <string name="remove_item">Remove item</string>
+    <string name="remove_option">Remove option</string>
+    <string name="add_option">Add Option</string>
+    <string name="concept_or_item">Concept or Item</string>
+    <string name="description_or_definition">Description or Definition</string>
+    <string name="blank_label">Blank %1$d:</string>
+    <string name="select_answer">Select Answer</string>
 </resources>

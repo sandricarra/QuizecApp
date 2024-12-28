@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,17 +25,32 @@ import androidx.navigation.compose.rememberNavController
 import pt.isec.ams.quizec.ui.screens.*
 import pt.isec.ams.quizec.ui.theme.QuizecTheme
 import pt.isec.ams.quizec.ui.viewmodel.AuthViewModel
+import pt.isec.ams.quizec.ui.viewmodel.LanguageViewModel
 import pt.isec.ams.quizec.ui.viewmodel.LoginViewModel
 import pt.isec.ams.quizec.ui.viewmodel.ManageQuizViewModel
 import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 import pt.isec.ams.quizec.ui.viewmodel.RegisterViewModel
 import java.util.Locale
+import android.util.Log
+
 
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        /*val languageViewModel: LanguageViewModel = LanguageViewModel()
+
+        // Obtén la preferencia de idioma almacenada
+        val preferredLanguage = languageViewModel.getLanguagePreference(applicationContext)
+        Log.d("MainActivity", "Preferred Language: $preferredLanguage")
+        // Establece el idioma
+        languageViewModel.setAppLocale(applicationContext, "es")*/
+        val languageViewModel = LanguageViewModel()
+
+        // Comprueba y establece el idioma al iniciar la aplicación
+        languageViewModel.checkAndSetLanguage(applicationContext)
         enableEdgeToEdge() // Activa el modo edge-to-edge para un diseño inmersivo
         setContent {
             QuizecTheme {
@@ -47,22 +63,17 @@ class MainActivity : ComponentActivity() {
     fun QuizecApp() {
         val navController = rememberNavController()
         val context = LocalContext.current
-        val configuration = LocalConfiguration.current
-        val viewModel: LoginViewModel = viewModel()
+        val languageViewModel: LanguageViewModel = LanguageViewModel()
 
-        // Observa el idioma seleccionado
-        val selectedLanguage by viewModel.selectedLanguage.observeAsState("en")
-
-        // Cambia la configuración de idioma cuando cambia el idioma seleccionado
-        LaunchedEffect(selectedLanguage) {
-            val locale = Locale(selectedLanguage)
-            Locale.setDefault(locale)
-            configuration.setLocale(locale)
-            context.resources.updateConfiguration(configuration, context.resources.displayMetrics)
-        }
+        // Cambia el idioma al iniciar la aplicación
+        /*LaunchedEffect(Unit) {
+            val preferredLanguage = languageViewModel.getLanguagePreference(context)
+            languageViewModel.setAppLocale(context, preferredLanguage)
+        }*/
+        languageViewModel.checkAndSetLanguage(context)
 
         Scaffold(
-            modifier = androidx.compose.ui.Modifier.systemBarsPadding(), // Asegura que la UI respete las áreas del sistema
+            modifier = Modifier.systemBarsPadding(), // Asegura que la UI respete las áreas del sistema
         ) { innerPadding ->
             AppNavHost(navController, innerPadding, authViewModel = viewModel())
         }

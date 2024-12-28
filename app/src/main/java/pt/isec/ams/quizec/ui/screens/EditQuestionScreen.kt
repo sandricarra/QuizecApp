@@ -6,8 +6,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
 
 
@@ -22,7 +24,7 @@ fun EditQuestionScreen(
 
     // Si no hay preguntas cargadas (la lista está vacía), mostramos un mensaje de error
     if (questions.isEmpty()) {
-        Text("No question found.")
+        Text(stringResource(id = R.string.no_questions_found))
     } else {
         val question = questions.first() // Tomamos la primera pregunta de la lista
         when (question.type) {

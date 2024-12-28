@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.getString
 import androidx.navigation.NavController
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.ui.viewmodel.LoginState
@@ -32,11 +33,10 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
 
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
-    val selectedLanguage by viewModel.selectedLanguage.observeAsState("pt")
+
     val loginState by viewModel.loginState.observeAsState()
     var expanded by remember { mutableStateOf(false) }
-
-
+    var errorMessage by remember { mutableStateOf<String?>(null) } // Variable para mostrar el mensaje de error
 
     // Contenedor de los elementos de la pantalla, alineado al centro
     Column(
@@ -57,43 +57,18 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 contentDescription = "Logo"
             )
         }
-        // Botón para cambiar el idioma
-        Button(
-            onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.change_language))
-        }
 
-        // Menú desplegable para seleccionar el idioma
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                onClick = {
-                    viewModel.setLanguage("en")
-                    expanded = false
-                },
-                text = { Text(stringResource(R.string.language_english)) }
-            )
-            DropdownMenuItem(
-                onClick = {
-                    viewModel.setLanguage("pt")
-                    expanded = false
-                },
-                text = { Text(stringResource(R.string.language_portuguese)) }
-            )
-        }
+
+
+
         // Campo de texto para el email
         TextField(
             value = email.value,
             onValueChange = { email.value = it },  // Actualiza el estado cuando el usuario escribe
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             colors = TextFieldDefaults.textFieldColors(
                 containerColor = Color(0xFFE3F2FD) // Azul clarito
             ),
-
             modifier = Modifier.fillMaxWidth()  // Asegura que el campo de texto ocupe todo el ancho disponible
         )
 
@@ -104,12 +79,11 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
         TextField(
             value = password.value,
             onValueChange = { password.value = it },
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.password)) },
             visualTransformation = PasswordVisualTransformation(),  // Oculta la contraseña
             colors = TextFieldDefaults.textFieldColors(
                 containerColor = Color(0xFFE3F2FD) // Azul clarito
             ),
-
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -119,24 +93,30 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
         // Botón para realizar login
         Button(
             onClick = {
-                // Llama a la función login del ViewModel con los datos proporcionados
-                viewModel.login(email.value, password.value)
+                // Validación de los campos antes de intentar hacer login
+                if (email.value.isBlank() || password.value.isBlank()) {
+                    errorMessage = "Please fill in both fields." // Mensaje de error si hay campos vacíos
+                } else {
+                    errorMessage = null // Limpia el mensaje de error si los campos no están vacíos
+                    viewModel.login(email.value, password.value)
+                }
             },
             modifier = Modifier.fillMaxWidth()  // Asegura que el botón ocupe todo el ancho disponible
         ) {
-            Text("Login")  // Texto dentro del botón
+            Text(stringResource(R.string.login))  // Texto dentro del botón
         }
 
         // Espaciador adicional entre el login y el mensaje de error (si lo hay)
         Spacer(modifier = Modifier.height(8.dp))
 
         // Muestra un mensaje de error si el estado de login es de error
-        when (loginState) {
+        when (val state = loginState) {
+
             is LoginState.Error -> {
                 // Muestra el mensaje de error en rojo
                 Text(
                     text = (loginState as LoginState.Error).message,
-                    color = androidx.compose.ui.graphics.Color.Red
+                    color = Color.Red
                 )
             }
             else -> {
@@ -167,9 +147,10 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Register")  // Texto dentro del botón
+            Text(stringResource(R.string.register))  // Texto dentro del botón
         }
     }
 }
+
 
 

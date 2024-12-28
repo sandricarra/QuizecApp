@@ -33,6 +33,8 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.Manifest
+import androidx.compose.ui.res.stringResource
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
@@ -175,12 +177,12 @@ fun QuizCreationScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.AccountCircle, // Ícono predeterminado
-                        contentDescription = "No image selected",
+                        contentDescription = stringResource(R.string.no_image_selected),
                         tint = Color.Gray,
                         modifier = Modifier.size(100.dp) // Tamaño del ícono
                     )
                     Text(
-                        text = "No image selected",
+                        text = stringResource(R.string.no_image_selected),
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -190,7 +192,7 @@ fun QuizCreationScreen(
 
         // Título principal del cuestionario
         item {
-            Text("Create Quiz", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(R.string.create_quiz), style = MaterialTheme.typography.headlineMedium)
         }
 
         // Campo para el título del cuestionario
@@ -198,7 +200,7 @@ fun QuizCreationScreen(
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Quiz Title") },
+                label = { Text(stringResource(R.string.quiz_title)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -209,7 +211,7 @@ fun QuizCreationScreen(
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Description") },
+                label = { Text(stringResource(R.string.description)) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 4
             )
@@ -223,7 +225,7 @@ fun QuizCreationScreen(
                     // Validar que el valor ingresado sea un número
                     timeLimit = it.toLongOrNull() // Si no es un número, será null
                 },
-                label = { Text("Time Limit (minutes)") },
+                label = { Text(stringResource(R.string.time_limit)) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 maxLines = 1
@@ -239,7 +241,7 @@ fun QuizCreationScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Restrict by Geolocation",
+                    text = stringResource(R.string.restrict_by_geolocation),
                     modifier = Modifier.weight(1f)
                 )
                 // Al cambiar el switch de restricción geográfica, obtener la ubicación
@@ -284,7 +286,7 @@ fun QuizCreationScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Access Controlled (Quiz start when the creator wants)",
+                    text = stringResource(R.string.access_controlled),
                     modifier = Modifier.weight(1f)
                 )
                 Switch(
@@ -303,7 +305,7 @@ fun QuizCreationScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Show Results Immediately (Show results after finishing)",
+                    text = stringResource(R.string.show_results_immediately),
                     modifier = Modifier.weight(1f)
                 )
                 Switch(
@@ -319,13 +321,13 @@ fun QuizCreationScreen(
                 onClick = { imagePickerLauncher.launch("image/*") },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Select Image")
+                Text(stringResource(R.string.select_image))
             }
         }
 
         // Botón y menú desplegable para seleccionar el tipo de pregunta
         item {
-            var selectedQuestionTypeText by remember { mutableStateOf("Select Question Type") }
+            var selectedQuestionTypeText by remember { mutableStateOf("Selecione o tipo de pergunta") }
 
             Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
@@ -587,7 +589,7 @@ fun QuizCreationScreen(
             // Mostrar el código del cuestionario si ya ha sido guardado
             if (showAccessCodeScreen && savedQuizId != null) {
                 Text(
-                    text = "Quiz Access Code: $savedQuizId",
+                    text = stringResource(R.string.quiz_access_code) + " $savedQuizId",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
@@ -633,7 +635,7 @@ fun QuizCreationScreen(
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Save Quiz")
+                    Text(stringResource(R.string.save_quiz))
                 }
             }
         }
@@ -644,7 +646,7 @@ fun QuizCreationScreen(
             if (viewModel.questions.isNotEmpty()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Added Questions",
+                        text = stringResource(R.string.added_questions),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -667,7 +669,7 @@ fun QuizCreationScreen(
                             ) {
                                 // Título de la pregunta
                                 Text(
-                                    text = "Title: ${question.title}",
+                                    text = stringResource(R.string.title) + " ${question.title}",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(bottom = 4.dp)
@@ -675,7 +677,7 @@ fun QuizCreationScreen(
 
                                 // Tipo de pregunta
                                 Text(
-                                    text = "Type: ${question.type}",
+                                    text = stringResource(R.string.type) + " ${question.type}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(bottom = 4.dp)
@@ -683,7 +685,7 @@ fun QuizCreationScreen(
 
                                 // Respuestas correctas
                                 Text(
-                                    text = "Correct Answers: ${question.correctAnswers}",
+                                    text = stringResource(R.string.correct_answers) + " ${question.correctAnswers}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
@@ -693,7 +695,7 @@ fun QuizCreationScreen(
                 }
             } else {
                 Text(
-                    text = "No questions added yet.",
+                    text = stringResource(R.string.no_questions_added),
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray,
                     modifier = Modifier.padding(8.dp)

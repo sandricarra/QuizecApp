@@ -571,6 +571,7 @@ fun QuizAccessScreen(navController: NavController,
                 onQuizIdChange = { quizId = it },
 
                 creatorId = creatorId,
+                quizNotFound = errorMessage != null,
                 onStartQuiz = {
                     viewModel.hasUserPlayedQuiz(quizId, creatorId) { hasPlayed ->
                         if (hasPlayed) {
@@ -683,8 +684,19 @@ fun StartScreen(
     quizId: String,
     creatorId: String, // Añade creatorId como parámetro
     onQuizIdChange: (String) -> Unit,
-    onStartQuiz: () -> Unit
+    onStartQuiz: () -> Unit,
+    quizNotFound: Boolean // Nuevo parámetro para controlar si el quiz no se encontró
 ) {
+    val errorMessage = remember { mutableStateOf<String?>(null) }
+
+    // Comprobaciones de validación
+    val isQuizIdValid = quizId.length == 6 && quizId.all { it.isUpperCase() || it.isDigit() }
+
+    // Muestra el mensaje de error si el quiz no fue encontrado
+    if (quizNotFound) {
+        errorMessage.value = "Quiz not found. Please check the Quiz ID."
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -713,7 +725,10 @@ fun StartScreen(
         item {
             TextField(
                 value = quizId,
-                onValueChange = onQuizIdChange,
+                onValueChange = {
+                    errorMessage.value = null // Limpiar mensaje de error cuando se cambia el ID
+                    onQuizIdChange(it)
+                },
                 label = { Text("Enter Quiz ID") },
                 placeholder = { Text("e.g., ABC123") },
                 modifier = Modifier
@@ -729,7 +744,16 @@ fun StartScreen(
         }
         item {
             Button(
-                onClick = onStartQuiz,
+                onClick = {
+                    if (quizId.isBlank()) {
+                        errorMessage.value = "Quiz ID cannot be empty"
+                    } else if (!isQuizIdValid) {
+                        errorMessage.value = "Quiz ID must be 6 characters, uppercase letters, and numbers"
+                    } else {
+                        errorMessage.value = null
+                        onStartQuiz()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -740,6 +764,17 @@ fun StartScreen(
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Load Quiz", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        errorMessage.value?.let { message ->
+            item {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    textAlign = TextAlign.Center
+                )
             }
         }
         item {
@@ -753,6 +788,7 @@ fun StartScreen(
         }
     }
 }
+
 
 
 @Composable

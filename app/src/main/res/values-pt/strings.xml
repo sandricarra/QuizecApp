@@ -7,4 +7,90 @@
     <string name="change_language">Mudar Idioma</string>
     <string name="language_english">Inglês</string>
     <string name="language_portuguese">Português</string>
+    <string name="create_quiz_button">Criar Quiz</string>
+    <string name="join_quiz_button">Entrar no Quiz</string>
+    <string name="quiz_history_button">Histórico de Quizzes</string>
+    <string name="logout_button">Sair</string>
+    <string name="welcome_message">Bem-vindo ao Quizec!</string>
+    <string name="homepage_title">Homepage</string>
+    <string name="quizCreation">Criar Quiz</string>
+    <string name="manage_quiz_button">Gerenciar Quiz</string>
+    <string name="no_questions_found">Nenhuma questão encontrada.</string>
+    <string name="name_label">Nome</string>
+    <string name="email_label">E-mail</string>
+    <string name="password_label">Senha</string>
+    <string name="select_role_button">Selecione o Papel</string>
+    <string name="student_role">Aluno 🧑‍🏫</string>
+    <string name="teacher_role">Professor 🧑‍🏫</string>
+    <string name="selected_role">Papel Selecionado: %1$s</string>
+    <string name="register_button">Cadastrar</string>
+    <string name="name_empty_error">O nome não pode estar vazio.</string>
+    <string name="email_empty_error">O e-mail não pode estar vazio.</string>
+    <string name="password_empty_error">A senha não pode estar vazia.</string>
+    <string name="invalid_email_format_error">Formato de e-mail inválido.</string>
+
+    <string name="create_quiz">Criar Questionário</string>
+    <string name="quiz_title">Título do Questionário</string>
+    <string name="description">Descrição</string>
+    <string name="time_limit">Tempo Limite (minutos)</string>
+    <string name="restrict_by_geolocation">Restringir por Geolocalização</string>
+    <string name="access_controlled">Controlo de Acesso (O questionário começa quando o criador deseja)</string>
+    <string name="show_results_immediately">Mostrar Resultados Imediatamente (Mostrar resultados após terminar)</string>
+
+    <string name="select_question_type">Selecionar Tipo de Pergunta</string>
+    <string name="added_questions">Perguntas Adicionadas</string>
+    <string name="no_questions_added">Nenhuma pergunta adicionada ainda.</string>
+    <string name="title">Título</string>
+    <string name="type">Tipo</string>
+
+    <string name="save_quiz">Salvar Questionário</string>
+    <string name="quiz_access_code">Código de Acesso do Questionário: %s</string>
+
+    <!-- Mensagens de erro e notificações -->
+    <string name="location_not_available">Não foi possível obter a localização.</string>
+    <string name="location_error">Erro ao obter a localização.</string>
+    <string name="location_permission_denied">Localização não permitida. Não é possível habilitar a restrição por geolocalização.</string>
+
+
+    <!-- Opções de perguntas -->
+    <string name="True">Verdadeiro</string>
+    <string name="False">Falso</string>
+    <string name="item_1">Item 1</string>
+    <string name="item_2">Item 2</string>
+    <string name="sun">Sol</string>
+    <string name="moon">Lua</string>
+    <string name="star">Estrela</string>
+
+
+    <string name="enter_question_title">Digite o título da pergunta</string>
+
+    <string name="true_or_false_question">Pergunta Verdadeiro ou Falso</string>
+    <string name="options">Opções:</string>
+    <string name="matching_pairs">Pares para combinar:</string>
+
+    <string name="add_pair">Adicionar Par</string>
+
+    <string name="question_tittle_label_black"> "Digite o título da pergunta: Digite uma frase com espaços em branco (use {} para espaços em branco)"</string>
+    <string name="remove_pair">Remover par</string>
+    <string name="associations">Associações</string>
+    <string name="add_answer">Adicionar resposta</string>
+    <string name="answer_label">Resposta</string>"
+    <string name="question_title_label">Digite o título da pergunta</string>
+    <string name="select_image">Selecionar imagem</string>
+    <string name="no_image_selected">Nenhuma imagem selecionada</string>
+    <string name="order_the_items">Ordene os seguintes itens:</string>
+    <string name="add_item">Adicionar item</string>
+    <string name="add_blank">Adicionar espaço em branco</string>
+    <string name="answers">Respostas:</string>
+    <string name="correct_answers">Respostas corretas:</string>
+    <string name="remove_item">Remover item</string>
+    <string name="remove_option">Remover opção</string>
+    <string name="add_option">Adicionar opção</string>
+    <string name="concept_or_item">Conceito ou item</string>
+    <string name="description_or_definition">Descrição ou definição</string>
+    <string name="blank_label">Espaço em branco %1$d:</string>
+    <string name="select_answer">Selecionar resposta</string>
+    <string name="option_label">Opção</string>
+    <string name="items_to_sort">Itens para ordenar</string>
+    <string name="add_question">Adicionar Pergunta</string>
 </resources>

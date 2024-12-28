@@ -13,14 +13,7 @@ class LoginViewModel : ViewModel() {
     val loginState: LiveData<LoginState?> get() = _loginState
 
     // Estado para el idioma seleccionado
-    private val _selectedLanguage = MutableLiveData<String>("en") // Estado inicial en portugués
-    val selectedLanguage: LiveData<String> get() = _selectedLanguage
 
-    // Función para cambiar el idioma
-    fun setLanguage(language: String) {
-        _selectedLanguage.value = language
-
-    }
 
     fun login(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)

@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,7 +51,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
         // Segundo item de la lista: mensaje de bienvenida.
         item {
             Text(
-                text = "Welcome to Quizec!", // Texto de bienvenida.
+                text = stringResource(id = R.string.welcome_message), // Texto de bienvenida.
                 color = Color(0xFF1E88E5), // Cambia el color a un tono azul más vibrante.
                 fontSize = 32.sp, // Tamaño de fuente más grande.
                 fontWeight = FontWeight.ExtraBold, // Negrita extra para mayor énfasis.
@@ -64,7 +65,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
         // Tercer item de la lista: título "HOMEPAGE".
         item {
             Text(
-                text = "HOMEPAGE", // Título de la página de inicio.
+                text = stringResource(id = R.string.homepage_title), // Título de la página de inicio.
                 style = MaterialTheme.typography.titleLarge.copy(
                     // Uso de estilo más grande.
                     fontWeight = FontWeight.Bold, // Negrita para mayor impacto.
@@ -85,7 +86,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Cambia el color de fondo del botón.
             ) {
                 Text(
-                    "Create a Quiz", // Texto dentro del botón.
+                    stringResource(id = R.string.create_quiz_button), // Texto dentro del botón.
                     color = Color.White, // Color de texto blanco para contraste.
                     style = MaterialTheme.typography.titleMedium // Estilo de texto del botón.
                 )
@@ -106,7 +107,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC6)) // Cambia el color del botón a verde-agua.
             ) {
                 Text(
-                    "Participate in a Quiz", // Texto dentro del botón.
+                    stringResource(id = R.string.join_quiz_button), // Texto dentro del botón.
                     color = Color.White, // Texto blanco.
                     style = MaterialTheme.typography.titleMedium // Estilo de texto del botón.
                 )
@@ -126,7 +127,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9E9E9E)) // Color gris para el botón.
             ) {
                 Text(
-                    "My Quiz History", // Texto dentro del botón.
+                    stringResource(id = R.string.quiz_history_button), // Texto dentro del botón.
                     color = Color.White, // Texto blanco.
                     style = MaterialTheme.typography.titleMedium // Estilo de texto del botón.
                 )
@@ -141,7 +142,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)) // Cambia el color de fondo del botón.
             ) {
                 Text(
-                    "Manage Quiz", // Texto dentro del botón.
+                    stringResource(id = R.string.manage_quiz_button), // Texto dentro del botón.
                     color = Color.White, // Color de texto blanco para contraste.
                     style = MaterialTheme.typography.titleMedium // Estilo de texto del botón.
                 )
@@ -165,7 +166,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary) // Color rojo para el botón de logout.
             ) {
                 Text(
-                    "Logout", // Texto dentro del botón.
+                    stringResource(id = R.string.logout_button), // Texto dentro del botón", // Texto dentro del botón.
                     color = Color.White, // Texto blanco.
                     style = MaterialTheme.typography.titleMedium // Estilo de texto del botón.
                 )
@@ -173,22 +174,7 @@ fun HomeScreen(navController: NavController, creatorId: String) {
         }
 
 
-        item {
-            if (participants.isNotEmpty()) {
-                Text(
-                    text = "Participants Waiting:",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-                participants.forEach { participant ->
-                    Text(
-                        text = participant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
-            }
-        }
+
     }
 }
 
