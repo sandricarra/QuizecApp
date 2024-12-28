@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
@@ -668,7 +669,7 @@ fun WaitingScreen1(navController: NavController, viewModel: QuizScreenViewModel,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "The quiz is currently locked. Please wait for the creator to unlock it.",
+            text = stringResource(R.string.waiting_message),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -694,7 +695,7 @@ fun StartScreen(
 
     // Muestra el mensaje de error si el quiz no fue encontrado
     if (quizNotFound) {
-        errorMessage.value = "Quiz not found. Please check the Quiz ID."
+        errorMessage.value = stringResource(R.string.quiz_not_found_error)
     }
 
     LazyColumn(
@@ -716,7 +717,7 @@ fun StartScreen(
         }
         item {
             Text(
-                text = "Start playing!",
+                text = stringResource(R.string.welcome_message),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -729,8 +730,8 @@ fun StartScreen(
                     errorMessage.value = null // Limpiar mensaje de error cuando se cambia el ID
                     onQuizIdChange(it)
                 },
-                label = { Text("Enter Quiz ID") },
-                placeholder = { Text("e.g., ABC123") },
+                label = { Text(stringResource(R.string.enter_quiz_id)) },
+                placeholder = { Text(stringResource(R.string.quiz_id_placeholder)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -779,7 +780,7 @@ fun StartScreen(
         }
         item {
             Text(
-                text = "Please enter the Quiz ID to proceed",
+                text = stringResource(R.string.proceed_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -811,7 +812,7 @@ fun ResultScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Quiz Finished!",
+            text = stringResource(R.string.quiz_finished),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -820,7 +821,7 @@ fun ResultScreen(
         // Mostrar el tiempo restante
         if (timeRemaining != null) {
             Text(
-                text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
+                text = stringResource(R.string.time_remaining) + ": ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Black
             )
@@ -836,14 +837,14 @@ fun ResultScreen(
             enabled = quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Check Answers")
+            Text(stringResource(R.string.check_answers))
         }
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = onExitQuiz,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Exit Quiz")
+            Text(stringResource(R.string.exit_quiz))
         }
     }
 }
@@ -874,7 +875,7 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (errorMessage != null) {
             Text(
-                text = errorMessage ?: "Unknown error",
+                text = errorMessage ?: stringResource(R.string.unknown_error),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -887,7 +888,7 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
 
             if (timeRemaining != null) {
                 Text(
-                    text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
+                    text = stringResource(R.string.time_remaining) + ": ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.Black
                 )
@@ -982,7 +983,7 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                 }
 
                 else -> {
-                    Text("Unsupported question type.")
+                    Text(stringResource(R.string.unsupported_question_type))
                 }
             }
             Column(
@@ -1018,7 +1019,7 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
                     onClick = onQuizFinished,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Finish Quiz")
+                    Text(stringResource(R.string.finish_quiz))
                 }
             }
         }
@@ -1055,13 +1056,13 @@ fun PresentationScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Number of Questions: ${it.questions.size}",
+                text = stringResource(R.string.questions_for_quiz) + ": ${it.questions.size}",
                 style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Created by: $creatorName",
+                text = stringResource(R.string.created_by) + ": $creatorName",
                 style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -1081,7 +1082,7 @@ fun PresentationScreen(
                 // Mostrar un ícono predeterminado si no hay imagen
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "No image selected",
+                    contentDescription = stringResource(R.string.no_image_selected),
                     tint = Color.Gray,
                     modifier = Modifier.size(100.dp)
                 )
@@ -1092,7 +1093,7 @@ fun PresentationScreen(
             onClick = onStartQuiz,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Start Quiz")
+            Text(stringResource(R.string.start_playing))
         }
     }
 }

@@ -32,7 +32,7 @@
     <string name="create_quiz">Criar Questionário</string>
     <string name="quiz_title">Título do Questionário</string>
     <string name="description">Descrição</string>
-    <string name="time_limit">Tempo Limite (minutos)</string>
+    <string name="time_limit">Tempo Limite (minutos): </string>
     <string name="restrict_by_geolocation">Restringir por Geolocalização</string>
     <string name="access_controlled">Controlo de Acesso (O questionário começa quando o criador deseja)</string>
     <string name="show_results_immediately">Mostrar Resultados Imediatamente (Mostrar resultados após terminar)</string>
@@ -50,7 +50,13 @@
     <string name="location_not_available">Não foi possível obter a localização.</string>
     <string name="location_error">Erro ao obter a localização.</string>
     <string name="location_permission_denied">Localização não permitida. Não é possível habilitar a restrição por geolocalização.</string>
+    <string name="quiz_history_title">Meu Histórico de Questionários \uD83D\uDCC3</string>
+    <string name="created_on">Criado em: %s</string>
 
+    <string name="filter">Filtrar: %s</string>
+    <string name="all">Todos</string>
+    <string name="created_quizzes">Questionários Criados</string>
+    <string name="participated_quizzes">Questionários Participados</string>
 
     <!-- Opções de perguntas -->
     <string name="True">Verdadeiro</string>
@@ -60,8 +66,37 @@
     <string name="sun">Sol</string>
     <string name="moon">Lua</string>
     <string name="star">Estrela</string>
+    <string name="questions_for_quiz">Perguntas para o Questionário %s</string>
+    <string name="edit">Editar</string>
+    <string name="duplicate">Duplicar</string>
+    <string name="delete">Excluir</string>
+    <string name="view_results">Ver Resultados</string>
+    <string name="start_playing">Comece a jogar!</string>
+    <string name="enter_quiz_id">Insira o ID do Questionário</string>
+    <string name="quiz_id_placeholder">ex., ABC123</string>
+    <string name="load_quiz">Carregar Questionário</string>
+    <string name="quiz_id_empty_error">O ID do Questionário não pode estar vazio</string>
+    <string name="quiz_id_invalid_error">O ID do Questionário deve ter 6 caracteres, letras maiúsculas e números</string>
+    <string name="quiz_not_found_error">Questionário não encontrado. Por favor, verifique o ID do Questionário.</string>
+    <string name="proceed_message">Por favor, insira o ID do Questionário para continuar</string>
+    <string name="quiz_locked_message">O questionário está bloqueado. Por favor, aguarde o criador desbloqueá-lo.</string>
+    <string name="quiz_finished">Questionário Finalizado!</string>
+    <string name="time_remaining">Tempo restante: %s</string>
+    <string name="check_answers">Ver Respostas</string>
+    <string name="exit_quiz">Sair do Questionário</string>
+    <string name="question_title">Pergunta: %s</string>
+    <string name="unsupported_question_type">Tipo de pergunta não suportado.</string>
+    <string name="previous_question">⬅️</string>
+    <string name="next_question">➡️</string>
+    <string name="finish_quiz">Finalizar Questionário</string>
 
-
+    <string name="number_of_questions">Número de Perguntas: %s</string>
+    <string name="created_by">Criado por: %s</string>
+    <string name="start_quiz">Iniciar Questionário</string>
+    <string name="location_required_message">A localização é necessária para iniciar este questionário. Por favor, habilite os serviços de localização.</string>
+    <string name="already_played_message">Você já jogou este questionário.</string>
+    <string name="unknown_error">Erro desconhecido</string>
+    <string name="waiting_message">O questionário está atualmente bloqueado. Por favor, aguarde que o criador o desbloqueie.</string>
     <string name="enter_question_title">Digite o título da pergunta</string>
 
     <string name="true_or_false_question">Pergunta Verdadeiro ou Falso</string>
@@ -93,4 +128,23 @@
     <string name="option_label">Opção</string>
     <string name="items_to_sort">Itens para ordenar</string>
     <string name="add_question">Adicionar Pergunta</string>
+    <string name="no_quizzes_message">No tienes ningún cuestionario creado.</string>
+    <string name="quiz_status">Estado: %s</string>
+    <string name="geolocation_restricted">Restricción de Geolocalización:</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="result">Resultados</string>
+    <string name="toggle_quiz_status">Alternar Estado do Questionário</string>
+    <string name="toggle_geolocation_restriction">Alternar Restrição de Geolocalização</string>
+    <string name="toggle_show_results_immediately">Alternar Mostrar Resultados Imediatamente</string>
+    <string name="force_finish_quiz">Forçar Finalização do Questionário</string>
+    <string name="waiting_participants">Participantes Aguardando:</string>
+    <string name="no_participants_yet">Ainda não há participantes.</string>
+    <string name="playing_users">Usuários Jogando:</string>
+    <string name="no_users_playing_yet">Ainda não há usuários jogando.</string>
+    <string name="anonymous_results">Resultados Anônimos:</string>
+    <string name="no_results_yet">Ainda não há resultados.</string>
+    <string name="clear_results">Limpar Resultados</string>
+    <string name="no_time_limit">Nao tem limite de tempo</string>">
+    <string name="user">Usuario</string>"
 </resources>

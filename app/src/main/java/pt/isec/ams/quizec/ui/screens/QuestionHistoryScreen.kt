@@ -11,9 +11,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.ui.viewmodel.QuestionHistoryViewModel
 
 @Composable
@@ -39,7 +41,7 @@ fun QuestionHistoryScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Título de la pantalla
-        Text(text = "Questions for Quiz $quizId", style = MaterialTheme.typography.headlineMedium)
+        Text(text = stringResource(R.string.questions_for_quiz) + " $quizId", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -75,14 +77,14 @@ fun QuestionHistoryScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                     ) {
-                                        Text("Edit")
+                                        Text(stringResource(R.string.edit))
                                     }
                                     Button(
                                         onClick = { viewModel.duplicateQuestion(question, quizId) },
                                         modifier = Modifier
                                             .weight(1f)
                                     ) {
-                                        Text("Duplicate")
+                                        Text(stringResource(R.string.duplicate))
                                     }
                                 }
 
@@ -106,7 +108,7 @@ fun QuestionHistoryScreen(
                                         modifier = Modifier
                                             .weight(1f)
                                     ) {
-                                        Text("View Results")
+                                        Text(stringResource(R.string.view_results))
                                     }
                                 }
                             }

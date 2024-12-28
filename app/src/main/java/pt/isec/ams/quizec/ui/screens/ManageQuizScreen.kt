@@ -6,10 +6,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.ui.viewmodel.ManageQuizViewModel
 
 @Composable
@@ -49,7 +51,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
         if (quizzes.isEmpty()) {
             item {
                 Text(
-                    text = AnnotatedString("You don't have any quizzes created."),
+                    text = AnnotatedString(stringResource(R.string.no_quizzes_message)),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -85,7 +87,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
 
                         // Estado del cuestionario
                         Text(
-                            text = "Status: ${quizStatus?.name}",
+                            text = stringResource(R.string.quiz_status) +"${quizStatus?.name}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 4.dp)
@@ -96,12 +98,12 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         // Restricción geolocalizada
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Geolocation Restricted: ",
+                                text =stringResource(R.string.geolocation_restricted),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = if (geolocationRestricted) "Yes" else "No",
+                                text = if (geolocationRestricted) stringResource(R.string.yes) else stringResource(R.string.no),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (geolocationRestricted) Color.Green else Color.Red
                             )
@@ -110,12 +112,12 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         // Mostrar resultados inmediatamente
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Show Results Immediately: ",
+                                text = stringResource(R.string.show_results_immediately),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = if (showResultsImmediately) "Yes" else "No",
+                                text = if (showResultsImmediately) stringResource(R.string.yes) else stringResource(R.string.no),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = if (showResultsImmediately) Color.Green else Color.Red
                             )
@@ -123,7 +125,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
 
                         // Mostrar tiempo límite
                         Text(
-                            text = "Time Limit: ${quiz.timeLimit ?: "No limit"}",
+                            text = stringResource(R.string.time_limit) + "${quiz.timeLimit ?: stringResource(R.string.no_time_limit)}",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
@@ -137,7 +139,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                         ) {
-                            Text("Toggle Quiz Status")
+                            Text(stringResource(R.string.toggle_quiz_status))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -146,7 +148,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("Toggle Geolocation Restriction")
+                            Text(stringResource(R.string.toggle_geolocation_restriction))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -155,7 +157,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                         ) {
-                            Text("Toggle Show Results Immediately")
+                            Text(stringResource(R.string.toggle_show_results_immediately))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
@@ -163,14 +165,14 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Force Finish Quiz")
+                            Text(stringResource(R.string.force_finish_quiz))
                         }
 
                         Divider(modifier = Modifier.padding(vertical = 12.dp))
 
                         // Participantes esperando
                         Text(
-                            text = "Waiting Participants:",
+                            text = stringResource(R.string.waiting_participants),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -185,13 +187,13 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     elevation = CardDefaults.cardElevation(2.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(text = "User: ${user.name}", style = MaterialTheme.typography.bodyMedium)
+                                        Text(text = stringResource(R.string.user) + " ${user.name}", style = MaterialTheme.typography.bodyMedium)
                                     }
                                 }
                             }
                         } else {
                             Text(
-                                text = "No participants yet.",
+                                text = stringResource(R.string.no_participants_yet),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center
@@ -201,7 +203,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
 
                         // Usuarios jugando
                         Text(
-                            text = "Playing Users:",
+                            text = stringResource(R.string.playing_users),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -216,13 +218,13 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     elevation = CardDefaults.cardElevation(2.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(text = "User: ${user.name}", style = MaterialTheme.typography.bodyMedium)
+                                        Text(text = stringResource(R.string.user) + " ${user.name}", style = MaterialTheme.typography.bodyMedium)
                                     }
                                 }
                             }
                         } else {
                             Text(
-                                text = "No users playing yet.",
+                                text = stringResource(R.string.no_users_playing_yet),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center
@@ -232,7 +234,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
 
                         // Resultados anónimos
                         Text(
-                            text = "Anonymous Results:",
+                            text = stringResource(R.string.anonymous_results),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
@@ -247,13 +249,13 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     elevation = CardDefaults.cardElevation(2.dp)
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(text = "User x results: $result", style = MaterialTheme.typography.bodyMedium)
+                                        Text(text = stringResource(R.string.result) + " $result", style = MaterialTheme.typography.bodyMedium)
                                     }
                                 }
                             }
                         } else {
                             Text(
-                                text = "No results yet.",
+                                text = stringResource(R.string.no_results_yet),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center
@@ -265,7 +267,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Clear Results")
+                            Text(stringResource(R.string.clear_results))
                         }
                     }
                     }

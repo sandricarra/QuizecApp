@@ -19,7 +19,7 @@
     <string name="create_quiz">Crear cuestionario</string>
     <string name="quiz_title">Título del cuestionario</string>
     <string name="description">Descripción</string>
-    <string name="time_limit">Límite de tiempo (minutos)</string>
+    <string name="time_limit">Límite de tiempo (minutos): </string>
     <string name="restrict_by_geolocation">Restringir por geolocalización</string>
     <string name="access_controlled">Acceso controlado (El cuestionario comienza cuando el creador lo desea)</string>
     <string name="show_results_immediately">Mostrar resultados inmediatamente (Mostrar resultados al finalizar)</string>
@@ -29,9 +29,15 @@
     <string name="no_questions_added">No se han agregado preguntas aún.</string>
     <string name="title">Título</string>
     <string name="type">Tipo</string>
+    <string name="quiz_history_title">Mi Historial de Cuestionarios \uD83D\uDCC3</string>
+    <string name="created_on">Creado el: </string>
 
+    <string name="filter">Filtrar: </string>
+    <string name="all">Todos</string>
+    <string name="created_quizzes">Cuestionarios Creados</string>
+    <string name="participated_quizzes">Cuestionarios Participados</string>
     <string name="save_quiz">Guardar cuestionario</string>
-    <string name="quiz_access_code">Código de acceso al cuestionario: %s</string>
+    <string name="quiz_access_code">Código de acceso al cuestionario: </string>
 
     <!-- Mensajes de error y notificaciones -->
     <string name="location_not_available">No se pudo obtener la ubicación.</string>
@@ -54,7 +60,7 @@
     <string name="select_role_button">Seleccionar rol</string>
     <string name="student_role">Estudiante 🧑‍🏫</string>
     <string name="teacher_role">Profesor 🧑‍🏫</string>
-    <string name="selected_role">Rol seleccionado: %1$s</string>
+    <string name="selected_role">Rol seleccionado: </string>
     <string name="register_button">Registrarse</string>
     <string name="name_empty_error">El nombre no puede estar vacío.</string>
     <string name="email_empty_error">El correo electrónico no puede estar vacío.</string>
@@ -86,7 +92,7 @@
     <string name="add_option">Agregar opción</string>
     <string name="concept_or_item">Concepto o ítem</string>
     <string name="description_or_definition">Descripción o definición</string>
-    <string name="blank_label">Espacio en blanco %1$d:</string>
+    <string name="blank_label">Espacio en blanco :</string>
     <string name="select_answer">Seleccionar respuesta</string>
    <string name="associations">Asociaciones</string>"
     <string name="add_answer">Añadir respuesta</string>
@@ -94,6 +100,54 @@
     <string name="option_label">Opción</string>
     <string name="items_to_sort">Elementos para ordenar</string>
     <string name="add_question">Agregar Pregunta</string>
-
+    <string name="no_quizzes_message">No tienes ningún cuestionario creado.</string>
+    <string name="quiz_status">Estado: </string>
+    <string name="geolocation_restricted">Restricción de Geolocalización:</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="result">Resultados</string>
+    <string name="no_time_limit">Sin limite de tiempo: </string>">
+    <string name="user">Usuario</string>"
+    <string name="toggle_quiz_status">Alternar Estado del Cuestionario</string>
+    <string name="toggle_geolocation_restriction">Alternar Restricción de Geolocalización</string>
+    <string name="toggle_show_results_immediately">Alternar Mostrar Resultados Inmediatamente</string>
+    <string name="force_finish_quiz">Forzar Finalización del Cuestionario</string>
+    <string name="waiting_participants">Participantes Esperando:</string>
+    <string name="no_participants_yet">No hay participantes todavía.</string>
+    <string name="playing_users">Usuarios Jugando:</string>
+    <string name="no_users_playing_yet">No hay usuarios jugando todavía.</string>
+    <string name="anonymous_results">Resultados Anónimos:</string>
+    <string name="no_results_yet">No hay resultados todavía.</string>
+    <string name="clear_results">Limpiar Resultados</string>
+    <string name="questions_for_quiz">Preguntas para el cuestionario</string> 
+    <string name="edit">Editar</string>
+    <string name="duplicate">Duplicar</string>
+    <string name="delete">Excluir</string>
+    <string name="start_playing">¡Comienza a jugar!</string>
+    <string name="enter_quiz_id">Ingresa el ID del Cuestionario</string>
+    <string name="quiz_id_placeholder">ej., ABC123</string>
+    <string name="load_quiz">Cargar Cuestionario</string>
+    <string name="quiz_id_empty_error">El ID del Cuestionario no puede estar vacío</string>
+    <string name="quiz_id_invalid_error">El ID del Cuestionario debe tener 6 caracteres, letras mayúsculas y números</string>
+    <string name="quiz_not_found_error">Cuestionario no encontrado. Por favor, verifica el ID del Cuestionario.</string>
+    <string name="proceed_message">Por favor, ingresa el ID del Cuestionario para continuar</string>
+    <string name="quiz_locked_message">El cuestionario está bloqueado. Por favor, espera a que el creador lo desbloquee.</string>
+    <string name="quiz_finished">¡Cuestionario Finalizado!</string>
+    <string name="time_remaining">Tiempo restante: </string>
+    <string name="check_answers">Ver Respuestas</string>
+    <string name="exit_quiz">Salir del Cuestionario</string>
+    <string name="question_title">Pregunta: </string>
+    <string name="unsupported_question_type">Tipo de pregunta no soportado.</string>
+    <string name="previous_question">⬅️</string>
+    <string name="next_question">➡️</string>
+    <string  name="finish_quiz">Finalizar Cuestionario</string>
+    <string name="unknown_error">Error desconocido</string>
+    <string name="waiting_message">El cuestionario está actualmente bloqueado. Por favor, espere a que el creador lo desbloquee.</string>
+    <string name="number_of_questions">Número de Preguntas: </string>
+    <string name="created_by">Creado por: </string>
+    <string name="start_quiz">Iniciar Cuestionario</string>
+    <string name="location_required_message">La ubicación es necesaria para iniciar este cuestionario. Por favor, habilita los servicios de ubicación.</string>
+    <string name="already_played_message">Ya has jugado este cuestionario.</string>
+    <string name="view_results">Ver Resultados</string>
     <string name="question_tittle_label_black">"Ingrese el título de la pregunta: Ingrese una oración con espacios en blanco (use {} para espacios en blanco)"</string>
 </resources>

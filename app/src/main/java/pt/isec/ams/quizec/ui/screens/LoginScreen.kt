@@ -4,6 +4,7 @@ package pt.isec.ams.quizec.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,115 +33,114 @@ import pt.isec.ams.quizec.ui.viewmodel.LoginViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
-
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
-
     val loginState by viewModel.loginState.observeAsState()
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Contenedor general con fondo
     Box(
-        modifier = Modifier
-            .fillMaxSize() // Asegura que ocupe todo el tamaño de la pantalla
-
+        modifier = Modifier.fillMaxSize()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.background), // Reemplaza con el ID de tu imagen
-            contentDescription = null, // Imagen decorativa
-            contentScale = ContentScale.Crop, // Escala para cubrir toda la pantalla
-            modifier = Modifier.fillMaxSize() // La imagen ocupa toda la pantalla
+            painter = painterResource(id = R.drawable.background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
-        Column(
+
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo),
-                contentDescription = "Logo",
-                modifier = Modifier
-                    .padding(bottom = 16.dp)
-            )
-
-            // Campo de texto para el email
-            TextField(
-                value = email.value,
-                onValueChange = { email.value = it },
-                label = { Text(stringResource(R.string.email)) },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFE3F2FD)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Campo de texto para la contraseña
-            TextField(
-                value = password.value,
-                onValueChange = { password.value = it },
-                label = { Text(stringResource(R.string.password)) },
-                visualTransformation = PasswordVisualTransformation(),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color(0xFFE3F2FD)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Botón de login
-            Button(
-                onClick = {
-                    if (email.value.isBlank() || password.value.isBlank()) {
-                        errorMessage = "Please fill in both fields."
-                    } else {
-                        errorMessage = null
-                        viewModel.login(email.value, password.value)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.login))
+            item {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            item {
+                TextField(
+                    value = email.value,
+                    onValueChange = { email.value = it },
+                    label = { Text(stringResource(R.string.email)) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-            // Muestra errores de login
-            when (val state = loginState) {
-                is LoginState.Error -> {
-                    Text(
-                        text = state.message,
-                        color = Color.Red
-                    )
+            item {
+                TextField(
+                    value = password.value,
+                    onValueChange = { password.value = it },
+                    label = { Text(stringResource(R.string.password)) },
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        if (email.value.isBlank() || password.value.isBlank()) {
+                            errorMessage = "Please fill in both fields."
+                        } else {
+                            errorMessage = null
+                            viewModel.login(email.value, password.value)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.login))
                 }
-                else -> {}
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            if (loginState is LoginState.Success) {
-                LaunchedEffect(Unit) {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
+            item {
+                when (val state = loginState) {
+                    is LoginState.Error -> {
+                        Text(
+                            text = state.message,
+                            color = Color.Red
+                        )
                     }
-                    viewModel.resetState()
+                    else -> {}
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            item {
+                if (loginState is LoginState.Success) {
+                    LaunchedEffect(Unit) {
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                        viewModel.resetState()
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-            // Botón para registro
-            Button(
-                onClick = {
-                    navController.navigate("register")
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.register))
+            item {
+                Button(
+                    onClick = {
+                        navController.navigate("register")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.register))
+                }
             }
         }
     }

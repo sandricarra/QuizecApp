@@ -31,7 +31,7 @@
     <string name="type">Type</string>
     <string name="correct_answers">Correct Answers</string>
     <string name="save_quiz">Save Quiz</string>
-    <string name="quiz_access_code">Quiz Access Code: %s</string>
+    <string name="quiz_access_code">Quiz Access Code: </string>
 
     <!-- Mensajes de error y notificaciones -->
     <string name="location_not_available">No se pudo obtener la ubicación.</string>
@@ -54,14 +54,44 @@
     <string name="select_role_button">Select Role</string>
     <string name="student_role">Student 🧑‍🏫</string>
     <string name="teacher_role">Teacher 🧑‍🏫</string>
-    <string name="selected_role">Selected Role: %1$s</string>
+    <string name="selected_role">Selected Role: </string>
     <string name="register_button">Register</string>
     <string name="name_empty_error">Name cannot be empty.</string>
     <string name="email_empty_error">Email cannot be empty.</string>
     <string name="password_empty_error">Password cannot be empty.</string>
     <string name="invalid_email_format_error">Invalid email format.</string>
+    <string name="start_playing">Start playing!</string>
+    <string name="enter_quiz_id">Enter Quiz ID</string>
+    <string name="quiz_id_placeholder">e.g., ABC123</string>
+    <string name="load_quiz">Load Quiz</string>
+    <string name="quiz_id_empty_error">Quiz ID cannot be empty</string>
+    <string name="quiz_id_invalid_error">Quiz ID must be 6 characters, uppercase letters, and numbers</string>
+    <string name="quiz_not_found_error">Quiz not found. Please check the Quiz ID.</string>
+    <string name="proceed_message">Please enter the Quiz ID to proceed</string>
+    <string name="quiz_locked_message">The quiz is currently locked. Please wait for the creator to unlock it.</string>
+    <string name="quiz_finished">Quiz Finished!</string>
+    <string name="time_remaining">Time remaining: </string>
+    <string name="check_answers">Check Answers</string>
+    <string name="exit_quiz">Exit Quiz</string>
+    <string name="question_title">Question: </string>
+    <string name="unsupported_question_type">Unsupported question type.</string>
+    <string name="previous_question">⬅️</string>
+    <string name="next_question">➡️</string>
+    <string name="finish_quiz">Finish Quiz</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="waiting_message">The quiz is currently locked. Please wait for the creator to unlock it.</string>
+    <string name="number_of_questions">Number of Questions: </string>
+    <string name="created_by">Created by: </string>
+    <string name="start_quiz">Start Quiz</string>
+    <string name="location_required_message">Location is required to start this quiz. Please enable location services.</string>
+    <string name="already_played_message">You have already played this quiz.</string>
+    <string name="quiz_history_title">My Quiz History \uD83D\uDCC3</string>
+    <string name="created_on">Created on: </string>
 
-
+    <string name="filter">Filter: </string>
+    <string name="all">All</string>
+    <string name="created_quizzes">Created Quizzes</string>
+    <string name="participated_quizzes">Participated Quizzes</string>
 
     <string name="enter_question_title">Enter Question Title</string>
 
@@ -93,6 +123,34 @@
     <string name="add_option">Add Option</string>
     <string name="concept_or_item">Concept or Item</string>
     <string name="description_or_definition">Description or Definition</string>
-    <string name="blank_label">Blank %1$d:</string>
+    <string name="blank_label">Blank :</string>
     <string name="select_answer">Select Answer</string>
+
+    <string name="no_quizzes_message">You don\'t have any quizzes created.</string>
+    <string name="quiz_status">Status: </string>
+    <string name="geolocation_restricted">Geolocation Restricted:</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="result">Results</string>"
+    <string name="no_time_limit">No time limit</string>">
+    <string name="user">User</string>
+    <string name="toggle_quiz_status">Toggle Quiz Status</string>
+    <string name="toggle_geolocation_restriction">Toggle Geolocation Restriction</string>
+    <string name="toggle_show_results_immediately">Toggle Show Results Immediately</string>
+    <string name="force_finish_quiz">Force Finish Quiz</string>
+    <string name="waiting_participants">Waiting Participants:</string>
+    <string name="no_participants_yet">No participants yet.</string>
+    <string name="playing_users">Playing Users:</string>
+    <string name="no_users_playing_yet">No users playing yet.</string>
+    <string name="anonymous_results">Anonymous Results:</string>
+    <string name="no_results_yet">No results yet.</string>
+    <string name="clear_results">Clear Results</string>
+
+    <string name="questions_for_quiz">Questions for Quiz %s</string>
+    <string name="edit">Edit</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="delete">Delete</string>
+    <string name="view_results">View Results</string>
+
+
 </resources>

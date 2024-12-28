@@ -1,20 +1,27 @@
 package pt.isec.ams.quizec.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.ui.viewmodel.QuizHistoryViewModel
 
 @Composable
 fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewModel = viewModel(), userId: String) {
-
     // Cargar el usuario al inicio
     LaunchedEffect(userId) {
         viewModel.loadUser(userId)
@@ -23,28 +30,46 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
     // Observar la lista de cuestionarios filtrados desde el ViewModel
     val quizzes = viewModel.filteredQuizzes.collectAsState(initial = emptyList())
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Título de la pantalla
-        Text(text = "My Quiz History \uD83D\uDCC3", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Dropdown para filtrar por estado
-        DropdownMenuFilter(
-            selectedStatus = viewModel.selectedStatus,
-            onStatusChange = { status -> viewModel.filterByStatus(status) }
+        // Fondo de la pantalla
+        Image(
+            painter = painterResource(id = R.drawable.background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Título de la pantalla
+            item {
+                Text(
+                    text = "My Quiz History \uD83D\uDCC3",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E88E5)
+                    ),
+                    modifier = Modifier.padding(vertical = 24.dp)
+                )
+            }
 
-        LazyColumn {
-            items(quizzes.value.size) { index ->
-                val quiz = quizzes.value[index]
+            // Dropdown para filtrar por estado
+            item {
+                DropdownMenuFilter(
+                    selectedStatus = viewModel.selectedStatus,
+                    onStatusChange = { status -> viewModel.filterByStatus(status) }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Lista de cuestionarios
+            items(quizzes.value) { quiz ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -54,32 +79,46 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                         // Navegar al historial de preguntas del cuestionario seleccionado
                         navController.navigate("questionHistory/${quiz.id}/$userId")
                     }
-
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        // Mostrar el título y la fecha de creación del cuestionario
-                        Text(text = quiz.title, style = MaterialTheme.typography.titleMedium)
+                        // Título del cuestionario
                         Text(
-                            text = "Created on: ${viewModel.formatDate(quiz.createdAt)}", // Formatear la fecha
-                            style = MaterialTheme.typography.bodyMedium
+                            text = quiz.title,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF6200EE)
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Fecha de creación del cuestionario
+                        Text(
+                            text = "Created on: ${viewModel.formatDate(quiz.createdAt)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF757575)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Botones solo visibles para cuestionarios creados
                         if (quiz.creatorId == viewModel.currentUser?.id) {
-                            Row {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Button(
                                     onClick = { viewModel.deleteQuiz(quiz.id) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                                    modifier = Modifier.weight(1f).padding(end = 8.dp)
                                 ) {
-                                    Text("Delete", color = MaterialTheme.colorScheme.onError)
+                                    Text("Delete", color = Color.White)
                                 }
 
                                 Button(
-                                    onClick = { viewModel.duplicateQuiz(quiz) }
+                                    onClick = { viewModel.duplicateQuiz(quiz) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC6)),
+                                    modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Duplicate")
+                                    Text("Duplicate", color = Color.White)
                                 }
                             }
                         }
@@ -95,13 +134,30 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
     var expanded by remember { mutableStateOf(false) }
 
     Box {
-        Button(onClick = { expanded = !expanded }) {
-            Text(text = "Filter: $selectedStatus")
+        Button(
+            onClick = { expanded = !expanded },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
+        ) {
+            Text(
+                text = "Filter: $selectedStatus",
+                color = Color.White,
+                style = MaterialTheme.typography.titleMedium
+            )
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
             listOf("All", "CreatedQuizzes", "ParticipatedQuizzes").forEach { status ->
                 DropdownMenuItem(
-                    text = { Text(status) },
+                    text = {
+                        Text(
+                            text = status,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color(0xFF6200EE)
+                            )
+                        )
+                    },
                     onClick = {
                         onStatusChange(status)
                         expanded = false
@@ -111,7 +167,3 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
         }
     }
 }
-
-
-
-
