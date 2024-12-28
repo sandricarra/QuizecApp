@@ -18,16 +18,9 @@ import pt.isec.ams.quizec.ui.viewmodel.ManageQuizViewModel
 fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel: ManageQuizViewModel) {
     val message by viewModel.message.collectAsState()
     val quizzes by viewModel.quizzes.collectAsState()
-
-
-
-
-
     LaunchedEffect(Unit) {
         viewModel.loadQuizzesByCreatorId(creatorId)
     }
-
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -75,7 +68,8 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    elevation = CardDefaults.cardElevation(4.dp)
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF)),
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Título del cuestionario
@@ -137,7 +131,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         Button(
                             onClick = { viewModel.toggleQuizStatus(quiz.id) }, // Asegúrate de pasar el ID correcto
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text(stringResource(R.string.toggle_quiz_status))
                         }
@@ -155,7 +149,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         Button(
                             onClick = { viewModel.toggleShowResultsImmediately(quiz.id) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text(stringResource(R.string.toggle_show_results_immediately))
                         }
@@ -163,7 +157,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         Button(
                             onClick = { viewModel.forceFinishQuiz(quiz.id) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                         ) {
                             Text(stringResource(R.string.force_finish_quiz))
                         }
@@ -184,7 +178,8 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 8.dp),
-                                    elevation = CardDefaults.cardElevation(2.dp)
+                                    elevation = CardDefaults.cardElevation(2.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF))
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(text = stringResource(R.string.user) + " ${user.name}", style = MaterialTheme.typography.bodyMedium)
@@ -215,7 +210,8 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 8.dp),
-                                    elevation = CardDefaults.cardElevation(2.dp)
+                                    elevation = CardDefaults.cardElevation(2.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF))
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(text = stringResource(R.string.user) + " ${user.name}", style = MaterialTheme.typography.bodyMedium)
@@ -246,7 +242,8 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 8.dp),
-                                    elevation = CardDefaults.cardElevation(2.dp)
+                                    elevation = CardDefaults.cardElevation(2.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF))
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(text = stringResource(R.string.result) + " $result", style = MaterialTheme.typography.bodyMedium)
@@ -265,7 +262,7 @@ fun ManageQuizScreen(navController: NavController, creatorId: String, viewModel:
                         Button(
                             onClick = { viewModel.clearResultsForQuiz(quiz.id) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                         ) {
                             Text(stringResource(R.string.clear_results))
                         }

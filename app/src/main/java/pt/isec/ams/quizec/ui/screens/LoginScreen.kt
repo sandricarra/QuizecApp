@@ -57,10 +57,10 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
             verticalArrangement = Arrangement.Center
         ) {
             item {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_logo),
+                Image(        painter = painterResource(id = R.drawable.ic_logo),
                     contentDescription = "Logo",
-                    modifier = Modifier.padding(bottom = 16.dp)
+
+                  modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
 

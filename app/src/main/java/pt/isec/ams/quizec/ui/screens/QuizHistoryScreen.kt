@@ -1,6 +1,5 @@
 package pt.isec.ams.quizec.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,15 +8,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.ui.viewmodel.QuizHistoryViewModel
 
 @Composable
@@ -33,14 +27,6 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Fondo de la pantalla
-        Image(
-            painter = painterResource(id = R.drawable.background),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -86,7 +72,6 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                             text = quiz.title,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6200EE)
                             )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -107,7 +92,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                             ) {
                                 Button(
                                     onClick = { viewModel.deleteQuiz(quiz.id) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                                     modifier = Modifier.weight(1f).padding(end = 8.dp)
                                 ) {
                                     Text("Delete", color = Color.White)
@@ -115,7 +100,6 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
 
                                 Button(
                                     onClick = { viewModel.duplicateQuiz(quiz) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF03DAC6)),
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Text("Duplicate", color = Color.White)
@@ -136,7 +120,7 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
     Box {
         Button(
             onClick = { expanded = !expanded },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E88E5))
         ) {
             Text(
                 text = "Filter: $selectedStatus",
@@ -154,7 +138,7 @@ fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit)
                         Text(
                             text = status,
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = Color(0xFF6200EE)
+                                color = Color(0xFF1E88E5)
                             )
                         )
                     },
