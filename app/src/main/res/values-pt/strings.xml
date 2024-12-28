@@ -11,8 +11,7 @@
     <string name="join_quiz_button">Entrar no Quiz</string>
     <string name="quiz_history_button">Histórico de Quizzes</string>
     <string name="logout_button">Sair</string>
-    <string name="welcome_message">Bem-vindo ao Quizec!</string>
-    <string name="homepage_title">Homepage</string>
+    <string name="welcome_message">Bem-vindo ao Quizec💭</string>
     <string name="quizCreation">Criar Quiz</string>
     <string name="manage_quiz_button">Gerenciar Quiz</string>
     <string name="no_questions_found">Nenhuma questão encontrada.</string>

@@ -12,8 +12,7 @@
     <string name="join_quiz_button">Join Quiz</string>
     <string name="quiz_history_button">Quiz History</string>
     <string name="logout_button">Logout</string>
-    <string name="welcome_message">Welcome to Quizec!</string>
-    <string name="homepage_title">HOMEPAGE</string>
+    <string name="welcome_message">Welcome to Quizec💭</string>
     <string name="quizCreation">Quiz Creation</string>
     <string name="manage_quiz_button">Manage Quiz</string>
     <string name="create_quiz">Create Quiz</string>

@@ -12,8 +12,7 @@
     <string name="join_quiz_button">Unirse al cuestionario</string>
     <string name="quiz_history_button">Historial de cuestionarios</string>
     <string name="logout_button">Cerrar sesión</string>
-    <string name="welcome_message">¡Bienvenido a Quizec!</string>
-    <string name="homepage_title">PÁGINA PRINCIPAL</string>
+    <string name="welcome_message">¡Bienvenido a Quizec!💭</string>
     <string name="quizCreation">Creación de cuestionarios</string>
     <string name="manage_quiz_button">Gestionar cuestionario</string>
     <string name="create_quiz">Crear cuestionario</string>
