@@ -20,12 +20,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,7 @@ import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P01Question(
     questionTitle: String, // Estado compartido para el título de la pregunta
@@ -65,7 +68,10 @@ fun P01Question(
             label = { Text(stringResource(R.string.question_title_label)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
         )
 
         // Mostrar la imagen seleccionada
@@ -131,6 +137,7 @@ fun P01Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P02Question(
     questionTitle: String,
@@ -155,7 +162,10 @@ fun P02Question(
             value = questionTitle,
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_title_label)) },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            )
         )
 
         // Imagen asociada a la pregunta
@@ -205,6 +215,9 @@ fun P02Question(
                         onOptionsChange(updatedOptions)
                     },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text(stringResource(R.string.option_label) + " ${index + 1}") }
                 )
                 IconButton(
@@ -230,6 +243,7 @@ fun P02Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P03Question(
     questionTitle: String, // Título de la pregunta
@@ -255,7 +269,10 @@ fun P03Question(
             value = questionTitle,
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_title_label)) },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            )
         )
 
         // Imagen asociada a la pregunta
@@ -312,6 +329,9 @@ fun P03Question(
                         onOptionsChange(updatedOptions)
                     },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Option ${index + 1}") }
                 )
                 IconButton(
@@ -337,6 +357,7 @@ fun P03Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P04Question(
     questionTitle: String,
@@ -359,7 +380,10 @@ fun P04Question(
             value = questionTitle,
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_title_label)) },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            )
         )
 
         // Imagen asociada a la pregunta
@@ -406,6 +430,9 @@ fun P04Question(
                         onPairsChange(updatedPairs)
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Column A ${index + 1}") }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -419,6 +446,9 @@ fun P04Question(
                         onPairsChange(updatedPairs)
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Column B ${index + 1}") }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -444,6 +474,7 @@ fun P04Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P05Question(
     questionTitle: String,
@@ -464,7 +495,10 @@ fun P05Question(
             value = questionTitle,
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_title_label)) },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
         )
 
         // Imagen asociada a la pregunta
@@ -514,7 +548,9 @@ fun P05Question(
                         onItemsChange(updatedItems)
                     },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
-                    label = { Text("Item ${index + 1}") }
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                 )
                 IconButton(
                     onClick = {
@@ -540,6 +576,8 @@ fun P05Question(
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P06Question(
     questionTitle: String,
@@ -570,6 +608,9 @@ fun P06Question(
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_tittle_label_black)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
             placeholder = { Text("Example: The {} is {}.") }
         )
 
@@ -616,6 +657,9 @@ fun P06Question(
                         onOptionsChange(updatedOptions)
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text(stringResource(R.string.option_label) + " ${index + 1}") }
                 )
                 IconButton(onClick = {
@@ -677,6 +721,7 @@ fun P06Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P07Question(
     questionTitle: String,
@@ -697,6 +742,9 @@ fun P07Question(
             value = questionTitle,
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_title_label)) },
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -745,6 +793,9 @@ fun P07Question(
                         associations[index] = updatedItem to association.second
                     },
                     label = { Text(stringResource(R.string.concept_or_item)) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     modifier = Modifier.weight(1f)
                 )
                 // Descripción o definición
@@ -755,6 +806,9 @@ fun P07Question(
                         associations[index] = association.first to updatedDescription
                     },
                     label = { Text(stringResource(R.string.description_or_definition)) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -773,6 +827,7 @@ fun P07Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P08Question(
     questionTitle: String,
@@ -795,6 +850,9 @@ fun P08Question(
             onValueChange = onTitleChange,
             label = { Text(stringResource(R.string.question_tittle_label_black)) },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
             placeholder = { Text("Example: The {} is {}.") }
         )
 
@@ -842,6 +900,9 @@ fun P08Question(
                         onAnswersChange(updatedAnswers)
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text(stringResource(R.string.answer_label) + " ${index + 1}") }
                 )
             }

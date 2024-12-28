@@ -272,7 +272,8 @@ fun QuizCreationScreen(
                                 creatorLocation = location
                             }
                         }
-                    }
+                    },
+
                 )
             }
         }
@@ -291,7 +292,7 @@ fun QuizCreationScreen(
                 )
                 Switch(
                     checked = isAccessControlled,
-                    onCheckedChange = { isAccessControlled = it }
+                    onCheckedChange = { isAccessControlled = it },
                 )
             }
         }
