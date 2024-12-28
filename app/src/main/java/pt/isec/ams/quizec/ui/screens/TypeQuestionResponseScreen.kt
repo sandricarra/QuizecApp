@@ -22,12 +22,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -743,6 +745,7 @@ fun P05(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun P06(
     question: Question,
@@ -786,6 +789,9 @@ fun P06(
                     modifier = Modifier
                         .background(Color.LightGray)
                         .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Enter Answer ${index + 1}") },
                     enabled = !isQuestionAnswered
                 )

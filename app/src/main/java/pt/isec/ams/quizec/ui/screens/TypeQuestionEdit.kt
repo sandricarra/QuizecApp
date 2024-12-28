@@ -20,12 +20,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.rememberAsyncImagePainter
 import pt.isec.ams.quizec.ui.viewmodel.QuestionHistoryViewModel
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP01Question(
     questionId: String,
@@ -67,7 +70,10 @@ fun EditP01Question(
             label = { Text("Enter Question Title") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
         )
 
         // Mostrar y permitir cambio de la imagen
@@ -151,6 +157,7 @@ fun EditP01Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP02Question(
     questionId: String,
@@ -179,7 +186,10 @@ fun EditP02Question(
             label = { Text("Enter Question Title") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
         )
 
         // Mostrar y permitir cambio de la imagen
@@ -234,6 +244,9 @@ fun EditP02Question(
                         options = updatedOptions
                     },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Option ${index + 1}") }
                 )
             }
@@ -268,6 +281,7 @@ fun EditP02Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP03Question(
     questionId: String,
@@ -296,7 +310,10 @@ fun EditP03Question(
             label = { Text("Enter Question Title") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
         )
 
         // Mostrar y permitir cambio de la imagen
@@ -358,6 +375,9 @@ fun EditP03Question(
                         options = updatedOptions
                     },
                     modifier = Modifier.weight(1f).padding(start = 8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Option ${index + 1}") }
                 )
             }
@@ -392,6 +412,7 @@ fun EditP03Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP04Question(
     questionId: String,
@@ -416,6 +437,9 @@ fun EditP04Question(
             value = questionTitle,
             onValueChange = { questionTitle = it },
             label = { Text("Enter Question Title") },
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
 
@@ -456,6 +480,9 @@ fun EditP04Question(
                         options = updatedOptions
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Column A ${index + 1}") }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -469,6 +496,9 @@ fun EditP04Question(
                         options = updatedOptions
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Column B ${index + 1}") }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -513,6 +543,7 @@ fun EditP04Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP05Question(
     questionId: String,
@@ -537,7 +568,10 @@ fun EditP05Question(
             value = questionTitle,
             onValueChange = { questionTitle = it },
             label = { Text("Enter Question Title") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            )
         )
 
         // Mostrar y permitir cambio de la imagen
@@ -572,6 +606,9 @@ fun EditP05Question(
                         items = updatedItems
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Item ${index + 1}") }
                 )
                 IconButton(onClick = {
@@ -610,6 +647,7 @@ fun EditP05Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP06Question(
     questionId: String,
@@ -644,6 +682,9 @@ fun EditP06Question(
             onValueChange = { questionTitle = it },
             label = { Text("Enter Question Title: Enter Sentence with Blanks (use {} for blanks)") },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
             placeholder = { Text("Example: The {} is {}.") }
         )
 
@@ -690,6 +731,9 @@ fun EditP06Question(
                         options = updatedOptions
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Option ${index + 1}") }
                 )
                 IconButton(onClick = {
@@ -768,6 +812,7 @@ fun EditP06Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP07Question(
     questionId: String,
@@ -794,7 +839,11 @@ fun EditP07Question(
             value = questionTitle,
             onValueChange = { questionTitle = it },
             label = { Text("Enter Question Title") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
+
         )
 
         // Imagen asociada a la pregunta
@@ -841,6 +890,9 @@ fun EditP07Question(
                         options = updatedOptions
                     },
                     label = { Text("Concept ${index + 1}") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     modifier = Modifier.weight(1f).padding(end = 8.dp)
                 )
                 // Campo de texto para la definición (columna B)
@@ -856,6 +908,9 @@ fun EditP07Question(
                         correctAnswers = updatedAnswers
                     },
                     label = { Text("Definition ${index + 1}") },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     modifier = Modifier.weight(1f)
                 )
                 // Botón para eliminar la fila
@@ -901,6 +956,7 @@ fun EditP07Question(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditP08Question(
     questionId: String,
@@ -926,6 +982,9 @@ fun EditP08Question(
             onValueChange = { questionTitle = it },
             label = { Text("Enter Question Title: Enter Sentence with Blanks (use {} for blanks)") },
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = Color(0xFFE3F2FD)
+            ),
             placeholder = { Text("Example: The {} is {}.") }
         )
 
@@ -973,6 +1032,9 @@ fun EditP08Question(
                         answers = updatedAnswers
                     },
                     modifier = Modifier.weight(1f),
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color(0xFFE3F2FD)
+                    ),
                     label = { Text("Enter Answer ${index + 1}") }
                 )
                 IconButton(onClick = {
