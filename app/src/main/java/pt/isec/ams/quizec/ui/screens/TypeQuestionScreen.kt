@@ -51,7 +51,7 @@ fun P01Question(
     selectedAnswer: String?, // Respuesta seleccionada
     onAnswerChange: (String) -> Unit, // Callback para actualizar la respuesta
     imageUrl: String?, // URL de la imagen
-    onImageChange: (String) -> Unit // Callback para actualizar la URL de la imagen
+    onImageChange: (String?) -> Unit // Callback para actualizar la URL de la imagen
 
 ) {
 
@@ -76,15 +76,24 @@ fun P01Question(
 
         // Mostrar la imagen seleccionada
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -147,7 +156,7 @@ fun P02Question(
     selectedOption: String?, // Opción seleccionada como respuesta correcta
     onSelectedOptionChange: (String) -> Unit, // Callback para actualizar la opción correcta
     imageUrl: String?,
-    onImageChange: (String) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -170,15 +179,24 @@ fun P02Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 "No image selected",
                 style = MaterialTheme.typography.bodySmall,
@@ -259,7 +277,7 @@ fun P03Question(
     onSelectedOptionsChange: (List<String>) -> Unit, // Callback para actualizar las respuestas seleccionadas
 
     imageUrl: String?, // URL de la imagen
-    onImageChange: (String) -> Unit // Callback para actualizar la URL de la imagen
+    onImageChange: (String?) -> Unit // Callback para actualizar la URL de la imagen
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -280,15 +298,24 @@ fun P03Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 "No image selected",
                 style = MaterialTheme.typography.bodySmall,
@@ -369,7 +396,7 @@ fun P04Question(
     pairs: List<Pair<String, String>>, // Lista de pares de opciones
     onPairsChange: (List<Pair<String, String>>) -> Unit, // Callback para actualizar los pares
     imageUrl: String?,
-    onImageChange: (String) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -392,15 +419,24 @@ fun P04Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 "No image selected",
                 style = MaterialTheme.typography.bodySmall,
@@ -486,7 +522,7 @@ fun P05Question(
     items: List<String>,
     onItemsChange: (List<String>) -> Unit,
     imageUrl: String?,
-    onImageChange: (String) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -507,15 +543,24 @@ fun P05Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
@@ -591,7 +636,7 @@ fun P06Question(
     correctAnswers: List<String>,
     onCorrectAnswersChange: (List<String>) -> Unit,
     imageUrl: String?,
-    onImageChange: (String) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -620,15 +665,24 @@ fun P06Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
@@ -748,7 +802,7 @@ fun P07Question(
     associations: SnapshotStateList<Pair<String, String>>, // Lista reactiva de asociaciones
     onAssociationsChange: (SnapshotStateList<Pair<String, String>>) -> Unit,
     imageUrl: String?,
-    onImageChange: (String) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -769,15 +823,24 @@ fun P07Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
@@ -855,7 +918,7 @@ fun P08Question(
     answers: List<String>,
     onAnswersChange: (List<String>) -> Unit,
     imageUrl: String?,
-    onImageChange: (String) -> Unit
+    onImageChange: (String?) -> Unit
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -877,15 +940,24 @@ fun P08Question(
 
         // Imagen asociada a la pregunta
         if (imageUrl != null) {
-            Image(
-                painter = rememberAsyncImagePainter(imageUrl),
-                contentDescription = stringResource(R.string.select_image),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-        } else {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Image(
+                    painter = rememberAsyncImagePainter(imageUrl),
+                    contentDescription = stringResource(R.string.select_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { onImageChange(null) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove image", tint = Color.Red)
+                }
+            }
+        }
+        else {
             Text(
                 stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
