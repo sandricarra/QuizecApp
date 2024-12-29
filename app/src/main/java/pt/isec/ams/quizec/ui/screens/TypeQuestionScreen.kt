@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
-import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +52,7 @@ fun P01Question(
     onAnswerChange: (String) -> Unit, // Callback para actualizar la respuesta
     imageUrl: String?, // URL de la imagen
     onImageChange: (String) -> Unit // Callback para actualizar la URL de la imagen
+
 ) {
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -205,7 +205,7 @@ fun P02Question(
             ) {
                 RadioButton(
                     selected = selectedOption == option,
-                    onClick = { onSelectedOptionChange(option) }
+                    onClick = { onSelectedOptionChange(option) } // Actualizar la opción seleccionada
                 )
                 TextField(
                     value = option,
@@ -228,6 +228,8 @@ fun P02Question(
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
+
+
                     Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove_option))
                 }
             }
@@ -242,6 +244,7 @@ fun P02Question(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -320,6 +323,7 @@ fun P03Question(
                         }
                         onSelectedOptionsChange(updatedOptions)
                     }
+
                 )
                 TextField(
                     value = option,
@@ -628,7 +632,8 @@ fun P06Question(
             Text(
                 stringResource(R.string.no_image_selected),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                color = Color.Gray,
+                modifier = Modifier.padding(8.dp)
             )
         }
         Button(
@@ -718,8 +723,22 @@ fun P06Question(
                 }
             }
         }
+
+        // Botón para añadir nuevos espacios en blanco
+        Button(
+            onClick = {
+                if (correctAnswers.size < options.size) { // Evitar más espacios en blanco que opciones
+                    onCorrectAnswersChange(correctAnswers + "")
+                    dropdownExpandedStates.add(false) // Añadir un nuevo estado para el DropdownMenu
+                }
+            },
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) {
+            Text(stringResource(R.string.add_blank))
+        }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -925,25 +944,17 @@ fun AddQuestionButton(
     options: List<String>,
     correctAnswers: List<String>,
     imageUrl: String?,
-    onUpdate: () -> Unit, // Callback opcional para actualizar la UI después de agregar la pregunta
-    viewModel: QuizCreationViewModel
+    onUpdate: () -> Unit,
+    onAddQuestion: () -> Unit // Nueva función para agregar la pregunta
 ) {
     Button(
         onClick = {
-            // Asegúrate de que hay un tipo de pregunta y que los campos necesarios están completos
-            questionType?.let {
-                viewModel.addQuestion(
-                    type = it,
-                    title = questionTitle,  // El título de la pregunta
-                    options = options,      // Las opciones de respuesta
-                    correctAnswers = correctAnswers, // Las respuestas correctas
-                    imageUrl = imageUrl // La URL de la imagen
-                )
+            if (questionTitle.isNotBlank() && correctAnswers.isNotEmpty()) {
+                onAddQuestion() // Llama a la función para agregar la pregunta
+                onUpdate() // Limpia los campos
             }
-
-            // Limpiar o actualizar otros campos de la UI si es necesario
-            onUpdate()
         },
+        enabled = questionTitle.isNotBlank() && correctAnswers.isNotEmpty(),
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(stringResource(R.string.add_question))

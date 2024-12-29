@@ -21,7 +21,7 @@
     <string name="select_role_button">Selecione o Papel</string>
     <string name="student_role">Aluno 🧑‍🏫</string>
     <string name="teacher_role">Professor 🧑‍🏫</string>
-    <string name="selected_role">Papel Selecionado: %1$s</string>
+    <string name="selected_role">Papel Selecionado: </string>
     <string name="register_button">Cadastrar</string>
     <string name="name_empty_error">O nome não pode estar vazio.</string>
     <string name="email_empty_error">O e-mail não pode estar vazio.</string>
@@ -43,16 +43,16 @@
     <string name="type">Tipo</string>
 
     <string name="save_quiz">Salvar Questionário</string>
-    <string name="quiz_access_code">Código de Acesso do Questionário: %s</string>
+    <string name="quiz_access_code">Código de Acesso do Questionário: </string>
 
     <!-- Mensagens de erro e notificações -->
     <string name="location_not_available">Não foi possível obter a localização.</string>
     <string name="location_error">Erro ao obter a localização.</string>
     <string name="location_permission_denied">Localização não permitida. Não é possível habilitar a restrição por geolocalização.</string>
     <string name="quiz_history_title">Meu Histórico de Questionários \uD83D\uDCC3</string>
-    <string name="created_on">Criado em: %s</string>
+    <string name="created_on">Criado em: </string>
 
-    <string name="filter">Filtrar: %s</string>
+    <string name="filter">Filtrar: </string>
     <string name="all">Todos</string>
     <string name="created_quizzes">Questionários Criados</string>
     <string name="participated_quizzes">Questionários Participados</string>
@@ -65,7 +65,7 @@
     <string name="sun">Sol</string>
     <string name="moon">Lua</string>
     <string name="star">Estrela</string>
-    <string name="questions_for_quiz">Perguntas para o Questionário %s</string>
+    <string name="questions_for_quiz">Perguntas para o Questionário </string>
     <string name="edit">Editar</string>
     <string name="duplicate">Duplicar</string>
     <string name="delete">Excluir</string>
@@ -80,17 +80,17 @@
     <string name="proceed_message">Por favor, insira o ID do Questionário para continuar</string>
     <string name="quiz_locked_message">O questionário está bloqueado. Por favor, aguarde o criador desbloqueá-lo.</string>
     <string name="quiz_finished">Questionário Finalizado!</string>
-    <string name="time_remaining">Tempo restante: %s</string>
+    <string name="time_remaining">Tempo restante </string>
     <string name="check_answers">Ver Respostas</string>
     <string name="exit_quiz">Sair do Questionário</string>
-    <string name="question_title">Pergunta: %s</string>
+    <string name="question_title">Pergunta: </string>
     <string name="unsupported_question_type">Tipo de pergunta não suportado.</string>
     <string name="previous_question">⬅️</string>
     <string name="next_question">➡️</string>
     <string name="finish_quiz">Finalizar Questionário</string>
 
-    <string name="number_of_questions">Número de Perguntas: %s</string>
-    <string name="created_by">Criado por: %s</string>
+    <string name="number_of_questions">Número de Perguntas: </string>
+    <string name="created_by">Criado por: </string>
     <string name="start_quiz">Iniciar Questionário</string>
     <string name="location_required_message">A localização é necessária para iniciar este questionário. Por favor, habilite os serviços de localização.</string>
     <string name="already_played_message">Você já jogou este questionário.</string>
@@ -122,13 +122,13 @@
     <string name="add_option">Adicionar opção</string>
     <string name="concept_or_item">Conceito ou item</string>
     <string name="description_or_definition">Descrição ou definição</string>
-    <string name="blank_label">Espaço em branco %1$d:</string>
+    <string name="blank_label">Espaço em branco :</string>
     <string name="select_answer">Selecionar resposta</string>
     <string name="option_label">Opção</string>
     <string name="items_to_sort">Itens para ordenar</string>
     <string name="add_question">Adicionar Pergunta</string>
     <string name="no_quizzes_message">No tienes ningún cuestionario creado.</string>
-    <string name="quiz_status">Estado: %s</string>
+    <string name="quiz_status">Estado: </string>
     <string name="geolocation_restricted">Restricción de Geolocalización:</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>

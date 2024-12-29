@@ -81,7 +81,7 @@ class QuizScreenViewModel : ViewModel() {
     private val _correctAnswers = MutableStateFlow(0)
     val correctAnswers: StateFlow<Int> = _correctAnswers
 
-    private val _quizStatus = MutableStateFlow(QuizStatus.AVAILABLE)
+    private val _quizStatus = MutableStateFlow(QuizStatus.LOCKED)
     val quizStatus: StateFlow<QuizStatus> = _quizStatus
 
     private val _isQuestionAnswered = mutableStateOf(false) // Estado para controlar si la pregunta ha sido respondida
@@ -225,27 +225,37 @@ class QuizScreenViewModel : ViewModel() {
             }
     }
 
+    fun getCreatorName(creatorId: String, onResult: (String?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val userSnapshot = firestore.collection("users").document(creatorId).get().await()
+                val creatorName = userSnapshot.getString("name") // Asume que el campo se llama "name"
+                onResult(creatorName)
+            } catch (e: Exception) {
+                _message.value = "Failed to fetch creator name: ${e.message}"
+                onResult(null)
+            }
+        }
+    }
+
+
 
 
 
 
     fun observeQuizStatus(quizId: String) {
         firestore.collection("quizzes").document(quizId)
-            .addSnapshotListener { documentSnapshot, exception ->
-                if (exception != null) {
-                    // Manejar el error si es necesario
-                    return@addSnapshotListener
-                }
-
+            .addSnapshotListener { documentSnapshot, _ ->
                 documentSnapshot?.let { document ->
                     val status = document.getString("status")?.let {
                         QuizStatus.valueOf(it)
                     } ?: QuizStatus.LOCKED
-
+                    Log.d("QuizScreenViewModel", "Quiz status updated to: $status")
                     _quizStatus.value = status
                 }
             }
     }
+
 
     fun startTimer() {
         timerJob?.cancel() // Cancelar cualquier temporizador existente
@@ -263,28 +273,6 @@ class QuizScreenViewModel : ViewModel() {
         timerJob?.cancel()
     }
 
-    fun checkQuizStatus(quizId: String) {
-        firestore.collection("quizzes")
-            .document(quizId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val accessControlled = document.getBoolean("accessControlled") ?: true
-                    val status = document.getString("status") ?: "LOCKED"
-
-                    if (!accessControlled) {
-                        _quizStatus.value = QuizStatus.AVAILABLE
-                    } else {
-                        _quizStatus.value = QuizStatus.valueOf(status)
-                    }
-                } else {
-                    handleError("Quiz not found")
-                }
-            }
-            .addOnFailureListener { exception ->
-                handleError(exception.message ?: "Error checking quiz status")
-            }
-    }
 
 
     private fun loadQuestionById(questionId: String) {
@@ -476,31 +464,30 @@ class QuizScreenViewModel : ViewModel() {
             val quizSnapshot = quizRef.get().await()
 
             if (!quizSnapshot.exists()) {
-                _message.value = "Quiz not found."
+                Log.d("QuizScreenViewModel", "Quiz not found.")
                 return@launch
             }
 
             val playingUsers = quizSnapshot.get("playingUsers") as? List<String> ?: emptyList()
 
-            // Cambiar el estado a IN_PROGRESS si hay jugadores
             if (playingUsers.isNotEmpty() && _quizStatus.value != QuizStatus.IN_PROGRESS) {
+                Log.d("QuizScreenViewModel", "Updating quiz status to IN_PROGRESS")
                 quizRef.update("status", QuizStatus.IN_PROGRESS.name).await()
                 _quizStatus.value = QuizStatus.IN_PROGRESS
                 initialPlayingUsers.clear()
                 initialPlayingUsers.addAll(playingUsers)
             }
 
-            // Cambiar el estado a FINISHED solo si todos los jugadores iniciales han salido
             if (initialPlayingUsers.isNotEmpty() && initialPlayingUsers.all { it !in playingUsers }) {
+                Log.d("QuizScreenViewModel", "Updating quiz status to FINISHED")
                 quizRef.update("status", QuizStatus.FINISHED.name).await()
                 _quizStatus.value = QuizStatus.FINISHED
-                _timeRemaining.value = 0L // Establecer el tiempo restante a cero
-                initialPlayingUsers.clear() // Limpiar la lista inicial
+                _timeRemaining.value = 0L
+                initialPlayingUsers.clear()
             }
-
-            _message.value = "Quiz status updated successfully!"
         }
     }
+
 
     fun updateQuizStatusToFinished(quizId: String) {
         viewModelScope.launch {

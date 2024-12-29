@@ -1,6 +1,9 @@
 package pt.isec.ams.quizec.ui.viewmodel
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,47 +15,202 @@ import pt.isec.ams.quizec.data.models.Quiz
 import pt.isec.ams.quizec.utils.IdGenerator
 import pt.isec.ams.quizec.utils.IdGeneratorQ
 
-class QuizCreationViewModel : ViewModel() {
+class QuizCreationViewModel(
+    private val savedStateHandle: SavedStateHandle // Añade SavedStateHandle
+) : ViewModel() {
 
-    // Instancia de Firebase Firestore para interactuar con la base de datos
+
     private val firestore = FirebaseFirestore.getInstance()
 
     // Lista mutable de preguntas del cuestionario
     private val _questions = mutableStateListOf<Question>()
+    val questions: List<Question> get() = _questions
+    // Título del cuestionario
+    // Usa mutableStateOf para las propiedades
+    var title: MutableState<String> = mutableStateOf(savedStateHandle.get<String>("title") ?: "")
+        private set
+
+    var description: MutableState<String> = mutableStateOf(savedStateHandle.get<String>("description") ?: "")
+        private set
+
+    var imageUrl: MutableState<String?> = mutableStateOf(savedStateHandle.get<String>("imageUrl"))
+        private set
+
+    var timeLimit: MutableState<Long?> = mutableStateOf(savedStateHandle.get<Long>("timeLimit"))
+        private set
+
+    var isGeolocationRestricted: MutableState<Boolean> = mutableStateOf(savedStateHandle.get<Boolean>("isGeolocationRestricted") ?: false)
+        private set
+
+    var creatorLocation: MutableState<GeoPoint?> = mutableStateOf(
+        savedStateHandle.get<Pair<Double, Double>>("creatorLocation")?.toGeoPoint()
+    )
+        private set
+
+
+    var isAccessControlled: MutableState<Boolean> = mutableStateOf(savedStateHandle.get<Boolean>("isAccessControlled") ?: false)
+        private set
+
+    var showResultsImmediately: MutableState<Boolean> = mutableStateOf(savedStateHandle.get<Boolean>("showResultsImmediately") ?: false)
+        private set
+
+    var questionType: MutableState<QuestionType?> = mutableStateOf(savedStateHandle.get<QuestionType>("questionType"))
+        private set
+
+    var questionTitle: MutableState<String> = mutableStateOf(savedStateHandle.get<String>("questionTitle") ?: "")
+        private set
+    var imageUri: MutableState<String?> = mutableStateOf(savedStateHandle.get<String>("imageUrl"))
+        private set
+    // Función para guardar los datos en SavedStateHandle
+    private fun saveState() {
+        savedStateHandle["title"] = title.value
+        savedStateHandle["description"] = description.value
+        savedStateHandle["imageUrl"] = imageUrl.value
+        savedStateHandle["timeLimit"] = timeLimit.value
+        savedStateHandle["isGeolocationRestricted"] = isGeolocationRestricted.value
+        savedStateHandle["creatorLocation"] = creatorLocation.value?.toPair()
+        savedStateHandle["isAccessControlled"] = isAccessControlled.value
+        savedStateHandle["showResultsImmediately"] = showResultsImmediately.value
+        savedStateHandle["questionType"] = questionType.value
+        savedStateHandle["questionTitle"] = questionTitle.value
+        savedStateHandle["imageUri"] = imageUri.value
+    }
+
+    // Función para actualizar el título
+    fun updateTitle(newTitle: String) {
+        title.value = newTitle
+        saveState()
+    }
+    fun updateImageUri(newImageUri: String?) {
+        imageUri.value = newImageUri
+        saveState()
+    }
+
+    // Función para actualizar la descripción
+    fun updateDescription(newDescription: String) {
+        description.value = newDescription
+        saveState()
+    }
+    fun updateImageUrl(newImageUrl: String?) {
+        imageUrl.value = newImageUrl
+        saveState()
+    }
+    fun updateTimeLimit(newTimeLimit: Long?) {
+        timeLimit.value = newTimeLimit
+        saveState()
+    }
+    fun updateIsGeolocationRestricted(newIsGeolocationRestricted: Boolean) {
+        isGeolocationRestricted.value = newIsGeolocationRestricted
+        saveState()
+    }
+    fun updateCreatorLocation(location: GeoPoint?) {
+        creatorLocation.value = location
+        saveState()
+    }
+
+    fun updateIsAccessControlled(newIsAccessControlled: Boolean) {
+        isAccessControlled.value = newIsAccessControlled
+        saveState()
+    }
+    fun updateShowResultsImmediately(newShowResultsImmediately: Boolean) {
+        showResultsImmediately.value = newShowResultsImmediately
+        saveState()
+    }
+    fun updateQuestionType(newQuestionType: QuestionType?) {
+        questionType.value= newQuestionType
+        saveState()
+    }
+    fun updateQuestionTitle(newQuestionTitle: String) {
+        questionTitle.value = newQuestionTitle
+        saveState()
+    }
+    fun updateQuestions(newQuestions: List<Question>) {
+        _questions.clear()
+        _questions.addAll(newQuestions)
+        saveState()
+    }
+
+    fun GeoPoint.toPair(): Pair<Double, Double> {
+        return Pair(this.latitude, this.longitude)
+    }
+
+    // Función para convertir Pair<Double, Double> a GeoPoint
+    fun Pair<Double, Double>.toGeoPoint(): GeoPoint {
+        return GeoPoint(this.first, this.second)
+    }
+
+    // Lista temporal de preguntas
+    private val _temporaryQuestions = mutableStateListOf<Question>()
+    val temporaryQuestions: List<Question> get() = _temporaryQuestions
+
+    fun removeQuestion(question: Question) {
+        _temporaryQuestions.remove(question)
+    }
+
+    // Función para agregar una pregunta temporalmente
+    fun addTemporaryQuestion(
+        type: QuestionType,
+        title: String,
+        options: List<String>,
+        correctAnswers: List<String>,
+        imageUrl: String?
+    ) {
+        val questionId = generateUniqueQId()
+        val newQuestion = Question(
+            id = questionId,
+            title = title,
+            type = type,
+            options = options,
+            correctAnswers = correctAnswers,
+            imageUrl = imageUrl
+        )
+        _temporaryQuestions.add(newQuestion)
+    }
+
+
+
+
+
+
+
+
+    // Instancia de Firebase Firestore para interactuar con la base de datos
+
 
 
     // Exposición de la lista de preguntas como solo lectura
-    val questions: List<Question> get() = _questions
+
 
     private fun generateUniqueQuizId(): String {
         return IdGenerator.generateUniqueQuizId() // Usa la clase utilitaria
     }
+
     private fun generateUniqueQId(): String {
         return IdGeneratorQ.generateUniqueQuizCode() // Usa la clase utilitaria
     }
 
 
     // Función para guardar un cuestionario en Firebase Firestore
+    // Función para guardar el cuestionario y enviar las preguntas a Firestore
     fun saveQuiz(
-        title: String,  // Título del cuestionario
-        description: String,  // Descripción del cuestionario
-        imageUrl: String?,  // URL de la imagen asociada al cuestionario
-        isGeolocationRestricted: Boolean,  // Si el cuestionario está restringido por geolocalización
-        location: GeoPoint?, // Ubicación del creador
-        timeLimit: Int?,  // Límite de tiempo del cuestionario en minutos
-        isAccessControlled: Boolean,  // Si el acceso al cuestionario está controlado
-        showResultsImmediately: Boolean,  // Si los resultados se muestran inmediatamente
-        creatorId: String,  // ID del creador del cuestionario
-        onSuccess: (String) -> Unit,  // Función que se ejecuta al guardar correctamente
-        onError: (Exception) -> Unit  // Función que se ejecuta si ocurre un error
+        title: String,
+        description: String,
+        imageUrl: String?,
+        isGeolocationRestricted: Boolean,
+        location: GeoPoint?,
+        timeLimit: Int?,
+        isAccessControlled: Boolean,
+        showResultsImmediately: Boolean,
+        creatorId: String,
+        onSuccess: (String) -> Unit,
+        onError: (Exception) -> Unit
     ) {
         viewModelScope.launch {
-            // Generar un ID único para el cuestionario
             val quizId = generateUniqueQuizId()
 
-            // Guardar todas las preguntas asociadas al cuestionario
-            val questionIds = _questions.map { question ->
-                question.copy(quizId = quizId) // Asociar la pregunta al cuestionario
+            // Guardar todas las preguntas temporales en Firestore
+            val questionIds = _temporaryQuestions.map { question ->
+                question.copy(quizId = quizId)
             }.map { question ->
                 firestore.collection("questions").document(question.id)
                     .set(question)
@@ -66,23 +224,24 @@ class QuizCreationViewModel : ViewModel() {
                 creatorId = creatorId,
                 title = title,
                 description = description,
-                questions = questionIds, // Asociar los IDs de las preguntas al cuestionario
+                questions = questionIds,
                 imageUrl = imageUrl,
                 isGeolocationRestricted = isGeolocationRestricted,
-                location = location, // Guardar la ubicación si está disponible
+                location = location,
                 timeLimit = timeLimit,
                 isAccessControlled = isAccessControlled,
-                showResultsImmediately = showResultsImmediately,
+                showResultsImmediately = showResultsImmediately
             )
 
             // Guardar el cuestionario en Firestore
             firestore.collection("quizzes")
-                .document(quizId)  // Usar el ID único generado para el documento
-                .set(quiz)  // Guardar el cuestionario
-                .addOnSuccessListener { onSuccess(quizId) }  // Llamar a onSuccess si se guarda correctamente
-                .addOnFailureListener { onError(it) }  // Llamar a onError si ocurre un error
+                .document(quizId)
+                .set(quiz)
+                .addOnSuccessListener { onSuccess(quizId) }
+                .addOnFailureListener { onError(it) }
         }
     }
+
 
 
     // Función para agregar una nueva pregunta al cuestionario
@@ -108,7 +267,7 @@ class QuizCreationViewModel : ViewModel() {
 
         _questions.add(newQuestion) // Agregar a la lista local
     }
-
 }
+
 
 

@@ -145,7 +145,7 @@
     <string name="no_results_yet">No results yet.</string>
     <string name="clear_results">Clear Results</string>
 
-    <string name="questions_for_quiz">Questions for Quiz %s</string>
+    <string name="questions_for_quiz">Questions for Quiz </string>
     <string name="edit">Edit</string>
     <string name="duplicate">Duplicate</string>
     <string name="delete">Delete</string>

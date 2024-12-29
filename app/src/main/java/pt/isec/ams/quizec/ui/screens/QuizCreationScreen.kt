@@ -2,7 +2,6 @@ package pt.isec.ams.quizec.ui.screens
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.widget.Toast
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +31,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.Manifest
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.res.stringResource
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
@@ -44,31 +43,37 @@ fun QuizCreationScreen(
     creatorId: String, // ID del creador del cuestionario
     viewModel: QuizCreationViewModel = viewModel() // Usamos el ViewModel para gestionar la lógica de creación
 ) {
+
+
+
+    val title by viewModel.title
+    val description by viewModel.description
+    var imageUrl by viewModel.imageUrl
+    val timeLimit by viewModel.timeLimit
+    val isGeolocationRestricted by viewModel.isGeolocationRestricted
+    val creatorLocation by viewModel.creatorLocation
+    val isAccessControlled by viewModel.isAccessControlled
+    val showResultsImmediately by viewModel.showResultsImmediately
+    val questionType by viewModel.questionType
+    val questionTitle by viewModel.questionTitle
+    val imageUri by viewModel.imageUri
+
     // Estado mutable para cada campo de entrada y configuraciones del cuestionario
-    var title by remember { mutableStateOf(TextFieldValue("")) } // Título del cuestionario
-    var description by remember { mutableStateOf(TextFieldValue("")) } // Descripción del cuestionario
-    var isLoading by remember { mutableStateOf(false) } // Estado de carga mientras se guarda el cuestionario
-    var imageUrl by remember { mutableStateOf<String?>(null) } // URL de la imagen seleccionada
-    var imageUri by remember { mutableStateOf<Uri?>(null) } // URI de la imagen seleccionada
-    var timeLimit by remember { mutableStateOf<Long?>(null) } // Límite de tiempo del cuestionario
-    var isGeolocationRestricted by remember { mutableStateOf(false) } // Restricción por geolocalización
-    var creatorLocation by remember { mutableStateOf<GeoPoint?>(null) }
-    var isAccessControlled by remember { mutableStateOf(false) } // Control de acceso (cuestionario empieza cuando el creador lo desea)
-    var showResultsImmediately by remember { mutableStateOf(false) } // Mostrar resultados inmediatamente después de terminar
+
     var showAccessCodeScreen by remember { mutableStateOf(false) } // Controla la visibilidad de la pantalla de código
     var savedQuizId by remember { mutableStateOf<String?>(null) } // ID del cuestionario guardado
-
+    var selectedQuestionTypeText by remember { mutableStateOf("Choose question type") }
     val context = LocalContext.current
     val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     // Variables relacionadas con el tipo de pregunta
-    var questionType by remember { mutableStateOf<QuestionType?>(null) }
-    var questionTitle by remember { mutableStateOf("") }
+
     val optionsP01 by remember { mutableStateOf(listOf("True", "False")) }
     var optionsP02 by remember { mutableStateOf(listOf<String>()) }
     var optionsP03 by remember { mutableStateOf(listOf<String>()) }
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var selectedAnswerP02 by remember { mutableStateOf<String?>(null) }
+
     var selectedAnswerP03 by remember { mutableStateOf<List<String>>(emptyList()) }
     var pairsP04 by remember { mutableStateOf(listOf("" to "")) }
 
@@ -76,7 +81,7 @@ fun QuizCreationScreen(
 
     // Lista de opciones posibles para completar los espacios en blanco
     var optionsP06 by remember { mutableStateOf(listOf("sun", "moon", "star")) }
-
+    var isLoading by remember { mutableStateOf(false) }
     // Respuestas correctas asociadas a los espacios en blanco
     var correctAnswersP06 by remember { mutableStateOf(listOf("sun")) }
 
@@ -93,14 +98,14 @@ fun QuizCreationScreen(
 
     // Función para limpiar los campos después de añadir una pregunta
     val onUpdate: () -> Unit = {
-        questionTitle = ""
+        viewModel.updateQuestionTitle("")
         selectedAnswer = null
     }
 
     // Launcher para seleccionar una imagen desde el dispositivo
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> imageUri = uri }
+        onResult = { uri -> viewModel.updateImageUri(uri?.toString()) }
     )
 
     // Función para obtener la ubicación
@@ -133,7 +138,7 @@ fun QuizCreationScreen(
                     context,
                     fusedLocationProviderClient
                 ) { location ->
-                    creatorLocation = location
+                    viewModel.updateCreatorLocation(location)
                 }
             } else {
                 Toast.makeText(
@@ -141,7 +146,7 @@ fun QuizCreationScreen(
                     "Ubicación no permitida. No se puede habilitar la restricción por geolocalización.",
                     Toast.LENGTH_LONG
                 ).show()
-                isGeolocationRestricted = false
+                viewModel.updateIsGeolocationRestricted(false)
             }
         }
     )
@@ -199,7 +204,7 @@ fun QuizCreationScreen(
         item {
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { viewModel.updateTitle(it) },
                 label = { Text(stringResource(R.string.quiz_title)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -210,7 +215,7 @@ fun QuizCreationScreen(
         item {
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = { viewModel.updateDescription(it) },
                 label = { Text(stringResource(R.string.description)) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 4
@@ -223,7 +228,7 @@ fun QuizCreationScreen(
                 value = timeLimit?.toString() ?: "",
                 onValueChange = {
                     // Validar que el valor ingresado sea un número
-                    timeLimit = it.toLongOrNull() // Si no es un número, será null
+                    viewModel.updateTimeLimit(it.toLongOrNull()) // Si no es un número, será null
                 },
                 label = { Text(stringResource(R.string.time_limit)) },
                 modifier = Modifier.fillMaxWidth(),
@@ -248,7 +253,7 @@ fun QuizCreationScreen(
                 Switch(
                     checked = isGeolocationRestricted,
                     onCheckedChange = { isChecked ->
-                        isGeolocationRestricted = isChecked
+                        viewModel.updateIsGeolocationRestricted(isChecked)
                         if (isChecked) {
                             val permissionStatus = ContextCompat.checkSelfPermission(
                                 context,
@@ -259,7 +264,7 @@ fun QuizCreationScreen(
                                     context,
                                     fusedLocationProviderClient
                                 ) { location ->
-                                    creatorLocation = location
+                                    viewModel.updateCreatorLocation(location)
                                 }
                             } else {
                                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -269,7 +274,7 @@ fun QuizCreationScreen(
                                 context,
                                 fusedLocationProviderClient
                             ) { location ->
-                                creatorLocation = location
+                                viewModel.updateCreatorLocation(location)
                             }
                         }
                     },
@@ -292,7 +297,7 @@ fun QuizCreationScreen(
                 )
                 Switch(
                     checked = isAccessControlled,
-                    onCheckedChange = { isAccessControlled = it },
+                    onCheckedChange = { viewModel.updateIsAccessControlled(it) },
                 )
             }
         }
@@ -311,7 +316,7 @@ fun QuizCreationScreen(
                 )
                 Switch(
                     checked = showResultsImmediately,
-                    onCheckedChange = { showResultsImmediately = it }
+                    onCheckedChange = { viewModel.updateShowResultsImmediately(it) }
                 )
             }
         }
@@ -328,7 +333,7 @@ fun QuizCreationScreen(
 
         // Botón y menú desplegable para seleccionar el tipo de pregunta
         item {
-            var selectedQuestionTypeText by remember { mutableStateOf("Selecione o tipo de pergunta") }
+
 
             Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
@@ -348,9 +353,9 @@ fun QuizCreationScreen(
                     QuestionType.values().forEach { type ->
                         DropdownMenuItem(
                             onClick = {
-                                questionType = type
+                                viewModel.updateQuestionType(type) // Actualiza el tipo de pregunta
                                 selectedQuestionTypeText = type.name // Actualiza el texto del botón
-                                isDropdownOpen = false // Cierra el menú
+                                isDropdownOpen = false // Cierra el menú después de seleccionar
                             },
                             text = {
                                 Text(
@@ -365,115 +370,115 @@ fun QuizCreationScreen(
             }
         }
 
-        // Mostrar UI de la pregunta basada en el tipo seleccionado
+// Mostrar UI de la pregunta basada en el tipo seleccionado
         item {
-            when (questionType) {
-                QuestionType.P01 -> {
-                    // Mostrar la UI para el tipo de pregunta P01
-                    P01Question(
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        selectedAnswer = selectedAnswer,
-                        onAnswerChange = { selectedAnswer = it },
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it }
-                    )
+            if (questionType != null) { // Solo mostrar si hay un tipo de pregunta seleccionado
+                when (questionType) {
+                    QuestionType.P01 -> {
+                        // Mostrar la UI para el tipo de pregunta P01
+                        P01Question(
+                            questionTitle = questionTitle,
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            selectedAnswer = selectedAnswer,
+                            onAnswerChange = { selectedAnswer = it },
+                            imageUrl = imageUrl,
+                            onImageChange = { imageUrl = it }
+                        )
+                    }
+
+                    QuestionType.P02 -> {
+                            P02Question(
+                                questionTitle = questionTitle,
+                                onTitleChange = { viewModel.updateQuestionTitle(it) },
+                                options = optionsP02,
+                                onOptionsChange = { optionsP02 = it },
+                                selectedOption = selectedAnswerP02,
+                                onSelectedOptionChange = { selectedAnswerP02 = it },
+                                imageUrl = imageUrl,
+                                onImageChange = { imageUrl = it }
+                            )
+                    }
+
+                    QuestionType.P03 -> {
+                        P03Question(
+                            imageUrl = imageUrl,
+                            onImageChange = { imageUrl = it },
+                            questionTitle = questionTitle,
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            options = optionsP03,
+                            onOptionsChange = { optionsP03 = it },
+                            onSelectedOptionsChange = { selectedAnswerP03 = it },
+                            selectedOptions = selectedAnswerP03
+
+
+                        )
+
+                    }
+
+                    QuestionType.P04 -> {
+
+                        P04Question(
+                            questionTitle = questionTitle,
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            pairs = pairsP04,
+                            onPairsChange = { pairsP04 = it },
+                            imageUrl = imageUrl,
+                            onImageChange = { imageUrl = it }
+                        )
+                    }
+
+                    QuestionType.P05 -> {
+                        P05Question(
+                            questionTitle = questionTitle,
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            items = itemsP05,
+                            onItemsChange = { itemsP05 = it },
+                            imageUrl = imageUrl,
+                            onImageChange = { imageUrl = it }
+                        )
+                    }
+
+
+                    QuestionType.P06 -> {
+                        P06Question(
+                            options = optionsP06,
+                            onOptionsChange = { optionsP06 = it },
+                            correctAnswers = correctAnswersP06,
+                            onCorrectAnswersChange = { correctAnswersP06 = it },
+                            imageUrl = imageUrl,
+                            onImageChange = { imageUrl = it },
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            questionTitle = questionTitle
+
+                        )
+                    }
+
+                    QuestionType.P07 -> {
+                        // Mostrar la UI para el tipo de pregunta P07
+                        P07Question(
+                            questionTitle = questionTitle,
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            associations = associationsP07,
+                            onAssociationsChange = { associationsP07 = it },
+                            imageUrl = imageUrl?.toString(),
+                            onImageChange = { imageUrl = it }
+                        )
+                    }
+
+                    QuestionType.P08 -> {
+                        P08Question(
+                            questionTitle = questionTitle,
+                            onTitleChange = { viewModel.updateQuestionTitle(it) },
+                            answers = correctAnswersP08,
+                            onAnswersChange = { correctAnswersP08 = it },
+                            imageUrl = imageUrl,
+                            onImageChange = { imageUrl = it },
+                            onOptionsChange = { optionsP08 = it }
+                        )
+                    }
+                    // Repite para los otros tipos de preguntas...
+                    else -> {}
                 }
-
-                QuestionType.P02 -> {
-                    P02Question(
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it },
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        options = optionsP02,
-                        onOptionsChange = { optionsP02 = it },
-                        onSelectedOptionChange = { selectedAnswerP02 = it },
-                        selectedOption = selectedAnswerP02
-
-                    )
-
-                }
-
-                QuestionType.P03 -> {
-                    P03Question(
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it },
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        options = optionsP03,
-                        onOptionsChange = { optionsP03 = it },
-                        onSelectedOptionsChange = { selectedAnswerP03 = it },
-                        selectedOptions = selectedAnswerP03
-
-
-                    )
-
-                }
-
-                QuestionType.P04 -> {
-
-                    P04Question(
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        pairs = pairsP04,
-                        onPairsChange = { pairsP04 = it },
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it }
-                    )
-                }
-
-                QuestionType.P05 -> {
-                    P05Question(
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        items = itemsP05,
-                        onItemsChange = { itemsP05 = it },
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it }
-                    )
-                }
-
-
-                QuestionType.P06 -> {
-                    P06Question(
-                        options = optionsP06,
-                        onOptionsChange = { optionsP06 = it },
-                        correctAnswers = correctAnswersP06,
-                        onCorrectAnswersChange = { correctAnswersP06 = it },
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it },
-                        onTitleChange = { questionTitle = it },
-                        questionTitle = questionTitle
-
-                    )
-                }
-
-                QuestionType.P07 -> {
-                    // Mostrar la UI para el tipo de pregunta P07
-                    P07Question(
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        associations = associationsP07,
-                        onAssociationsChange = { associationsP07 = it },
-                        imageUrl = imageUrl?.toString(),
-                        onImageChange = { imageUrl = it }
-                    )
-                }
-
-                QuestionType.P08 -> {
-                    P08Question(
-                        questionTitle = questionTitle,
-                        onTitleChange = { questionTitle = it },
-                        answers = correctAnswersP08,
-                        onAnswersChange = { correctAnswersP08 = it },
-                        imageUrl = imageUrl,
-                        onImageChange = { imageUrl = it },
-                        onOptionsChange = { optionsP08 = it }
-                    )
-                }
-
-                else -> {}
             }
         }
 
@@ -481,30 +486,59 @@ fun QuizCreationScreen(
         item {
             when (questionType) {
                 QuestionType.P01 -> {
-                    // Cuando el questionType es P01, pasamos las opciones y otros parámetros específicos de este tipo
                     AddQuestionButton(
                         questionType = questionType,
                         questionTitle = questionTitle,
                         options = optionsP01,
                         correctAnswers = listOf(selectedAnswer ?: ""),
                         imageUrl = imageUrl,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {
+                            onUpdate()
+                            selectedQuestionTypeText = "Choose question type"
+                            viewModel.updateQuestionType(null)
+                        },
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = optionsP01,
+                                correctAnswers = listOf(selectedAnswer ?: ""),
+                                imageUrl = imageUrl,
+
+                            )
+                        },
+
                     )
                 }
+
+                    // Cuando el questionType es P01, pasamos las opciones y otros parámetros específicos de este tipo
+
 
                 QuestionType.P02 -> {
                     AddQuestionButton(
                         questionType = questionType,
                         questionTitle = questionTitle,
                         options = optionsP02,
-                        correctAnswers = listOf(selectedAnswerP02 ?: ""),
+                        correctAnswers = selectedAnswerP02?.let { listOf(it) }
+                            ?: emptyList(), // Convertir a List<String>
                         imageUrl = imageUrl,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {
+                            onUpdate()
+                            selectedQuestionTypeText = "Selecione o tipo de pergunta"
+                            viewModel.updateQuestionType(null)
+                        },
+                        onAddQuestion = {
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = optionsP02,
+                                correctAnswers = selectedAnswerP02?.let { listOf(it) }
+                                    ?: emptyList(), // Convertir a List<String>
+                                imageUrl = imageUrl
+                            )
+                        }
                     )
                 }
-
                 QuestionType.P03 -> {
                     AddQuestionButton(
                         questionType = questionType,
@@ -512,8 +546,21 @@ fun QuizCreationScreen(
                         options = optionsP03,
                         correctAnswers = selectedAnswerP03,
                         imageUrl = imageUrl,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {onUpdate()
+                            isDropdownOpen = false
+                            selectedQuestionTypeText = "Choose question type" // Restablece el texto del botón
+                            viewModel.updateQuestionType(null)},
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = optionsP03,
+                                correctAnswers = selectedAnswerP03,
+                                imageUrl = imageUrl,
+
+                                )
+                        },
+
                     )
                 }
 
@@ -524,8 +571,21 @@ fun QuizCreationScreen(
                         options = pairsP04.map { "${it.first} -> ${it.second}" }, // Combina pares como "A -> B"
                         correctAnswers = pairsP04.map { "${it.first} -> ${it.second}" }, // Los pares se consideran las respuestas correctas
                         imageUrl = imageUrl,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {onUpdate()
+                            isDropdownOpen = false
+                            selectedQuestionTypeText = "Choose question type" // Restablece el texto del botón
+                            viewModel.updateQuestionType(null)},
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = pairsP04.map { "${it.first} -> ${it.second}" },
+                                correctAnswers = listOf(selectedAnswer ?: ""),
+                                imageUrl = imageUrl,
+
+                                )
+                        },
+
                     )
                 }
 
@@ -536,8 +596,21 @@ fun QuizCreationScreen(
                         options = itemsP05, // Los elementos a ordenar
                         correctAnswers = itemsP05, // El orden correcto se define al crearlos
                         imageUrl = imageUrl,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {onUpdate()
+                            isDropdownOpen = false
+                            selectedQuestionTypeText = "Choose question type" // Restablece el texto del botón
+                            viewModel.updateQuestionType(null)},
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = itemsP05,
+                                correctAnswers = itemsP05,
+                                imageUrl = imageUrl,
+
+                                )
+                        },
+
 
                     )
                 }
@@ -549,8 +622,21 @@ fun QuizCreationScreen(
                         options = optionsP06,
                         correctAnswers = correctAnswersP06,
                         imageUrl = imageUrl, // Las preguntas de completar no requieren imagen (puedes cambiar esto)
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {onUpdate()
+                            isDropdownOpen = false
+                            selectedQuestionTypeText = "Choose question type" // Restablece el texto del botón
+                            viewModel.updateQuestionType(null)},
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = optionsP01,
+                                correctAnswers = correctAnswersP06,
+                                imageUrl = imageUrl,
+
+                                )
+                        },
+
                     )
                 }
 
@@ -561,8 +647,21 @@ fun QuizCreationScreen(
                         options = associationsP07.map { it.first }, // Lista de conceptos
                         correctAnswers = associationsP07.map { it.second }, // Lista de asociaciones
                         imageUrl = imageUrlP07,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {onUpdate()
+                            isDropdownOpen = false
+                            selectedQuestionTypeText = "Choose question type" // Restablece el texto del botón
+                            viewModel.updateQuestionType(null)},
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = optionsP01,
+                                correctAnswers = associationsP07.map { it.second } ,
+                                imageUrl = imageUrl,
+
+                                )
+                        },
+
                     )
                 }
 
@@ -575,8 +674,21 @@ fun QuizCreationScreen(
 
                         correctAnswers = correctAnswersP08,
                         imageUrl = imageUrl,
-                        onUpdate = onUpdate,
-                        viewModel = viewModel
+                        onUpdate = {onUpdate()
+                            isDropdownOpen = false
+                            selectedQuestionTypeText = "Selecione o tipo de pergunta" // Restablece el texto del botón
+                            viewModel.updateQuestionType(null)},
+                        onAddQuestion = { // Nueva función para agregar la pregunta temporalmente
+                            viewModel.addTemporaryQuestion(
+                                type = questionType!!,
+                                title = questionTitle,
+                                options = optionsP01,
+                                correctAnswers = correctAnswersP08,
+                                imageUrl = imageUrl,
+
+                                )
+                        },
+
                     )
                 }
                 else -> {}
@@ -600,37 +712,31 @@ fun QuizCreationScreen(
             Button(
                 onClick = {
                     isLoading = true
-                    if (title.text.isNotBlank() &&
-                        viewModel.questions.isNotEmpty()) {
-                    viewModel.saveQuiz(
-                        title = title.text,
-                        description = description.text,
-                        imageUrl = imageUri?.toString(),
-                        timeLimit = timeLimit?.toInt(),
-                        creatorId = creatorId,
-                        isGeolocationRestricted = isGeolocationRestricted,
-                        location = creatorLocation,
-                        isAccessControlled = isAccessControlled,
-                        showResultsImmediately = showResultsImmediately,
-
-                        onSuccess = { id ->
-                            isLoading = false
-                            showAccessCodeScreen = true // Muestra la pantalla del código de acceso
-                            savedQuizId = id
-                        },
-
-                        onError = {
-                            isLoading = false
-                        }
-                    )
-                }
-                    else {
-                        isLoading = false // Si falla la validación, asegurarse de desactivar el loading
+                    if (title.isNotBlank() && viewModel.temporaryQuestions.isNotEmpty()) {
+                        viewModel.saveQuiz(
+                            title = title,
+                            description = description,
+                            imageUrl = imageUri?.toString(),
+                            timeLimit = timeLimit?.toInt(),
+                            creatorId = creatorId,
+                            isGeolocationRestricted = isGeolocationRestricted,
+                            location = creatorLocation,
+                            isAccessControlled = isAccessControlled,
+                            showResultsImmediately = showResultsImmediately,
+                            onSuccess = { id ->
+                                isLoading = false
+                                showAccessCodeScreen = true
+                                savedQuizId = id
+                            },
+                            onError = {
+                                isLoading = false
+                            }
+                        )
+                    } else {
+                        isLoading = false
                     }
-                          },
-                enabled = !isLoading &&
-                        title.toString().isNotBlank() &&
-                        viewModel.questions.isNotEmpty(),
+                },
+                enabled = !isLoading && title.toString().isNotBlank() && viewModel.temporaryQuestions.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (isLoading) {
@@ -642,69 +748,93 @@ fun QuizCreationScreen(
         }
 
 
-        // Agregar preguntas añadidas como otro ítem en el LazyColumn
+
+
+    // Agregar preguntas añadidas como otro ítem en el LazyColumn
         item {
-            if (viewModel.questions.isNotEmpty()) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(R.string.added_questions),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+        if (viewModel.temporaryQuestions.isNotEmpty()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(R.string.added_questions),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        viewModel.questions.forEach { question ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                                    .border(
-                                        1.dp,
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                                        MaterialTheme.shapes.small
-                                    ) // Agrega borde sutil
-                                    .padding(16.dp) // Padding interno para separación
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    viewModel.temporaryQuestions.forEach { question ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .border(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                    MaterialTheme.shapes.small
+                                )
+                                .padding(16.dp)
+                        ) {
+                            // Título de la pregunta
+                            Text(
+                                text = stringResource(R.string.title) + " ${question.title}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+
+                            // Tipo de pregunta
+                            Text(
+                                text = stringResource(R.string.type) + " ${question.type}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+
+                            // Respuestas correctas
+                            Text(
+                                text = stringResource(R.string.correct_answers) + " ${question.correctAnswers}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+
+                            // Botón para eliminar la pregunta
+                            Button(
+                                onClick = {
+                                    viewModel.removeQuestion(question) // Elimina la pregunta
+                                },
+                                modifier = Modifier.align(Alignment.End),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
                             ) {
-                                // Título de la pregunta
-                                Text(
-                                    text = stringResource(R.string.title) + " ${question.title}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-
-                                // Tipo de pregunta
-                                Text(
-                                    text = stringResource(R.string.type) + " ${question.type}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-
-                                // Respuestas correctas
-                                Text(
-                                    text = stringResource(R.string.correct_answers) + " ${question.correctAnswers}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete question",
+                                    tint = MaterialTheme.colorScheme.error
                                 )
                             }
                         }
                     }
                 }
-            } else {
-                Text(
-                    text = stringResource(R.string.no_questions_added),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(8.dp)
-                )
             }
+        } else {
+            Text(
+                text = stringResource(R.string.no_questions_added),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.padding(8.dp)
+            )
         }
     }
 }
+}
+
+
 
 
 

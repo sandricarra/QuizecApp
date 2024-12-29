@@ -23,6 +23,7 @@ import pt.isec.ams.quizec.data.models.QuestionType
 import pt.isec.ams.quizec.ui.viewmodel.QuizScreenViewModel
 import androidx.core.app.ActivityCompat
 import android.app.Activity
+import android.util.Log
 import pt.isec.ams.quizec.data.models.QuizStatus
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -31,8 +32,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +48,7 @@ import androidx.navigation.NavController
 import coil3.compose.rememberAsyncImagePainter
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.perf.util.Timer
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.Question
 import pt.isec.ams.quizec.data.models.Quiz
@@ -52,7 +60,8 @@ fun QuizAccessScreen(navController: NavController,
                      viewModel: QuizScreenViewModel = viewModel(), creatorId: String
 ) {
 
-    var isQuizStarted by remember { mutableStateOf(false) } // Control del estado de inicio del quiz
+
+
     // Usa collectAsState para observar los StateFlows
     val quiz by viewModel.quiz.collectAsState()
     val question by viewModel.question.collectAsState()
@@ -202,15 +211,9 @@ fun QuizAccessScreen(navController: NavController,
                 viewModel.decrementTimeRemaining()
             }
             // Finalizar el cuestionario cuando el tiempo se agote
-            viewModel.finishQuiz()
-            viewModel.updateQuizStatusToFinished(quizId)
-            viewModel.updateQuizStatusToFinished2(quizId)
-            viewModel.removeUserFromPlayingList(quizId, creatorId)
-            viewModel.removeUserFromWaitingList(quizId, creatorId)
-            viewModel.saveQuizResult(quizId, creatorId, correctAnswers, quiz?.questions?.size ?: 0)
-            currentScreen = Screen.Result
 
-            Toast.makeText(context, "Time's up! Quiz finished.", Toast.LENGTH_LONG).show()
+
+
         } else if (timeRemaining == 0L) {
             Toast.makeText(context, "Time's up! Quiz finished.", Toast.LENGTH_LONG).show()
             viewModel.finishQuiz()
@@ -541,28 +544,46 @@ fun QuizAccessScreen(navController: NavController,
 }
 
 */
+    LaunchedEffect(quizStatus) {
+        Log.d("QuizAccessScreen", "Quiz status changed to: $quizStatus")
+        if (quizStatus == QuizStatus.LOCKED && quiz?.isAccessControlled == true) {
+            Log.d("QuizAccessScreen", "Switching to WaitingScreen")
+            currentScreen = Screen.Waiting
+        }
+    }
+
     LaunchedEffect(quizId) {
         if (quizId.isNotBlank()) {
+            Log.d("QuizAccessScreen", "Observing quiz status for quizId: $quizId")
             viewModel.observeQuizStatus(quizId)
         }
     }
 
+
+
     LaunchedEffect(quizStatus) {
         if (quizStatus == QuizStatus.AVAILABLE && currentScreen == Screen.Waiting) {
             currentScreen = Screen.Presentation
+            viewModel.loadQuiz(quizId, context,creatorId)
 
         }
     }
     LaunchedEffect(quizStatus) {
         if (quizStatus == QuizStatus.FINISHED && currentScreen == Screen.Question) {
-            currentScreen = Screen.Result
-            viewModel.saveQuizResult(quizId, creatorId, correctAnswers, quiz?.questions?.size ?: 0)
+            Log.d("QuizAccessScreen", "Quiz finished, saving results...")
+            viewModel.saveQuizResult(quizId, creatorId, viewModel.correctAnswers.value, quiz?.questions?.size ?: 0)
             viewModel.removeUserFromPlayingList(quizId, creatorId)
             viewModel.finishQuiz()
             viewModel.updateQuizStatusToFinished(quizId)
             viewModel.removeUserFromWaitingList(quizId, creatorId)
+            currentScreen = Screen.Result
         }
     }
+
+
+
+
+
 
     when (currentScreen) {
 
@@ -578,33 +599,28 @@ fun QuizAccessScreen(navController: NavController,
                         if (hasPlayed) {
                             Toast.makeText(context, "You have already played this quiz.", Toast.LENGTH_LONG).show()
                         } else {
-                            if (quizStatus == QuizStatus.LOCKED && quiz?.isAccessControlled == true) {
+                            Log.d("QuizAccessScreen11", "Starting quiz with ID: $quizId")
+                            Log.d("QuizAccessScreen11", "Quiz status: $quizStatus")
+                            if (quizStatus == QuizStatus.LOCKED) {
                                 currentScreen = Screen.Waiting
-                            } else if (quizStatus == QuizStatus.AVAILABLE) {
-                                // Verificar si la ubicación es necesaria
-                                if (quiz?.isGeolocationRestricted == true && userLocation == null ) {
-                                    currentScreen = Screen.Start
-                                    viewModel.removeUserFromPlayingList(quizId, creatorId)
-                                    Toast.makeText(
-                                        context,
-                                        "Location is required to start this quiz. Please enable location services.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                } else {
+                                Log.d("QuizAccessScreen11", "Switching to WaitingScreen")
+                            }
+                            else {
                                     currentScreen = Screen.Presentation
                                     viewModel.loadQuiz(quizId, context,creatorId)
+                                    Log.d("QuizAccessScreen11", "Loadingquiz with ID: $quizId")
 
                                 }
                             }
                         }
-                    }
+
                 }
             )
         }
         Screen.Presentation -> {
             PresentationScreen(
                 quiz = quiz,
-                creatorName = quiz?.creatorId.toString(), // Reemplaza con la lógica para obtener el nombre del creador
+                creatorId = quiz?.creatorId.toString(), // Reemplaza con la lógica para obtener el nombre del creador
                 onStartQuiz = {
                     currentScreen = Screen.Question
 
@@ -612,8 +628,11 @@ fun QuizAccessScreen(navController: NavController,
                     viewModel.removeUserFromWaitingList(quizId, creatorId)
                     viewModel.addUserToPlayingList(quizId, creatorId)
                     viewModel.updateQuizStatus(quizId)
+                    isQuizLoaded = false
 
-                }
+                },
+                viewModel = viewModel
+
             )
         }
 
@@ -621,7 +640,7 @@ fun QuizAccessScreen(navController: NavController,
             QuestionScreen(
                 viewModel = viewModel,
                 onQuizFinished = { currentScreen = Screen.Result
-                    viewModel.saveQuizResult(quizId, creatorId, correctAnswers, quiz?.questions?.size ?: 0)
+
                     viewModel.removeUserFromPlayingList(quizId, creatorId)
                     viewModel.finishQuiz()
                     viewModel.updateQuizStatusToFinished(quizId)
@@ -717,7 +736,7 @@ fun StartScreen(
         }
         item {
             Text(
-                text = stringResource(R.string.welcome_message),
+                text = stringResource(R.string.start_playing),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -746,14 +765,7 @@ fun StartScreen(
         item {
             Button(
                 onClick = {
-                    if (quizId.isBlank()) {
-                        errorMessage.value = "Quiz ID cannot be empty"
-                    } else if (!isQuizIdValid) {
-                        errorMessage.value = "Quiz ID must be 6 characters, uppercase letters, and numbers"
-                    } else {
-                        errorMessage.value = null
-                        onStartQuiz()
-                    }
+                   onStartQuiz()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1031,72 +1043,173 @@ fun QuestionScreen(viewModel: QuizScreenViewModel, onQuizFinished: () -> Unit) {
 @Composable
 fun PresentationScreen(
     quiz: Quiz?,
-    creatorName: String,
-    onStartQuiz: () -> Unit
+    creatorId: String,
+    onStartQuiz: () -> Unit,
+    viewModel: QuizScreenViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        quiz?.let {
-            Text(
-                text = it.title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+    // Estado para almacenar el nombre del creador
+    val creatorName = remember { mutableStateOf("Loading...") }
 
-            Text(
-                text = "Time Limit: ${it.timeLimit} minutes",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(R.string.questions_for_quiz) + ": ${it.questions.size}",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(R.string.created_by) + ": $creatorName",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Mostrar la imagen del quiz si está disponible
-            it.imageUrl?.let { imageUrl ->
-                Image(
-                    painter = rememberAsyncImagePainter(imageUrl),
-                    contentDescription = "Quiz Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            } ?: run {
-                // Mostrar un ícono predeterminado si no hay imagen
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = stringResource(R.string.no_image_selected),
-                    tint = Color.Gray,
-                    modifier = Modifier.size(100.dp)
-                )
+    // Efecto para cargar el nombre del creador
+    LaunchedEffect(creatorId) {
+        viewModel.getCreatorName(creatorId) { name ->
+            if (name != null) {
+                creatorName.value = name
             }
         }
+    }
 
-        Button(
-            onClick = onStartQuiz,
-            modifier = Modifier.fillMaxWidth()
+    // Colores y estilos (ajustados a azul clarito)
+    val backgroundColor = Color(0xFFE3F2FD) // Fondo azul claro
+    val cardColor = Color.White // Color de la tarjeta
+    val primaryColor = Color(0xFF2196F3) // Azul clarito
+    val textColor = Color.Black // Color del texto
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+            .padding(16.dp)
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor)
         ) {
-            Text(stringResource(R.string.start_playing))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                // Título del quiz
+                Text(
+                    text = quiz?.title ?: "Quiz Title",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = primaryColor,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                // Imagen del quiz
+                quiz?.imageUrl?.let { imageUrl ->
+                    Image(
+                        painter = rememberAsyncImagePainter(imageUrl),
+                        contentDescription = "Quiz Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                } ?: run {
+                    // Icono predeterminado si no hay imagen
+                    Icon(
+                        imageVector = Icons.Default.AccountBox,
+                        contentDescription = "No image selected",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(100.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                // Detalles del quiz
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Tiempo límite
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Time Limit",
+                            tint = primaryColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Time Limit: ${quiz?.timeLimit} minutes",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textColor
+                        )
+                    }
+
+                    // Número de preguntas
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.List,
+                            contentDescription = "Number of Questions",
+                            tint = primaryColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Questions: ${quiz?.questions?.size}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textColor
+                        )
+                    }
+
+                    // Creador del quiz
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Creator",
+                            tint = primaryColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Created by: ${creatorName.value}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textColor
+                        )
+                    }
+                }
+
+                // Botón de inicio
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onStartQuiz,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = primaryColor,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Start Quiz",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
         }
     }
 }
+
+
+
+
+
 
 
 enum class Screen {
