@@ -159,7 +159,7 @@ class QuizScreenViewModel : ViewModel() {
 
 
 
-    fun loadQuiz(quizId: String, context: Context,creatorId : String) {
+    fun loadQuiz(quizId: String, context: Context, creatorId: String, onResult: (Boolean) -> Unit) {
         _isLoading.value = true
         _errorMessage.value = null
 
@@ -167,75 +167,47 @@ class QuizScreenViewModel : ViewModel() {
             if (hasPlayed) {
                 Toast.makeText(context, "You have already played this quiz", Toast.LENGTH_LONG).show()
                 _isLoading.value = false
+                onResult(false)
             } else {
-                getQuizGeolocationRestriction(quizId) { isGeolocationRestricted ->
+                getQuizGeolocationRestriction(quizId) { isGeolocationRestricted, quizLocation ->
                     if (isGeolocationRestricted) {
-                        if (_userLocation.value == null) {
-                            Toast.makeText(
-                                context,
-                                "Unable to fetch your location. Please enable location services.",
-                                Toast.LENGTH_LONG
-                            ).show()
+
+
+                        if (quizLocation == null) {
+                            Toast.makeText(context, "Quiz location not found.", Toast.LENGTH_LONG).show()
                             _isLoading.value = false
+                            onResult(false)
                             return@getQuizGeolocationRestriction
                         }
 
-                        getQuizLocation(quizId) { quizLocation ->
-                            if (quizLocation == null) {
-                                Toast.makeText(context, "Quiz location not found.", Toast.LENGTH_LONG).show()
-                                _isLoading.value = false
-                                return@getQuizLocation
-                            }
+                        val distance = calculateDistance(
+                            _userLocation.value!!.first,
+                            _userLocation.value!!.second,
+                            quizLocation.latitude,
+                            quizLocation.longitude
+                        )
 
-                            val distance = FloatArray(1)
-                            Location.distanceBetween(
-                                _userLocation.value!!.first,
-                                _userLocation.value!!.second,
-                                quizLocation.first,
-                                quizLocation.second,
-                                distance
-                            )
-
-                            if (distance[0] > 20000) {
-                                Toast.makeText(
-                                    context,
-                                    "You are not within the allowed region (20 km) to play this quiz.",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                _isLoading.value = false
-                                return@getQuizLocation
-                            }
-
-                            loadQuizData(quizId)
+                        if (distance > 20) {
+                            Toast.makeText(
+                                context,
+                                "You are not within the allowed region (20 km) to play this quiz.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            _isLoading.value = false
+                            onResult(false)
+                            return@getQuizGeolocationRestriction
                         }
-                    } else {
-                        loadQuizData(quizId)
                     }
+                    loadQuizData(quizId, onResult)
                 }
             }
         }
     }
-    private fun loadQuizData(quizId: String) {
-        firestore.collection("quizzes").document(quizId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val quiz = document.toObject(Quiz::class.java)
-                    _quiz.value = quiz
-                    quiz?.questions?.firstOrNull()?.let { loadQuestionById(it) }
-                    _timeRemaining.value = quiz?.timeLimit?.toLong()?.times(60)
-                    _quizNotFound.value = false // Quiz found
-                } else {
-                    handleError("Quiz not found")
-                    _quizNotFound.value = true // Quiz not found
-                }
-                _isLoading.value = false
-            }
-            .addOnFailureListener { exception ->
-                handleError(exception.message ?: "Error loading quiz")
-                _isLoading.value = false
-                _quizNotFound.value = true
-            }
-    }
+
+
+
+
+
 
     fun getCreatorName(creatorId: String, onResult: (String?) -> Unit) {
         viewModelScope.launch {
@@ -251,7 +223,30 @@ class QuizScreenViewModel : ViewModel() {
     }
 
 
-
+    private fun loadQuizData(quizId: String, onResult: (Boolean) -> Unit) {
+        firestore.collection("quizzes").document(quizId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val quiz = document.toObject(Quiz::class.java)
+                    _quiz.value = quiz
+                    quiz?.questions?.firstOrNull()?.let { loadQuestionById(it) }
+                    _timeRemaining.value = quiz?.timeLimit?.toLong()?.times(60)
+                    _quizNotFound.value = false // Quiz found
+                    onResult(true)
+                } else {
+                    handleError("Quiz not found")
+                    _quizNotFound.value = true // Quiz not found
+                    onResult(false)
+                }
+                _isLoading.value = false
+            }
+            .addOnFailureListener { exception ->
+                handleError(exception.message ?: "Error loading quiz")
+                _isLoading.value = false
+                _quizNotFound.value = true
+                onResult(false)
+            }
+    }
 
 
 

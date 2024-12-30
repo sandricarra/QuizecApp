@@ -183,7 +183,7 @@ fun QuizAccessScreen(navController: NavController,
     LaunchedEffect(quizStatus) {
         if (quizStatus == QuizStatus.AVAILABLE && currentScreen == Screen.Waiting) {
             currentScreen = Screen.Presentation
-            viewModel.loadQuiz(quizId, context,creatorId)
+            viewModel.loadQuiz(quizId, context,creatorId,onResult = {})
 
         }
     }
@@ -210,10 +210,15 @@ fun QuizAccessScreen(navController: NavController,
             StartScreen(
                 quizId = quizId,
                 onQuizIdChange = { quizId = it },
-
                 creatorId = creatorId,
                 quizNotFound = errorMessage != null,
                 onStartQuiz = {
+                    // Validar el código del cuestionario
+                    if (quizId.length != 6 || !quizId.all { it.isUpperCase() || it.isDigit() }) {
+                        errorMessage = "Invalid quiz code. It must be 6 uppercase letters or numbers."
+                        Log.d("QuizAccessScreen", "Invalid quiz code: $quizId")
+                        return@StartScreen
+                    }
                     viewModel.hasUserPlayedQuiz(quizId, creatorId) { hasPlayed ->
                         if (hasPlayed) {
                             Toast.makeText(context, "You have already played this quiz.", Toast.LENGTH_LONG).show()
@@ -222,10 +227,7 @@ fun QuizAccessScreen(navController: NavController,
                             viewModel.getQuizGeolocationRestriction(quizId) { isGeolocationRestricted, quizLocation ->
                                 if (isGeolocationRestricted) {
                                     Log.d("QuizAccessScreen", "Quiz has geolocation restriction")
-                                    if (userLocation == null) {
-                                        Toast.makeText(context, "Unable to fetch your location. Please enable location services.", Toast.LENGTH_LONG).show()
-                                        return@getQuizGeolocationRestriction
-                                    }
+
                                     if (quizLocation == null) {
                                         Toast.makeText(context, "Quiz location not found.", Toast.LENGTH_LONG).show()
                                         return@getQuizGeolocationRestriction
@@ -247,7 +249,12 @@ fun QuizAccessScreen(navController: NavController,
                                     Log.d("QuizAccessScreen", "Switching to WaitingScreen")
                                 } else {
                                     currentScreen = Screen.Presentation
-                                    viewModel.loadQuiz(quizId, context, creatorId)
+                                    viewModel.loadQuiz(quizId, context, creatorId) { success ->
+                                        if (!success) {
+                                            errorMessage = "Quiz not found. Please check the code."
+                                            Log.d("QuizAccessScreen", "Quiz not found: $quizId")
+                                        }
+                                    }
                                     Log.d("QuizAccessScreen", "Loading quiz with ID: $quizId")
                                 }
                             }
