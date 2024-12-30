@@ -46,6 +46,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import pt.isec.ams.quizec.ui.theme.MyAppTheme
+import pt.isec.ams.quizec.ui.viewmodel.UserProfileViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -191,6 +192,15 @@ class MainActivity : ComponentActivity() {
                 val questionId = backStackEntry.arguments?.getString("questionId") ?: ""
                 ResultsScreen(questionId = questionId)
             }
+            composable("userProfile/{userId}") { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                UserProfileScreen(
+                    navController = navController,
+                     userId = userId,
+                    viewModel = viewModel<UserProfileViewModel>()
+                )
+            }
+
 
         }
 

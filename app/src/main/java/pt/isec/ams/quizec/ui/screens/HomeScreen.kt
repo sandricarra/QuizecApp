@@ -5,9 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import pt.isec.ams.quizec.R
+import pt.isec.ams.quizec.ui.theme.BackgroundImage
 
 
 @Composable
@@ -32,12 +38,10 @@ fun HomeScreen(navController: NavController, creatorId: String) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.background), // Tu imagen de fondo
-            contentDescription = null, // Descripción (opcional)
-            contentScale = ContentScale.Crop, // Ajusta la imagen al tamaño de la pantalla
-            modifier = Modifier.fillMaxSize() // La imagen debe ocupar toda la pantalla
-        )
+        BackgroundImage()
+
+
+
 
 
         // LazyColumn para mostrar una lista desplazable de elementos.
@@ -47,6 +51,30 @@ fun HomeScreen(navController: NavController, creatorId: String) {
                 .padding(16.dp), // Añade padding alrededor de la lista.
             horizontalAlignment = Alignment.CenterHorizontally // Centra los elementos horizontalmente.
         ) {
+
+            item{
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    IconButton(
+                        onClick = { navController.navigate("userProfile/$creatorId") },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(48.dp)
+                            .background(Color.White.copy(alpha = 0.7f), CircleShape)
+                            .padding(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "User Profile",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
             // Primer item de la lista: logo de la aplicación.
             item {
                 Image(
