@@ -88,36 +88,46 @@ class QuizScreenViewModel : ViewModel() {
     val isQuestionAnswered: State<Boolean> = _isQuestionAnswered
 
     private val _answeredQuestions = mutableSetOf<String>()
+
+
+
     @SuppressLint("MissingPermission")
     fun getLocation(fusedLocationProviderClient: FusedLocationProviderClient, onLocationRetrieved: (GeoPoint?) -> Unit) {
         fusedLocationProviderClient.lastLocation
             .addOnSuccessListener { location ->
                 if (location != null) {
+                    Log.d("QuizScreenViewModel", "User location retrieved: ${location.latitude}, ${location.longitude}")
                     onLocationRetrieved(GeoPoint(location.latitude, location.longitude))
                 } else {
+                    Log.d("QuizScreenViewModel", "Failed to get user location")
                     onLocationRetrieved(null)
                 }
             }
             .addOnFailureListener {
+                Log.e("QuizScreenViewModel", "Error getting user location: ${it.message}")
                 onLocationRetrieved(null)
             }
     }
 
-    // Función para obtener la restricción de geolocalización y las coordenadas del quiz
+    // Método para obtener la restricción geográfica y la ubicación del quiz
     fun getQuizGeolocationRestriction(quizId: String, callback: (Boolean, GeoPoint?) -> Unit) {
         viewModelScope.launch {
             try {
                 val quizSnapshot = firestore.collection("quizzes").document(quizId).get().await()
                 val isGeolocationRestricted = quizSnapshot.getBoolean("isGeolocationRestricted") ?: false
                 val geoPoint = quizSnapshot.get("location") as? GeoPoint
+                Log.d("QuizScreenViewModel", "Quiz geolocation restriction: $isGeolocationRestricted, location: $geoPoint")
                 callback(isGeolocationRestricted, geoPoint)
             } catch (e: Exception) {
+                Log.e("QuizScreenViewModel", "Error fetching quiz geolocation restriction: ${e.message}")
                 callback(false, null)
             }
         }
     }
 
-    // Función para calcular la distancia entre dos puntos geográficos
+
+
+    // Método para calcular la distancia entre dos puntos geográficos
     fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val R = 6371 // Radio de la Tierra en km
         val dLat = Math.toRadians(lat2 - lat1)
@@ -126,7 +136,9 @@ class QuizScreenViewModel : ViewModel() {
                 cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
                 sin(dLon / 2) * sin(dLon / 2)
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return R * c
+        val distance = R * c
+        Log.d("QuizScreenViewModel", "Calculated distance: $distance km")
+        return distance
     }
 
     // Función para verificar si el usuario está dentro del rango permitido

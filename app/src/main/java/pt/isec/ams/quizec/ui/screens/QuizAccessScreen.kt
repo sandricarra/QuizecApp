@@ -97,111 +97,45 @@ fun QuizAccessScreen(navController: NavController,
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Start) }
 
 
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            if (isGranted) {
-                viewModel.getLocation(fusedLocationProviderClient) { location ->
-                    userLocation = location
-                }
-            } else {
-                Toast.makeText(context, "Location permission denied", Toast.LENGTH_LONG).show()
-            }
-        }
-    )
 
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            viewModel.getLocation(fusedLocationProviderClient) { location ->
-                userLocation = location
+    // Solicitar permisos de ubicación
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("QuizAccessScreen", "Location permission granted")
+            // Obtener la ubicación del usuario
+            viewModel.getLocation(fusedLocationProviderClient) { geoPoint ->
+                if (geoPoint != null) {
+                    userLocation = geoPoint
+                    Log.d("QuizAccessScreen", "User location: $geoPoint")
+                } else {
+                    Log.d("QuizAccessScreen", "Failed to get user location")
+                }
             }
         } else {
+            Log.d("QuizAccessScreen", "Location permission denied")
+            Toast.makeText(context, "Location permission is required to play this quiz.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Solicitar permisos al abrir la pantalla
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
-
-    // Verificar permisos de ubicación y obtener la ubicación del usuario
-
-
-
-    // Observar userLocation como State
-
-
-
-
-
-
-    /*LaunchedEffect(viewModel.quizStatus.value) {
-        if (viewModel.quizStatus.value == QuizStatus.IN_PROGRESS) {
-            viewModel.startTimer() // Iniciar el temporizador cuando el quiz esté disponible
-        }
-    }
-    LaunchedEffect(quizId) {
-        if (quizId.isNotBlank()) {
-            viewModel.observeQuizStatus(quizId) // Observar el estado del quiz
-        }
-    }
-    LaunchedEffect(isQuizFinished) {
-        if (isQuizFinished) {
-            viewModel.saveQuizResult(quizId, creatorId, correctAnswers, quiz?.questions?.size ?: 0)
-        }
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    fun calculateResults(): String {
-        val correctAnswers = viewModel.correctAnswers.value
-        return "You got $correctAnswers correct."
-    }
-
-    LaunchedEffect(quizId) {
-        if (quizId.isNotBlank()) {
-            // Bucle para verificar el estado de quizStatus
-
-
-            while (quizStatus != QuizStatus.AVAILABLE) {
-
-                // Espera y vuelve a verificar el estado cada 3 segundos
-                delay(500)
-                viewModel.checkQuizStatus(quizId)
-                println("Quiz status: $quizStatus")
+        } else {
+            Log.d("QuizAccessScreen", "Location permission already granted")
+            // Obtener la ubicación del usuario
+            viewModel.getLocation(fusedLocationProviderClient) { geoPoint ->
+                if (geoPoint != null) {
+                    userLocation = geoPoint
+                    Log.d("QuizAccessScreen", "User location: $geoPoint")
+                } else {
+                    Log.d("QuizAccessScreen", "Failed to get user location")
+                }
             }
-
-            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
-            // El quiz está disponible, ahora cargamos el quiz y marcamos que ha sido cargado
-
-
         }
     }
-    LaunchedEffect(quizId) {
-        if (quizId.isNotBlank()) {
-            // Bucle para verificar el estado de quizStatus
-
-            while (quizStatus != QuizStatus.FINISHED) {
-
-                // Espera y vuelve a verificar el estado cada 3 segundos
-                delay(3000)
-                viewModel.checkQuizStatus(quizId)
-                viewModel.updateQuizStatus(quizId)
-                println("Quiz status: $quizStatus")
-            }
-
-
-        }
-    }*/
-
-
 
     // Iniciar el contador cuando el cuestionario se cargue
     LaunchedEffect(timeRemaining) {
@@ -228,322 +162,7 @@ fun QuizAccessScreen(navController: NavController,
     }
 
 
-    /* if (quiz?.status == QuizStatus.LOCKED) {
-        viewModel.addUserToWaitingList(quizId, creatorId)
 
-        // Manejar el botón de retroceso
-        BackHandler {
-            // Remover el usuario de la lista de espera al retroceder
-            if (quizId.isNotBlank()) {
-                viewModel.removeUserFromWaitingList(quizId, creatorId)
-            }
-
-            // Navegar de vuelta al HomeScreen
-            navController.navigate("home") {
-                // Limitar el historial de navegación para evitar regresar al QuizAccessScreen
-                popUpTo("home") { inclusive = true }
-            }
-        }
-
-        // Mostrar mensaje de espera
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "The quiz is currently locked. Please wait for the creator to unlock it.",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator()
-        }
-        } else {
-            if (!isQuizStarted) {
-                viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
-                viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .background(MaterialTheme.colorScheme.background),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    // Imagen o logo
-                    item {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_logo), // Cambia esto por el ID de tu logo
-                            contentDescription = "App Logo",
-                            modifier = Modifier
-                                .size(150.dp)
-                                .padding(bottom = 32.dp)
-                        )
-                    }
-
-                    // Texto de bienvenida
-                    item {
-                        Text(
-                            text = "Start playing!",
-                            style = MaterialTheme.typography.headlineLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                    }
-
-                    // Campo de texto para ingresar el ID del cuestionario
-                    item {
-                        TextField(
-                            value = quizId,
-                            onValueChange = { quizId = it },
-                            label = { Text("Enter Quiz ID") },
-                            placeholder = { Text("e.g., ABC123") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            colors = TextFieldDefaults.textFieldColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            ),
-                            singleLine = true
-                        )
-                    }
-
-
-
-                    // Botón para cargar el cuestionario
-                    item {
-                        Button(
-                            onClick = { viewModel.loadQuiz( quizId, context,creatorId)
-                                      isQuizStarted = true
-                                      isQuizLoaded=true },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = Color.White
-                            ),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text("Load Quiz", style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-
-                    // Mensaje opcional
-                    item {
-                        Text(
-                            text = "Please enter the Quiz ID to proceed",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
-
-                }
-
-
-                Spacer(modifier = Modifier.height(16.dp))
-            } else if (isQuizFinished || quizStatus == QuizStatus.FINISHED || timeRemaining == 0L) {
-
-            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
-            viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
-
-            // Pantalla final con los botones Check Answers y Exit Quiz
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Quiz Finished!",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Mostrar el contador de tiempo restante
-                if (timeRemaining != null) {
-                    Text(
-                        text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                Button(
-                    onClick = {
-                        if (quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED) {
-                            val results = calculateResults()
-                            Toast.makeText(context, results, Toast.LENGTH_LONG).show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Please wait until the end of the quiz to see the answers.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    },
-                    enabled = quiz?.showResultsImmediately == true || quizStatus == QuizStatus.FINISHED || timeRemaining == 0L,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Check Answers")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        isQuizStarted = false // Volver al estado inicial
-                        viewModel.removeUserFromPlayingList(quiz?.id.toString(), creatorId)
-
-
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Exit Quiz")
-                }
-            }
-        } else {
-            BackHandler {
-                // Remover el usuario de la lista de espera al retroceder
-                if (quizId.isNotBlank()) {
-                    viewModel.removeUserFromWaitingList(quizId, creatorId)
-                    viewModel.removeUserFromPlayingList(quizId, creatorId)
-                }
-                // Navegar de vuelta al HomeScreen
-                navController.navigate("home") {
-                    // Limitar el historial de navegación para evitar regresar al QuizAccessScreen
-                    popUpTo("home") { inclusive = true }
-                }
-            }
-            viewModel.addUserToPlayingList(quiz?.id.toString(), creatorId)
-            viewModel.removeUserFromWaitingList(quiz?.id.toString(), creatorId)
-            // Pantalla del cuestionario con preguntas
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                } else if (errorMessage != null) {
-                    Text(
-                        text = errorMessage ?: "Unknown error",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                } else if (quiz != null && question != null) {
-                    Text(
-                        text = "Quiz: ${quiz?.title}",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Mostrar el contador de tiempo restante
-                    if (timeRemaining != null) {
-                        Text(
-                            text = "Time remaining: ${timeRemaining!! / 60}:${timeRemaining!! % 60}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Black
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    // Mostrar la pregunta dependiendo de su tipo
-                    when (question?.type) {
-                        QuestionType.P01 -> {
-                            P01(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P02 -> {
-                            P02(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P03 -> {
-                            P03(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P04 -> {
-                            P04(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P05 -> {
-                            P05(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P06 -> {
-                            P06(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P07 -> {
-                            P07(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        QuestionType.P08 -> {
-                            P08Reply(
-                                question = question!!,
-                                onNext = { nextQuestion() },
-                                onPrevious = { previousQuestion() },
-                                viewModel = viewModel
-                            )
-                        }
-
-                        else -> {
-                            Text("Unsupported question type.")
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-*/
     LaunchedEffect(quizStatus) {
         Log.d("QuizAccessScreen", "Quiz status changed to: $quizStatus")
         if (quizStatus == QuizStatus.LOCKED && quiz?.isAccessControlled == true) {
@@ -599,21 +218,41 @@ fun QuizAccessScreen(navController: NavController,
                         if (hasPlayed) {
                             Toast.makeText(context, "You have already played this quiz.", Toast.LENGTH_LONG).show()
                         } else {
-                            Log.d("QuizAccessScreen11", "Starting quiz with ID: $quizId")
-                            Log.d("QuizAccessScreen11", "Quiz status: $quizStatus")
-                            if (quizStatus == QuizStatus.LOCKED) {
-                                currentScreen = Screen.Waiting
-                                Log.d("QuizAccessScreen11", "Switching to WaitingScreen")
-                            }
-                            else {
+                            Log.d("QuizAccessScreen", "Starting quiz with ID: $quizId")
+                            viewModel.getQuizGeolocationRestriction(quizId) { isGeolocationRestricted, quizLocation ->
+                                if (isGeolocationRestricted) {
+                                    Log.d("QuizAccessScreen", "Quiz has geolocation restriction")
+                                    if (userLocation == null) {
+                                        Toast.makeText(context, "Unable to fetch your location. Please enable location services.", Toast.LENGTH_LONG).show()
+                                        return@getQuizGeolocationRestriction
+                                    }
+                                    if (quizLocation == null) {
+                                        Toast.makeText(context, "Quiz location not found.", Toast.LENGTH_LONG).show()
+                                        return@getQuizGeolocationRestriction
+                                    }
+                                    val distance = viewModel.calculateDistance(
+                                        userLocation!!.latitude,
+                                        userLocation!!.longitude,
+                                        quizLocation.latitude,
+                                        quizLocation.longitude
+                                    )
+                                    Log.d("QuizAccessScreen", "Distance to quiz: $distance km")
+                                    if (distance > 20) {
+                                        Toast.makeText(context, "You are not within the allowed region (20 km) to play this quiz.", Toast.LENGTH_LONG).show()
+                                        return@getQuizGeolocationRestriction
+                                    }
+                                }
+                                if (quizStatus == QuizStatus.LOCKED) {
+                                    currentScreen = Screen.Waiting
+                                    Log.d("QuizAccessScreen", "Switching to WaitingScreen")
+                                } else {
                                     currentScreen = Screen.Presentation
-                                    viewModel.loadQuiz(quizId, context,creatorId)
-                                    Log.d("QuizAccessScreen11", "Loadingquiz with ID: $quizId")
-
+                                    viewModel.loadQuiz(quizId, context, creatorId)
+                                    Log.d("QuizAccessScreen", "Loading quiz with ID: $quizId")
                                 }
                             }
                         }
-
+                    }
                 }
             )
         }

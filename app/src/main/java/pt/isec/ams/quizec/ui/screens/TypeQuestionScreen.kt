@@ -922,7 +922,7 @@ fun P08Question(
 ) {
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> uri?.let { onImageChange(it.toString()) } }
+        onResult = { uri -> uri?.let { (it.toString()) } }
     )
 
     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
