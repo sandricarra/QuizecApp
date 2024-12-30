@@ -580,7 +580,7 @@ fun QuizCreationScreen(
                                 type = questionType!!,
                                 title = questionTitle,
                                 options = pairsP04.map { "${it.first} -> ${it.second}" },
-                                correctAnswers = listOf(selectedAnswer ?: ""),
+                                correctAnswers = pairsP04.map { "${it.first} -> ${it.second}" },
                                 imageUrl = imageUrl,
 
                                 )

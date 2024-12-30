@@ -756,8 +756,19 @@ fun P06(
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
     var isCorrect by remember { mutableStateOf(false) }
 
+    // Construir el texto dinámico con las respuestas del usuario
+    val dynamicText = buildString {
+        val parts = question.title.split("{}")
+        parts.forEachIndexed { index, part ->
+            append(part)
+            if (index < userAnswers.value.size) {
+                append(userAnswers.value[index].ifEmpty { "______" }) // Mostrar "______" si no hay respuesta
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
 
         // Mostrar imagen si está disponible
         question.imageUrl?.let { imageUrl ->
@@ -772,30 +783,33 @@ fun P06(
             )
         }
 
-        // Texto base con espacios en blanco
-        val baseTextParts = question.baseTextP06.split("{}")
-        baseTextParts.forEachIndexed { index, part ->
-            Text(text = part, style = MaterialTheme.typography.bodyMedium)
-            if (index < userAnswers.value.size) {
-                TextField(
-                    value = userAnswers.value[index],
-                    onValueChange = { newAnswer ->
-                        if (!isQuestionAnswered) {
-                            val updatedAnswers = userAnswers.value.toMutableList()
-                            updatedAnswers[index] = newAnswer
-                            userAnswers.value = updatedAnswers
-                        }
-                    },
-                    modifier = Modifier
-                        .background(Color.LightGray)
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = Color(0xFFE3F2FD)
-                    ),
-                    label = { Text("Enter Answer ${index + 1}") },
-                    enabled = !isQuestionAnswered
-                )
-            }
+        // Mostrar el texto dinámico con las respuestas del usuario
+        Text(
+            text = dynamicText,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        // Campos de texto para las respuestas
+        userAnswers.value.forEachIndexed { index, answer ->
+            TextField(
+                value = answer,
+                onValueChange = { newAnswer ->
+                    if (!isQuestionAnswered) {
+                        val updatedAnswers = userAnswers.value.toMutableList()
+                        updatedAnswers[index] = newAnswer
+                        userAnswers.value = updatedAnswers
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = Color(0xFFE3F2FD)
+                ),
+                label = { Text("Enter Answer ${index + 1}") },
+                enabled = !isQuestionAnswered
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -850,6 +864,8 @@ fun P06(
         }
     }
 }
+
+
 
 
 
@@ -983,14 +999,34 @@ fun P07(question: Question, viewModel: QuizScreenViewModel, isQuestionAnswered: 
         }
     }
 }
+
+
+
+
+
 @Composable
-fun P08(question: Question, viewModel: QuizScreenViewModel, isQuestionAnswered: Boolean) {
+fun P08(
+    question: Question,
+    viewModel: QuizScreenViewModel,
+    isQuestionAnswered: Boolean
+) {
     val db = FirebaseFirestore.getInstance()
     val userAnswers = remember { mutableStateOf(List(question.correctAnswers.size) { "" }) }
     var isCorrect by remember { mutableStateOf(false) }
 
+    // Construir el texto dinámico con las respuestas del usuario
+    val dynamicText = buildString {
+        val parts = question.title.split("{}")
+        parts.forEachIndexed { index, part ->
+            append(part)
+            if (index < userAnswers.value.size) {
+                append(userAnswers.value[index].ifEmpty { "______" }) // Mostrar "______" si no hay respuesta
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Text(text = question.title, style = MaterialTheme.typography.bodyLarge)
+
 
         // Mostrar imagen si está disponible
         question.imageUrl?.let { imageUrl ->
@@ -1005,41 +1041,44 @@ fun P08(question: Question, viewModel: QuizScreenViewModel, isQuestionAnswered: 
             )
         }
 
-        // Texto base con espacios en blanco
-        val baseTextParts = question.baseTextP06.split("{}")
-        baseTextParts.forEachIndexed { index, part ->
-            Text(text = part, style = MaterialTheme.typography.bodyMedium)
-            if (index < userAnswers.value.size) {
-                var expanded by remember { mutableStateOf(false) }
-                var selectedOption by remember { mutableStateOf(userAnswers.value[index]) }
+        // Mostrar el texto dinámico con las respuestas del usuario
+        Text(
+            text = dynamicText,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
 
-                Box {
-                    Text(
-                        text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
-                        modifier = Modifier
-                            .clickable { expanded = true }
-                            .background(Color.LightGray)
-                            .padding(8.dp)
-                            .then(if (isQuestionAnswered) Modifier.background(Color.Transparent) else Modifier)
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        question.correctAnswers.forEach { option ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    if (!isQuestionAnswered) {
-                                        selectedOption = option
-                                        expanded = false
-                                        val updatedAnswers = userAnswers.value.toMutableList()
-                                        updatedAnswers[index] = option
-                                        userAnswers.value = updatedAnswers
-                                    }
-                                },
-                                text = { Text(option) }
-                            )
-                        }
+        // Desplegables para las respuestas
+        userAnswers.value.forEachIndexed { index, answer ->
+            var expanded by remember { mutableStateOf(false) }
+            var selectedOption by remember { mutableStateOf(answer) }
+
+            Box {
+                Text(
+                    text = if (selectedOption.isEmpty()) "Select an option" else selectedOption,
+                    modifier = Modifier
+                        .clickable { expanded = true }
+                        .background(Color.LightGray)
+                        .padding(8.dp)
+                        .then(if (isQuestionAnswered) Modifier.background(Color.Transparent) else Modifier)
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    question.correctAnswers.forEach { option ->
+                        DropdownMenuItem(
+                            onClick = {
+                                if (!isQuestionAnswered) {
+                                    selectedOption = option
+                                    expanded = false
+                                    val updatedAnswers = userAnswers.value.toMutableList()
+                                    updatedAnswers[index] = option
+                                    userAnswers.value = updatedAnswers
+                                }
+                            },
+                            text = { Text(option) }
+                        )
                     }
                 }
             }
@@ -1095,9 +1134,3 @@ fun P08(question: Question, viewModel: QuizScreenViewModel, isQuestionAnswered: 
         }
     }
 }
-
-
-
-
-
-
