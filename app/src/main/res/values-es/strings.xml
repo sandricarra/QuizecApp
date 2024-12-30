@@ -132,7 +132,8 @@
     <string name="proceed_message">Por favor, ingresa el ID del Cuestionario para continuar</string>
     <string name="quiz_locked_message">El cuestionario está bloqueado. Por favor, espera a que el creador lo desbloquee.</string>
     <string name="quiz_finished">¡Cuestionario Finalizado!</string>
-    <string name="time_remaining">Tiempo restante: </string>
+    <string name="time_remaining">Tiempo restante </string>
+    <string name="quiz_results"> Resultados</string>
     <string name="check_answers">Ver Respuestas</string>
     <string name="exit_quiz">Salir del Cuestionario</string>
     <string name="question_title">Pregunta: </string>

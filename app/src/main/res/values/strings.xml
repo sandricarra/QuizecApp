@@ -69,7 +69,7 @@
     <string name="proceed_message">Please enter the Quiz ID to proceed</string>
     <string name="quiz_locked_message">The quiz is currently locked. Please wait for the creator to unlock it.</string>
     <string name="quiz_finished">Quiz Finished!</string>
-    <string name="time_remaining">Time remaining: </string>
+    <string name="time_remaining">Time remaining </string>
     <string name="check_answers">Check Answers</string>
     <string name="exit_quiz">Exit Quiz</string>
     <string name="question_title">Question: </string>
@@ -86,7 +86,7 @@
     <string name="already_played_message">You have already played this quiz.</string>
     <string name="quiz_history_title">My Quiz History \uD83D\uDCC3</string>
     <string name="created_on">Created on: </string>
-
+    <string name="quiz_results"> Quiz results</string>
     <string name="filter">Filter: </string>
     <string name="all">All</string>
     <string name="created_quizzes">Created Quizzes</string>

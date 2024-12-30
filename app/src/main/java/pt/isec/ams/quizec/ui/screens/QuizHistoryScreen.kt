@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import pt.isec.ams.quizec.ui.theme.BackgroundImage
 import pt.isec.ams.quizec.ui.viewmodel.QuizHistoryViewModel
 
 @Composable
@@ -24,9 +25,11 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
     // Observar la lista de cuestionarios filtrados desde el ViewModel
     val quizzes = viewModel.filteredQuizzes.collectAsState(initial = emptyList())
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Fondo
+        BackgroundImage()
+
+        // Contenido
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -39,7 +42,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                     text = "My Quiz History \uD83D\uDCC3",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E88E5)
+                        color = Color.White // Ajusta el color del texto para que sea legible sobre el fondo
                     ),
                     modifier = Modifier.padding(vertical = 24.dp)
                 )
@@ -60,7 +63,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFBFDEFF).copy(alpha = 0.9f)), // Ajusta la opacidad de la tarjeta
                     onClick = {
                         // Navegar al historial de preguntas del cuestionario seleccionado
                         navController.navigate("questionHistory/${quiz.id}/$userId")
@@ -112,6 +115,7 @@ fun QuizHistoryScreen(navController: NavController, viewModel: QuizHistoryViewMo
         }
     }
 }
+
 
 @Composable
 fun DropdownMenuFilter(selectedStatus: String, onStatusChange: (String) -> Unit) {

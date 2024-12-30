@@ -81,6 +81,7 @@
     <string name="quiz_locked_message">O questionário está bloqueado. Por favor, aguarde o criador desbloqueá-lo.</string>
     <string name="quiz_finished">Questionário Finalizado!</string>
     <string name="time_remaining">Tempo restante </string>
+    <string name="quiz_results"> Resultados obtidos</string>
     <string name="check_answers">Ver Respostas</string>
     <string name="exit_quiz">Sair do Questionário</string>
     <string name="question_title">Pergunta: </string>

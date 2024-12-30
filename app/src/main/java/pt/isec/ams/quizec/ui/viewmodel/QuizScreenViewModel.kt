@@ -370,6 +370,30 @@ class QuizScreenViewModel : ViewModel() {
         }
     }
 
+    fun updateUserAfterQuiz(quizId: String, userId: String, correctAnswers: Int, totalQuestions: Int) {
+        viewModelScope.launch {
+            try {
+                val userRef = firestore.collection("users").document(userId)
+
+                // Actualizar el score sumando las respuestas correctas
+                userRef.update("score", FieldValue.increment(correctAnswers.toLong()))
+
+                // Añadir el quizId al array participatedQuizzes
+                userRef.update("participatedQuizzes", FieldValue.arrayUnion(quizId))
+
+                // Si todas las respuestas son correctas, añadir el quizId al array completedQuizzes
+                if (correctAnswers == totalQuestions) {
+                    userRef.update("completedQuizzes", FieldValue.arrayUnion(quizId))
+                }
+
+                Log.d("QuizScreenViewModel", "User data updated successfully!")
+            } catch (e: Exception) {
+                Log.e("QuizScreenViewModel", "Error updating user data: ${e.message}")
+            }
+        }
+    }
+
+
     // Función para registrar una respuesta correcta
     fun registerCorrectAnswer() {
         _correctAnswers.value += 1

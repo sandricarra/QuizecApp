@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import pt.isec.ams.quizec.R
+import pt.isec.ams.quizec.ui.theme.BackgroundImage
 import pt.isec.ams.quizec.ui.viewmodel.QuestionHistoryViewModel
 
 @Composable
@@ -33,6 +34,10 @@ fun QuestionHistoryScreen(
     LaunchedEffect(quizId) {
         viewModel.loadQuestions(quizId)
     }
+
+    Box(modifier = Modifier.fillMaxSize()){
+        BackgroundImage()
+
 
     Column(
         modifier = Modifier
@@ -118,6 +123,6 @@ fun QuestionHistoryScreen(
             }
         }
     }
-}
+}}
 
 

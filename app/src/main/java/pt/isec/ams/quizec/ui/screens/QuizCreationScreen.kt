@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.res.stringResource
 import pt.isec.ams.quizec.R
 import pt.isec.ams.quizec.data.models.QuestionType
+import pt.isec.ams.quizec.ui.theme.BackgroundImage
 import pt.isec.ams.quizec.ui.viewmodel.QuizCreationViewModel
 
 
@@ -150,6 +151,8 @@ fun QuizCreationScreen(
             }
         }
     )
+  Box(modifier = Modifier.fillMaxSize()){
+      BackgroundImage()
 
 
 
@@ -832,7 +835,7 @@ fun QuizCreationScreen(
         }
     }
 }
-}
+}}
 
 
 

@@ -37,6 +37,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.background
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.lightColorScheme
+
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import pt.isec.ams.quizec.ui.theme.MyAppTheme
 
 
 class MainActivity : ComponentActivity() {
@@ -57,7 +66,7 @@ class MainActivity : ComponentActivity() {
         languageViewModel.checkAndSetLanguage(applicationContext)
         enableEdgeToEdge() // Activa el modo edge-to-edge para un diseño inmersivo
         setContent {
-            QuizecTheme {
+            MyAppTheme {
                 QuizecApp()
             }
         }
@@ -90,7 +99,11 @@ class MainActivity : ComponentActivity() {
             // Contenido principal
             Scaffold(
                 modifier = Modifier.systemBarsPadding(),
-            ) { innerPadding ->
+
+            )
+
+
+            { innerPadding ->
                 AppNavHost(navController, innerPadding, authViewModel = viewModel())
             }
         }
@@ -182,6 +195,14 @@ class MainActivity : ComponentActivity() {
         }
 
     }}
+
+
+
+
+
+
+
+
 
 
 
