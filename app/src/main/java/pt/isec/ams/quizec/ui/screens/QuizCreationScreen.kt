@@ -658,7 +658,7 @@ fun QuizCreationScreen(
                             viewModel.addTemporaryQuestion(
                                 type = questionType!!,
                                 title = questionTitle,
-                                options = optionsP01,
+                                options = associationsP07.map { it.first },
                                 correctAnswers = associationsP07.map { it.second } ,
                                 imageUrl = imageUrl,
 
